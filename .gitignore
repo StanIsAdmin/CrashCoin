@@ -26,3 +26,7 @@ hs_err_pid*
 target/*
 nb-configuration.xml
 
+# Eclipse
+.classpath
+.project
+bin/
