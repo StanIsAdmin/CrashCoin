@@ -6,6 +6,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 
@@ -20,10 +21,11 @@ public class Wallet {
 	/**
 	 * Constructs an empty wallet. This constructor behaves differently 
 	 * if one passes a Keypair to it.
+	 * @throws NoSuchProviderException 
 	 */
-	public Wallet() {
+	public Wallet() throws NoSuchProviderException {
 		try {
-			dsaKeyGen = KeyPairGenerator.getInstance("DSA");
+			dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("[Error] Could not find DSA key-pair generator");
 		}
@@ -37,9 +39,10 @@ public class Wallet {
 	 * anymore.
 	 * 
 	 * @param keyPair Pair of keys
+	 * @throws NoSuchProviderException 
 	 * @see signTransaction
 	 */
-	public Wallet(KeyPair keyPair) {
+	public Wallet(KeyPair keyPair) throws NoSuchProviderException {
 		this();
 		this.publicKey = keyPair.getPublic();
 	}
@@ -50,13 +53,16 @@ public class Wallet {
 	 * This method can be called at most one time per wallet.
 	 * 
 	 * @return Pair of DSA keys
+	 * @throws NoSuchAlgorithmException 
+	 * @throws NoSuchProviderException 
 	 */
-	public KeyPair generateKey() {
+	public KeyPair generateKey() throws NoSuchAlgorithmException, NoSuchProviderException {
 		if (publicKey != null) {
 			System.out.println("[Error] Only one key pair can be assigned to a wallet");
 			return null;
 		}
-		dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS);
+		SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+		dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
 		KeyPair keyPair = dsaKeyGen.generateKeyPair();
 		this.publicKey = keyPair.getPublic();
 		return keyPair;	
