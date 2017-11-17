@@ -6,4 +6,7 @@ public class Parameters {
 
     /** Primitive data type sizes */
     public static final Integer INTEGER_N_BYTES = Integer.SIZE / Byte.SIZE;
+    
+    /** Wallets directory path */
+    public static final String WALLETS_PATH = "./wallets/";
 }

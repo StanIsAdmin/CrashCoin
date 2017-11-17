@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.client;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.Base64;
 import java.util.Scanner;
 import java.security.KeyPair;
@@ -28,32 +29,52 @@ public class ClientApplication {
             System.out.print("Please enter your choice : ");
 
             choice = reader.nextInt();
-            if (choice == 1)
+            if(choice == 1)
                 signIn();
-            else if (choice == 2)
+            else if(choice == 2)
                 signUp();
 
-        } while (choice != 3);
+        } while(choice != 3);
 
         reader.close();
     }
 
     public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException {
-
-        // Create a new empty wallet and generate a key pair
-        this.wallet = new Wallet();
-        KeyPair keyPair = this.wallet.generateKey();
-
-        // Account name = public key in hexa
-        Base64.Encoder encoder = Base64.getEncoder();
-
-        String publicKey = encoder.encodeToString(keyPair.getPublic().getEncoded());
-
-        System.out.println("\n");
+    	
+    	System.out.println("\n");
         System.out.println("Sign up");
         System.out.println("-------\n");
-        System.out.println("Your public key is : " + publicKey);
+        
+        Boolean notExists = true;
+                
+    	// Ask the user to specify a wallet identifier
+        System.out.print("Please specify a wallet identifier : ");
+        String accountName = reader.next();
+        
+        File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
+        if(f.exists()) { 
+            System.out.println("The wallet identifier that you specified already exists, please sign in");
+            notExists = false;
+        }
+        
+        if(notExists){
+        	
+        	// Create a new empty wallet and generate a key pair
+            this.wallet = new Wallet();
+            KeyPair keyPair = this.wallet.generateKeys();	// TODO change to generateKeys after commit
 
+            Base64.Encoder encoder = Base64.getEncoder();
+            Base64.Decoder decoder = Base64.getDecoder();
+            
+            // publicKey : X509 encoding  -  privateKey : PKCS8 encoding
+            
+            // ce qui doit être chiffré c'est : keyPair.getPrivate().getEncoded 
+            String publicKey = encoder.encodeToString(keyPair.getPublic().getEncoded());
+            
+            System.out.println("Your public key is : " + publicKey);
+        	
+        }
+        
     }
 
     public void signIn() {
