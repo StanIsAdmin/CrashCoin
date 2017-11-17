@@ -5,6 +5,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
@@ -16,7 +17,6 @@ import be.ac.ulb.crashcoin.data.Transaction;
 public class Wallet {
 
     private PublicKey publicKey = null;
-    private Signature dsa;
     private KeyPairGenerator dsaKeyGen;
 
     /**
@@ -58,7 +58,7 @@ public class Wallet {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public KeyPair generateKey() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public KeyPair generateKeys() throws NoSuchAlgorithmException, NoSuchProviderException {
         if (publicKey != null) {
             System.out.println("[Error] Only one key pair can be assigned to a wallet");
             return null;
@@ -76,15 +76,9 @@ public class Wallet {
         // address as src or dest, and return them
         return null; // TODO
     }
-
-    /**
-     * Returns a transaction signature using DSA algorithm.
-     * 
-     * @param keyPair
-     * @param transaction
-     * @return transaction signature
-     */
-    public byte[] signTransaction(KeyPair keyPair, Transaction transaction) {
+    
+    public Signature dsaFromPrivateKey(PrivateKey privateKey) {
+        Signature dsa = null;
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
@@ -95,13 +89,41 @@ public class Wallet {
 
         try {
             // Using private key to sign with DSA
-            dsa.initSign(keyPair.getPrivate());
+            dsa.initSign(privateKey);
         } catch (InvalidKeyException e1) {
             e1.printStackTrace();
         }
+        return dsa;
+    }
+    
+    public Signature dsaFromPublicKey(PublicKey publicKey) {
+        Signature dsa = null;
+        try {
+            dsa = Signature.getInstance("SHA1withDSA", "SUN");
+        } catch (NoSuchAlgorithmException e2) {
+            e2.printStackTrace();
+        } catch (NoSuchProviderException e2) {
+            e2.printStackTrace();
+        }
+        try {
+            // Using public key to verify signatures
+            dsa.initVerify(publicKey);
+        } catch (InvalidKeyException e1) {
+            e1.printStackTrace();
+        }
+        return dsa;
+    }
 
+    /**
+     * Returns a transaction signature using DSA algorithm.
+     * 
+     * @param keyPair
+     * @param transaction
+     * @return transaction signature
+     */
+    public byte[] signTransaction(PrivateKey privateKey, byte[] bytes) {
+        Signature dsa = dsaFromPrivateKey(privateKey);
         byte[] signature = null;
-        byte[] bytes = transaction.toBytes();
         try {
             // Running DSA
             dsa.update(bytes, 0, bytes.length);
@@ -110,6 +132,19 @@ public class Wallet {
             e.printStackTrace();
         }
         return signature;
+    }
+    
+    public boolean verifySignature(PublicKey publicKey, byte[] transaction, byte[] signature) {        
+        Signature dsa = dsaFromPublicKey(publicKey);
+        
+        boolean verified = false;
+        try {
+            dsa.update(transaction, 0, transaction.length);
+            verified = dsa.verify(signature);
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        return verified;
     }
 
     /** Get the unique public key */
