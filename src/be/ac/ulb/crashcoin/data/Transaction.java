@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.data;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import be.ac.ulb.crashcoin.client.Parameters;
 
@@ -39,5 +40,10 @@ public class Transaction {
 		buffer.put(srcAddressBytes);
 		buffer.put(destAddressBytes);
 		return buffer.array();
+	}
+	
+	/** String representation of a transaction */
+	public String toString() {
+		return "src: " + srcAddress + " | dest: " + destAddress + " | amount: " + amount;
 	}
 }

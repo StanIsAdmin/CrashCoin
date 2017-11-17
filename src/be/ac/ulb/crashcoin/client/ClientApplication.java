@@ -18,11 +18,8 @@ public class ClientApplication {
 	private Wallet wallet;
 	
 	public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException {
-		
-		
 		int choice;
-		
-		do{		
+		do {		
 			System.out.println("Menu");
 			System.out.println("----\n");
 			System.out.println("1. Sign in");
@@ -31,14 +28,12 @@ public class ClientApplication {
 			System.out.print("Please enter your choice : ");
 			
 			choice = reader.nextInt();
-			
-			if(choice == 1) signIn();
-			else if(choice == 2) signUp();
+			if (choice == 1) signIn();
+			else if (choice == 2) signUp();
 	
-		}while(choice != 3);
+		} while(choice != 3);
 		
 		reader.close();
-
 	}
 	
 	
@@ -61,7 +56,7 @@ public class ClientApplication {
 	}
 	
 	
-	public void signIn(){
+	public void signIn() {
 		System.out.println("\n");
 		System.out.println("Sign in");
 		System.out.println("-------");
@@ -69,12 +64,12 @@ public class ClientApplication {
 	}
 	
 	
-	public void signOut(){
-		
+	public void signOut() {
+		// TODO
 	}
 	
 	
-	public void createTransaction(){
+	public void createTransaction() {
 		
 		/*
 		 * get input from client

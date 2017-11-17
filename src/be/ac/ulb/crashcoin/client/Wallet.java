@@ -9,6 +9,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.ArrayList;
 
 import be.ac.ulb.crashcoin.data.Transaction;
 
@@ -68,6 +69,13 @@ public class Wallet {
 		return keyPair;	
 	}
 	
+	public ArrayList<Transaction> getTransactions() {
+		// TODO: ask for the blockchain if it is not in memory
+		// TODO: look for all the transactions containing my
+		//       address as src or dest, and return them
+		return null; // TODO
+	}
+	
 	/**
 	 * Returns a transaction signature using DSA algorithm.
 	 * 
@@ -85,6 +93,7 @@ public class Wallet {
 		}
 		
 		try {
+			// Using private key to sign with DSA
 			dsa.initSign(keyPair.getPrivate());
 		} catch (InvalidKeyException e1) {
 			e1.printStackTrace();
@@ -93,6 +102,7 @@ public class Wallet {
 		byte[] signature = null;
 		byte[] bytes = transaction.toBytes();
 		try {
+			// Running DSA
 			dsa.update(bytes, 0, bytes.length);
 			signature = dsa.sign();
 		} catch (SignatureException e) {
