@@ -7,10 +7,10 @@ import java.security.NoSuchProviderException;
 public class Main {
 
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
-		
+
 		// TODO GUI or Terminal application ?
 		ClientApplication ca = new ClientApplication();
-		
+
 	}
 
 }
