@@ -6,7 +6,6 @@ import java.util.Scanner;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PublicKey;
 
 /*
  * Handle IO from user
