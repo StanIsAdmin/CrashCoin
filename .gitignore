@@ -30,3 +30,6 @@ nb-configuration.xml
 .classpath
 .project
 bin/
+
+# CrashCoin folders
+wallets/

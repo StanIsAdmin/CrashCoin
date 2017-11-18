@@ -160,7 +160,11 @@ public class ClientApplication {
     }
     
     public void writeWalletFile(WalletInformation walletInformation, String accountName) throws FileNotFoundException, IOException {
-    	
+    	// Creates wallet folder if not exists
+        File walletFolder = new File(Parameters.WALLETS_PATH);
+        if (!walletFolder.exists()) walletFolder.mkdir();
+        
+        // Creates new wallet file
     	File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
     	ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
     	oos.writeObject(walletInformation);
