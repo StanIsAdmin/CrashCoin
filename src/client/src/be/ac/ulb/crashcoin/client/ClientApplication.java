@@ -21,6 +21,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import be.ac.ulb.crashcoin.common.Transaction;
+import java.io.Console;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
@@ -47,10 +48,12 @@ import java.util.Random;
 
 public class ClientApplication {
 
+    private Console console;
     private Scanner reader = new Scanner(System.in);
     private Wallet wallet;
 
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
+        console = System.console();
         int choice;
         do {
             System.out.println("Menu");
@@ -227,9 +230,21 @@ public class ClientApplication {
         	byte[] encryptedPrivateKey = walletInformation.getEncryptedPrivateKey();
         	byte[] publicKeyBytes = walletInformation.getPublicKey();	
         	
-        	// Ask the password of the user (// TODO hidden password)
-        	System.out.print("Please enter your password: ");
-        	char[] userPassword = reader.next().toCharArray();
+                // Ask the password of the user, and hides input
+                // Using Console.readPassword because it is safer than reader.next() for 2 reasons:
+                // 1) Hides user input, to protect from an attacker who potentially monitors the screen
+                // 2) Returns a char array (no temporary String), to shorten the password lifetime
+                //    in RAM, in case an attacker has access to it
+                // Note: we use Console.readPassword only in console since IDEs
+                //       do not work with consoles
+                char[] userPassword;
+                if (console != null) { // If using a console
+                    userPassword = console.readPassword("Enter your secret password: ");
+                }
+                else { // Is using an IDE
+                    System.out.print("Please enter your password: ");
+                    userPassword = reader.next().toCharArray();   
+                }
         	
         	SecretKey decryptionKey = this.computeSecretKey(userPassword, salt);
         	
