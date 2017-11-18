@@ -1,14 +1,13 @@
 package be.ac.ulb.crashcoin.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.util.Random;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.jupiter.api.Test;
 
 class TestWallet {
     /**
