@@ -1,17 +1,33 @@
 package be.ac.ulb.crashcoin.common;
 
-import org.bouncycastle.crypto.digests.RIPEMD160Digest;
-
 import java.security.PublicKey;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.json.JSONObject;
 
-public class Address {
+public class Address extends JSONable {
 
     private PublicKey key; // Public key
     private byte[] value; // CrashCoin address, derived from the public key
 
     public Address(PublicKey key) {
+        super();
         this.key = key;
         this.value = applyRIPEMD160(key);
+    }
+    
+    /** Create Address instance from a JSON representation **/
+    public Address(JSONObject json) {
+        super(json);
+        this.key = (PublicKey) (json.get("key")); //TODO check if deserialization works properly on key instance.
+        this.value = (byte[]) json.get("value");
+    }
+    
+    /** Get a JSON representation of the Address instance **/
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("key", key);
+        json.put("value", value);
+        return json;
     }
 
     /**
