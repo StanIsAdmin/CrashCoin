@@ -1,4 +1,4 @@
-package be.ac.ulb.crashcoin.data;
+package be.ac.ulb.crashcoin.common;
 
 /**
  * Block that compose BlockChain

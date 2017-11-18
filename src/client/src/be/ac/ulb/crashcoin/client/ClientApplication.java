@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.common.Parameters;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,7 +20,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import be.ac.ulb.crashcoin.data.Transaction;
+import be.ac.ulb.crashcoin.common.Transaction;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;

@@ -23,7 +23,8 @@ hs_err_pid*
 /target/
 
 # Netbeans
-target/*
+/src/*/target/
+/dist/*
 nb-configuration.xml
 
 # Eclipse

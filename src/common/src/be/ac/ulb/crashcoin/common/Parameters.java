@@ -1,4 +1,4 @@
-package be.ac.ulb.crashcoin.client;
+package be.ac.ulb.crashcoin.common;
 
 public class Parameters {
     /** Parameters for cryptographic algorithms */
