@@ -9,4 +9,17 @@ public class Parameters {
     
     /** Wallets directory path */
     public static final String WALLETS_PATH = "./wallets/";
+    
+    
+    // For AES private key encryption
+    
+    /** Secret key derivation iteration */
+    public static final Integer KEY_DERIVATION_ITERATION = 65536;
+    
+    /** Key size (guidelines) */
+    public static final Integer KEY_SIZE = 128;
+    
+    /** Salt size in bytes */
+    public static final Integer SALT_SIZE = 32;
+    
 }
