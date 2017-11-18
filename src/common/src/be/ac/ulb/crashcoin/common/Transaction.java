@@ -1,8 +1,6 @@
-package be.ac.ulb.crashcoin.data;
+package be.ac.ulb.crashcoin.common;
 
 import java.nio.ByteBuffer;
-
-import be.ac.ulb.crashcoin.client.Parameters;
 
 public class Transaction {
 
