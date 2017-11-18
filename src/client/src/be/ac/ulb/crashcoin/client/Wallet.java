@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -12,7 +13,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.util.ArrayList;
 
-import be.ac.ulb.crashcoin.data.Transaction;
+import be.ac.ulb.crashcoin.common.Transaction;
 
 public class Wallet {
 

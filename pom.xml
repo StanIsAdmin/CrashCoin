@@ -4,27 +4,11 @@
     <groupId>be.ac.ulb.crashcoin</groupId>
     <artifactId>CrashCoin</artifactId>
     <version>1.0</version>
-    <packaging>jar</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>be.ac.ulb.crashcoin.Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <finalName>${project.name}</finalName>
-                </configuration>
-            </plugin>
-        </plugins>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
-    </build>
+    <packaging>pom</packaging>
+    <modules>
+        <module>src/client</module>
+        <module>src/common</module>
+    </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -35,8 +19,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-            <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
