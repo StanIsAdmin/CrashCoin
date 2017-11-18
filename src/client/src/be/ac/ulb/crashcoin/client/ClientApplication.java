@@ -91,7 +91,7 @@ public class ClientApplication {
         	       	
         	// Ask a password from the user (// TODO hidden password + confirmation)
         	System.out.print("Please enter the desired password: ");
-        	String userPassword = reader.next();
+        	char[] userPassword = reader.next().toCharArray();
         	
         	// Create a new empty wallet and generate a key pair
             this.wallet = new Wallet();
@@ -141,7 +141,7 @@ public class ClientApplication {
         
     }
     
-    private SecretKey computeSecretKey(String userPassword, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private SecretKey computeSecretKey(char[] userPassword, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
     	
     	/*
     	 * Compute an encryption / decryption key (they are the same) from the password and the salt
@@ -152,7 +152,7 @@ public class ClientApplication {
     	 */
     	
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        KeySpec spec = new PBEKeySpec(userPassword.toCharArray(), salt, Parameters.KEY_DERIVATION_ITERATION, Parameters.KEY_SIZE);
+        KeySpec spec = new PBEKeySpec(userPassword, salt, Parameters.KEY_DERIVATION_ITERATION, Parameters.KEY_SIZE);
         SecretKey tmpKey = factory.generateSecret(spec);
         SecretKey secretKey = new SecretKeySpec(tmpKey.getEncoded(), "AES");
         
@@ -229,7 +229,7 @@ public class ClientApplication {
         	
         	// Ask the password of the user (// TODO hidden password)
         	System.out.print("Please enter your password: ");
-        	String userPassword = reader.next();
+        	char[] userPassword = reader.next().toCharArray();
         	
         	SecretKey decryptionKey = this.computeSecretKey(userPassword, salt);
         	
