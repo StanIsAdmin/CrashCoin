@@ -6,10 +6,10 @@ import java.security.PublicKey;
 
 public class Address {
 
-    private PublicKey key; // Public key
-    private byte[] value; // CrashCoin address, derived from the public key
+    private final PublicKey key; // Public key
+    private final byte[] value; // CrashCoin address, derived from the public key
 
-    public Address(PublicKey key) {
+    public Address(final PublicKey key) {
         this.key = key;
         this.value = applyRIPEMD160(key);
     }
@@ -21,20 +21,26 @@ public class Address {
      * @param key Public key
      * @return Byte representation of the CrashCoin address
      */
-    private byte[] applyRIPEMD160(PublicKey key) {
-        byte[] bytes = key.getEncoded();
-        RIPEMD160Digest d = new RIPEMD160Digest();
+    private byte[] applyRIPEMD160(final PublicKey key) {
+        final byte[] bytes = key.getEncoded();
+        final RIPEMD160Digest d = new RIPEMD160Digest();
         d.update(bytes, 0, bytes.length); // Copute RIPEMD160 digest
         d.doFinal(bytes, 0); // Copy digest into bytes
         return bytes;
     }
 
-    /** Byte representation of the CrashCoin address */
+    /** 
+     * Byte representation of the CrashCoin address
+     * @return the byte
+     */
     public byte[] toBytes() {
         return value;
     }
 
-    /** Get public key, from which the address has been derived */
+    /** 
+     * Get public key, from which the address has been derived
+     * @return the public key
+     */
     public PublicKey getPublicKey() {
         return key;
     }

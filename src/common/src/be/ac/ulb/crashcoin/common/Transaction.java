@@ -11,14 +11,11 @@ public class Transaction {
     /**
      * Constructor for transactions
      * 
-     * @param srcAddress
-     *            CrashCoin address of the source
-     * @param destAddress
-     *            CrashCoin address of the destination
-     * @param amount
-     *            Number of CrashCoins
+     * @param srcAddress CrashCoin address of the source
+     * @param destAddress CrashCoin address of the destination
+     * @param amount Number of CrashCoins
      */
-    public Transaction(Address srcAddress, Address destAddress, Integer amount) {
+    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount) {
         this.srcAddress = srcAddress;
         this.destAddress = destAddress;
         this.amount = amount;
@@ -33,9 +30,9 @@ public class Transaction {
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
-        byte[] srcAddressBytes = srcAddress.toBytes();
-        byte[] destAddressBytes = destAddress.toBytes();
-        ByteBuffer buffer = ByteBuffer
+        final byte[] srcAddressBytes = srcAddress.toBytes();
+        final byte[] destAddressBytes = destAddress.toBytes();
+        final ByteBuffer buffer = ByteBuffer
                 .allocate(srcAddressBytes.length + destAddressBytes.length + Parameters.INTEGER_N_BYTES);
         buffer.putInt(amount);
         buffer.put(srcAddressBytes);
@@ -43,7 +40,11 @@ public class Transaction {
         return buffer.array();
     }
 
-    /** String representation of a transaction */
+    /** 
+     * String representation of a transaction
+     * @return String
+     */
+    @Override
     public String toString() {
         return "src: " + srcAddress + " | dest: " + destAddress + " | amount: " + amount;
     }
