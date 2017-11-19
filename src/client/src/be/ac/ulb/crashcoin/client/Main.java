@@ -14,10 +14,13 @@ import javax.crypto.NoSuchPaddingException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
+    public static void main(final String[] args) throws IOException, NoSuchAlgorithmException, 
+            NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, 
+            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, 
+            InvalidAlgorithmParameterException, ClassNotFoundException {
 
         // TODO GUI or Terminal application ?
-        ClientApplication ca = new ClientApplication();
+        final ClientApplication ca = new ClientApplication();
 
     }
 

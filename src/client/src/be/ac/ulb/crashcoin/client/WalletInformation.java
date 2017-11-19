@@ -4,12 +4,12 @@ public class WalletInformation implements java.io.Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private byte[] salt;
-	private byte[] iv;
-	private byte[] encryptedPrivateKey;
-	private byte[] publicKey;	
+	private final byte[] salt;
+	private final byte[] iv;
+	private final byte[] encryptedPrivateKey;
+	private final byte[] publicKey;
 	
-	public WalletInformation(byte[] salt, byte[] iv, byte[] encryptedPrivateKey, byte[] publicKey) {
+	public WalletInformation(final byte[] salt, final byte[] iv, final byte[] encryptedPrivateKey, final byte[] publicKey) {
 		this.salt = salt;
 		this.iv = iv;
 		this.encryptedPrivateKey = encryptedPrivateKey;
