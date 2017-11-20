@@ -6,10 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * 
- * Est-ce qu'Antoine va stalker mon commit?
- */
+
 public class TransactionMiner {
     
     private final Transaction transaction;
