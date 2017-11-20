@@ -17,7 +17,7 @@ public class TestJSONable {
     public Address createAddress() {
         KeyPairGenerator kpg = null;
         try { 
-            kpg = KeyPairGenerator.getInstance("RSA"); 
+            kpg = KeyPairGenerator.getInstance("DSA"); 
         } catch(NoSuchAlgorithmException e) {
             fail("Could not create key pair generator");
         }
