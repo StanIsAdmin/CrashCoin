@@ -17,7 +17,7 @@ import be.ac.ulb.crashcoin.common.Transaction;
 
 public class Wallet {
 
-    private PublicKey publicKey = null;
+    private PublicKey publicKey;
     private KeyPairGenerator dsaKeyGen;
 
     /**
@@ -27,6 +27,7 @@ public class Wallet {
      * @throws NoSuchProviderException
      */
     public Wallet() throws NoSuchProviderException {
+        this.publicKey = null;
         try {
             dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
@@ -47,6 +48,7 @@ public class Wallet {
      */
     public Wallet(KeyPair keyPair) throws NoSuchProviderException {
         this();
+        this.publicKey = null;
         this.publicKey = keyPair.getPublic();
     }
 
@@ -64,9 +66,9 @@ public class Wallet {
             System.out.println("[Error] Only one key pair can be assigned to a wallet");
             return null;
         }
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        final SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
         dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        KeyPair keyPair = dsaKeyGen.generateKeyPair();
+        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
         this.publicKey = keyPair.getPublic();
         return keyPair;
     }
@@ -78,7 +80,7 @@ public class Wallet {
         return null; // TODO
     }
     
-    public Signature dsaFromPrivateKey(PrivateKey privateKey) {
+    public Signature dsaFromPrivateKey(final PrivateKey privateKey) {
         Signature dsa = null;
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
@@ -97,13 +99,11 @@ public class Wallet {
         return dsa;
     }
     
-    public Signature dsaFromPublicKey(PublicKey publicKey) {
+    public Signature dsaFromPublicKey(final PublicKey publicKey) {
         Signature dsa = null;
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
-        } catch (NoSuchAlgorithmException e2) {
-            e2.printStackTrace();
-        } catch (NoSuchProviderException e2) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
             e2.printStackTrace();
         }
         try {
@@ -118,12 +118,12 @@ public class Wallet {
     /**
      * Returns a transaction signature using DSA algorithm.
      * 
-     * @param keyPair
-     * @param transaction
+     * @param privateKey private key
+     * @param bytes data to sign
      * @return transaction signature
      */
-    public byte[] signTransaction(PrivateKey privateKey, byte[] bytes) {
-        Signature dsa = dsaFromPrivateKey(privateKey);
+    public byte[] signTransaction(final PrivateKey privateKey, final byte[] bytes) {
+        final Signature dsa = dsaFromPrivateKey(privateKey);
         byte[] signature = null;
         try {
             // Running DSA
@@ -135,8 +135,8 @@ public class Wallet {
         return signature;
     }
     
-    public boolean verifySignature(PublicKey publicKey, byte[] transaction, byte[] signature) {        
-        Signature dsa = dsaFromPublicKey(publicKey);
+    public boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
+        final Signature dsa = dsaFromPublicKey(publicKey);
         
         boolean verified = false;
         try {
@@ -148,7 +148,10 @@ public class Wallet {
         return verified;
     }
 
-    /** Get the unique public key */
+    /** 
+     * Get the unique public key
+     * @return  The public key
+     */
     public PublicKey getPublicKey() {
         return publicKey;
     }

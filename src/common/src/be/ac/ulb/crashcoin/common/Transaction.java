@@ -1,45 +1,66 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.nio.ByteBuffer;
+import java.security.Timestamp;
+import java.util.ArrayList;
 import org.json.JSONObject;
 
 public class Transaction extends JSONable {
 
     private final Address srcAddress;
-    private final Address destAddress;
-    private final Integer amount;
+    private final Integer totalAmount;
+    private final Timestamp lockTime;
+    private ArrayList<Input> inputs;
+    private ArrayList<Output> outputs;
 
     /**
      * Constructor for transactions
      * 
-     * @param srcAddress
-     *            CrashCoin address of the source
-     * @param destAddress
-     *            CrashCoin address of the destination
-     * @param amount
-     *            Number of CrashCoins
+     * @param srcAddress CrashCoin address of the source
+     * @param totalAmount Number of CrashCoins
+     * @param lockTime Transaction timestamp
      */
-    public Transaction(Address srcAddress, Address destAddress, Integer amount) {
+    public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
         super();
         this.srcAddress = srcAddress;
-        this.destAddress = destAddress;
-        this.amount = amount;
+        this.totalAmount = totalAmount;
+        this.lockTime = lockTime;
+        this.inputs = new ArrayList<>();
+        this.outputs = new ArrayList<>();
     }
     
     /** Create Transaction instance from a JSON representation **/
     public Transaction(JSONObject json) {
         this(new Address((JSONObject) json.get("srcAddress")), 
-                new Address((JSONObject) json.get("destAddress")),
-                (Integer) json.get("amount"));
+                (Integer) json.get("totalAmount"),
+                (Timestamp) json.get("lockTime"));
     }
     
     /** Get a JSON representation of the Address instance **/
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put("srcAddress", srcAddress.toJSON());
-        json.put("destAddress", destAddress.toJSON());
-        json.put("amount", amount);
+        json.put("totalAmount", totalAmount);
+        json.put("lockTime", lockTime);
         return json;
+    }
+    
+    public void addInputTransaction(final Transaction transaction) {
+        this.inputs.add(new Input(transaction));
+    }
+    
+    public void addOutput(final Address address, final Integer nCrashCoins) {
+        this.outputs.add(new Output(address, nCrashCoins));
+    }
+    
+    public byte[] hash() {
+        return null; // TODO
+    }
+    
+    public boolean isValid() {
+        // TODO: check whether sum of inputs is lower than the sum of outputs
+        // The difference is considered as transaction fee
+        return false; // TODO
     }
 
     /**
@@ -51,19 +72,48 @@ public class Transaction extends JSONable {
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
-        byte[] srcAddressBytes = srcAddress.toBytes();
-        byte[] destAddressBytes = destAddress.toBytes();
-        ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + destAddressBytes.length + Parameters.INTEGER_N_BYTES);
-        buffer.putInt(amount);
+        // TODO: convert inputs and outputs to bytes
+        final byte[] srcAddressBytes = srcAddress.toBytes();
+        final ByteBuffer buffer = ByteBuffer
+                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+        buffer.putInt(totalAmount);
         buffer.put(srcAddressBytes);
-        buffer.put(destAddressBytes);
         return buffer.array();
     }
 
-    /** String representation of a transaction */
+    /** 
+     * String representation of a transaction
+     * @return String
+     */
+    @Override
     public String toString() {
-        return "src: " + srcAddress + " | dest: " + destAddress + " | amount: " + amount;
+        return "src: " + srcAddress + " | amount: " + totalAmount;
+    }
+    
+    /**
+     * Input of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     */
+    public class Input {
+ 
+        final byte[] previousTx; // Hash value of a previous transaction
+        
+        public Input(Transaction previousTransaction) {
+            this.previousTx = previousTransaction.hash();
+        }
+    }
+    
+    /**
+     * Output of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     */
+    public class Output {
+        
+        final Integer nCrashCoins;
+        final Address address;
+        
+        public Output(Address address, Integer nCrashCoins) {
+            this.nCrashCoins = nCrashCoins;
+            this.address = address;
+        }
     }
     
     /** Used for test purposes **/
@@ -80,7 +130,7 @@ public class Transaction extends JSONable {
         }
         final Transaction other = (Transaction) obj;
         return this.srcAddress.equals(other.srcAddress) 
-                && this.destAddress.equals(other.destAddress) 
-                && this.amount.equals(other.amount);
+                && this.totalAmount.equals(other.totalAmount) 
+                && this.lockTime.equals(other.lockTime);
     }
 }

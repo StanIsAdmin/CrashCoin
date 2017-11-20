@@ -10,14 +10,15 @@ import static org.junit.Assert.assertEquals;
 
 
 public class TestWallet {
+    
     /**
      * Creates an array of random bytes
      * 
      * @param nBytes Number of bytes to generate
      * @return Array of random bytes
      */
-    public byte[] randomBytes(Integer nBytes) {
-        byte[] bytes = new byte[nBytes];
+    public byte[] randomBytes(final Integer nBytes) {
+        final byte[] bytes = new byte[nBytes];
         new Random().nextBytes(bytes);
         return bytes;
     }
@@ -44,13 +45,11 @@ public class TestWallet {
      * 
      * @return A pair of keys
      */
-    private KeyPair createKeyPair(Wallet wallet) {
+    private KeyPair createKeyPair(final Wallet wallet) {
         KeyPair keyPair = null;
         try {
             keyPair = wallet.generateKeys();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
         }
         return keyPair;
@@ -58,11 +57,11 @@ public class TestWallet {
 
     @Test
     public void testValidSignature() {
-        Wallet wallet = createWallet();
-        KeyPair keyPair = createKeyPair(wallet);  
+        final Wallet wallet = createWallet();
+        final KeyPair keyPair = createKeyPair(wallet);  
         
-        byte[] transaction = randomBytes(50);
-        byte[] signature = wallet.signTransaction(keyPair.getPrivate(), transaction);
+        final byte[] transaction = randomBytes(50);
+        final byte[] signature = wallet.signTransaction(keyPair.getPrivate(), transaction);
         
         assertEquals(wallet.verifySignature(keyPair.getPublic(), transaction, signature), true);
     }
@@ -71,17 +70,17 @@ public class TestWallet {
     public void testBadPrivateKey() throws NoSuchAlgorithmException, NoSuchProviderException {
         // Let wallet and keyPairs be the wallet and the pair of keys associated to user's account
         // and stored on the hard drive.
-        Wallet wallet = createWallet();
-        KeyPair keyPair = createKeyPair(wallet);
+        final Wallet wallet = createWallet();
+        final KeyPair keyPair = createKeyPair(wallet);
 
         // Let's suppose that an attacker entered a bad password and thus, got a bad DSA private key from
         // the decryption algorithm.
-        PrivateKey badPrivateKey = createWallet().generateKeys().getPrivate();
+        final PrivateKey badPrivateKey = createWallet().generateKeys().getPrivate();
         
         // The offline software must check whether this key is wrong or not. Let's do this by signing a
         // test transaction (it can be anything, let's write random bytes) and verify the signature.
-        byte[] transaction = randomBytes(156);
-        byte[] badSignature = wallet.signTransaction(badPrivateKey, transaction);
+        final byte[] transaction = randomBytes(156);
+        final byte[] badSignature = wallet.signTransaction(badPrivateKey, transaction);
         assertEquals(wallet.verifySignature(keyPair.getPublic(), transaction, badSignature), false);
     }
 }

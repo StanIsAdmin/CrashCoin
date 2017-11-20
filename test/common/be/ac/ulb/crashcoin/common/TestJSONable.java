@@ -1,9 +1,26 @@
 package be.ac.ulb.crashcoin.common;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.Timestamp;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathBuilder;
+import java.security.cert.CertPathBuilderException;
+import java.security.cert.CertPathBuilderResult;
+import java.security.cert.CertificateException;
+import java.security.cert.PKIXBuilderParameters;
+import java.security.cert.X509CertSelector;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -37,8 +54,27 @@ public class TestJSONable {
     }
     
     public Transaction createTransaction() {
-        //TODO check relevance of data (need for random amounts ?)
-        return new Transaction(createAddress(), createAddress(), 20);
+        Transaction transaction = null;
+        try {
+            //TODO I have no idea how to create a Transaction and give up.
+            Date date = new Date();
+            CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
+            X509CertSelector cs = new X509CertSelector();
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            char[] password = "password".toCharArray();
+            ks.load(null, password);
+            try (FileOutputStream fos = new FileOutputStream("testKeyStore")) {
+                ks.store(fos, password);
+            }
+            PKIXBuilderParameters cpp = new PKIXBuilderParameters(ks, cs);
+            CertPathBuilderResult cpbResult = cpb.build(cpp);
+            CertPath certPath = cpbResult.getCertPath();
+            Timestamp timestamp = new Timestamp(date, certPath);
+            transaction = new Transaction(createAddress(), 20, timestamp);
+        } catch (InvalidAlgorithmParameterException | KeyStoreException | NoSuchAlgorithmException | CertPathBuilderException | IOException | CertificateException ex) {
+            fail("Could not generate a Transaction instance: " + ex.toString());
+        }
+        return transaction;
     }
     
     @Test
