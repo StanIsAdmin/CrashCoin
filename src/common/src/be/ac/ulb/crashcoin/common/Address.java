@@ -1,6 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Objects;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.json.JSONObject;
 
@@ -53,5 +55,21 @@ public class Address extends JSONable {
     /** Get public key, from which the address has been derived */
     public PublicKey getPublicKey() {
         return key;
+    }
+
+    /** Used for test purposes **/
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Address other = (Address) obj;
+        return this.key.equals(other.key) && Arrays.equals(this.value, other.value);
     }
 }
