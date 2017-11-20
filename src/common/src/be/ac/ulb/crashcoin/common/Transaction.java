@@ -1,24 +1,48 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.nio.ByteBuffer;
+import java.security.Timestamp;
+import java.util.ArrayList;
 
 public class Transaction {
 
     private final Address srcAddress;
-    private final Address destAddress;
-    private final Integer amount;
+    private final Integer totalAmount;
+    private final Timestamp lockTime;
+    private ArrayList<Input> inputs;
+    private ArrayList<Output> outputs;
 
     /**
      * Constructor for transactions
      * 
      * @param srcAddress CrashCoin address of the source
-     * @param destAddress CrashCoin address of the destination
-     * @param amount Number of CrashCoins
+     * @param totalAmount Number of CrashCoins
+     * @param lockTime Transaction timestamp
      */
-    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount) {
+    public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
         this.srcAddress = srcAddress;
-        this.destAddress = destAddress;
-        this.amount = amount;
+        this.totalAmount = totalAmount;
+        this.lockTime = lockTime;
+        this.inputs = new ArrayList<>();
+        this.outputs = new ArrayList<>();
+    }
+    
+    public void addInputTransaction(final Transaction transaction) {
+        this.inputs.add(new Input(transaction));
+    }
+    
+    public void addOutput(final Address address, final Integer nCrashCoins) {
+        this.outputs.add(new Output(address, nCrashCoins));
+    }
+    
+    public byte[] hash() {
+        return null; // TODO
+    }
+    
+    public boolean isValid() {
+        // TODO: check whether sum of inputs is lower than the sum of outputs
+        // The difference is considered as transaction fee
+        return false; // TODO
     }
 
     /**
@@ -30,13 +54,12 @@ public class Transaction {
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
+        // TODO: convert inputs and outputs to bytes
         final byte[] srcAddressBytes = srcAddress.toBytes();
-        final byte[] destAddressBytes = destAddress.toBytes();
         final ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + destAddressBytes.length + Parameters.INTEGER_N_BYTES);
-        buffer.putInt(amount);
+                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+        buffer.putInt(totalAmount);
         buffer.put(srcAddressBytes);
-        buffer.put(destAddressBytes);
         return buffer.array();
     }
 
@@ -46,6 +69,32 @@ public class Transaction {
      */
     @Override
     public String toString() {
-        return "src: " + srcAddress + " | dest: " + destAddress + " | amount: " + amount;
+        return "src: " + srcAddress + " | amount: " + totalAmount;
+    }
+    
+    /**
+     * Input of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     */
+    public class Input {
+ 
+        final byte[] previousTx; // Hash value of a previous transaction
+        
+        public Input(Transaction previousTransaction) {
+            this.previousTx = previousTransaction.hash();
+        }
+    }
+    
+    /**
+     * Output of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     */
+    public class Output {
+        
+        final Integer nCrashCoins;
+        final Address address;
+        
+        public Output(Address address, Integer nCrashCoins) {
+            this.nCrashCoins = nCrashCoins;
+            this.address = address;
+        }
     }
 }
