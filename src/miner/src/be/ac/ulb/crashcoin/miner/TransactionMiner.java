@@ -13,6 +13,17 @@ import java.util.logging.Logger;
 public class TransactionMiner {
     
     private final Transaction transaction;
+    
+    /** array of masks such that MASKS[i] contains the first i bits with 1s and
+     * the 8-i last bits with 0s */
+    static final byte[] MASKS;
+    
+    static {
+        MASKS = new byte[8];
+        for(int i = 1; i < 8; ++i) {
+            MASKS[i] = (byte) ((1 << (Byte.SIZE - i)) | MASKS[i-1]);
+        }
+    }
    
     /**
      * Constructor
@@ -44,18 +55,28 @@ public class TransactionMiner {
         } while(!isValid(currentHash));
         return this.transaction;
     }
+    
+    /**
+     * Checks if a hash satisfies the difficulty
+     *
+     * @see isValid
+     */
+    private boolean isValid(final byte[] hash) {
+        return isValid(hash, Parameters.MINING_DIFFICULTY);
+    }
 
     /**
      * Checks if a hash satisfies the difficulty
      * 
      * @param hash The hash of a transaction to test
+     * @param difficulty The number of null bits that are required
      * @return true if the hash starts with the right amount of null bits and
      * false otherwise
      * @see Parameters.MINING_DIFFICULTY
      */
-    private boolean isValid(final byte[] hash) {
-        int nbOfNullBytes = Parameters.MINING_DIFFICULTY / Byte.SIZE;
-        int nbOfRemaningNullBits = Parameters.MINING_DIFFICULTY - nbOfNullBytes;
+    private boolean isValid(final byte[] hash, Integer difficulty) {
+        int nbOfNullBytes = difficulty / Byte.SIZE;
+        int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
         
         if(hash == null)
             return false;
@@ -64,10 +85,9 @@ public class TransactionMiner {
         for(int byteIdx = 0; byteIdx < nbOfNullBytes; ++byteIdx)
             if(hash[byteIdx] != 0)
                 return false;
-        // check the remaining bits one by one
-        for(int bit = 0; bit < nbOfRemaningNullBits; ++bit)
-            if((hash[nbOfNullBytes] & (1 << Byte.SIZE - 1 - bit)) != 0)
-                return false;
+        // and then check the last remaining bits
+        if(nbOfRemaningNullBits > 0 && (hash[nbOfNullBytes] & MASKS[nbOfRemaningNullBits]) != 0)
+            return false;
         return true;
     }
 }
