@@ -7,6 +7,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>src/client</module>
+        <module>src/miner</module>
         <module>src/common</module>
     </modules>
     <properties>
