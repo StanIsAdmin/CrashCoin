@@ -2,7 +2,6 @@ package be.ac.ulb.crashcoin.common;
 
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.Objects;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.json.JSONObject;
 
@@ -19,16 +18,13 @@ public class Address extends JSONable {
     
     /** Create Address instance from a JSON representation **/
     public Address(JSONObject json) {
-        super(json);
-        this.key = (PublicKey) (json.get("key")); //TODO check if deserialization works properly on key instance.
-        this.value = (byte[]) json.get("value");
+        this((PublicKey) (json.get("key")));
     }
     
     /** Get a JSON representation of the Address instance **/
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put("key", key);
-        json.put("value", value);
         return json;
     }
 

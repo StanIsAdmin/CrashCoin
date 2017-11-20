@@ -4,7 +4,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import org.json.JSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -27,11 +26,39 @@ public class TestJSONable {
         return new Address(pk);
     }
     
+    public Block createBlock() {
+        //TODO fill with relevant data
+        return new Block();
+    }
+    
+    public BlockChain createBlockchain() {
+        //TODO fill with relevant data
+        return new BlockChain();
+    }
+    
+    public Transaction createTransaction() {
+        //TODO check relevance of data (need for random amounts ?)
+        return new Transaction(createAddress(), createAddress(), 20);
+    }
+    
     @Test
     public void testAddressJSONConversion() {
-        Address address1 = createAddress();
-        JSONObject json = address1.toJSON();
-        Address address2 = new Address(json);
-        assertEquals(address1, address2);
+        Address address = createAddress();
+        Address copy = new Address(address.toJSON());
+        assertEquals(address, copy);
+    }
+    
+    @Test
+    public void testBlockJSONConversion() {
+        Block block = createBlock();
+        Block copy = new Block(block.toJSON());
+        assertEquals(block, copy);
+    }
+    
+    @Test
+    public void testTransactionJSONConversion() {
+        Transaction transaction = createTransaction();
+        Transaction copy = new Transaction(transaction.toJSON());
+        assertEquals(transaction, copy);
     }
 }

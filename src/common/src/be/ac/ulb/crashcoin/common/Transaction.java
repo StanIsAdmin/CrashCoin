@@ -1,8 +1,9 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.nio.ByteBuffer;
+import org.json.JSONObject;
 
-public class Transaction {
+public class Transaction extends JSONable {
 
     private final Address srcAddress;
     private final Address destAddress;
@@ -19,9 +20,26 @@ public class Transaction {
      *            Number of CrashCoins
      */
     public Transaction(Address srcAddress, Address destAddress, Integer amount) {
+        super();
         this.srcAddress = srcAddress;
         this.destAddress = destAddress;
         this.amount = amount;
+    }
+    
+    /** Create Transaction instance from a JSON representation **/
+    public Transaction(JSONObject json) {
+        this(new Address((JSONObject) json.get("srcAddress")), 
+                new Address((JSONObject) json.get("destAddress")),
+                (Integer) json.get("amount"));
+    }
+    
+    /** Get a JSON representation of the Address instance **/
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("srcAddress", srcAddress.toJSON());
+        json.put("destAddress", destAddress.toJSON());
+        json.put("amount", amount);
+        return json;
     }
 
     /**
@@ -46,5 +64,23 @@ public class Transaction {
     /** String representation of a transaction */
     public String toString() {
         return "src: " + srcAddress + " | dest: " + destAddress + " | amount: " + amount;
+    }
+    
+    /** Used for test purposes **/
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Transaction other = (Transaction) obj;
+        return this.srcAddress.equals(other.srcAddress) 
+                && this.destAddress.equals(other.destAddress) 
+                && this.amount.equals(other.amount);
     }
 }
