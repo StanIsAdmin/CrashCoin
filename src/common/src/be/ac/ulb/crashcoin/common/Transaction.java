@@ -1,6 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Timestamp;
 import java.util.ArrayList;
 
@@ -11,6 +13,7 @@ public class Transaction {
     private final Timestamp lockTime;
     private ArrayList<Input> inputs;
     private ArrayList<Output> outputs;
+    private Long nonce;  
 
     /**
      * Constructor for transactions
@@ -25,9 +28,10 @@ public class Transaction {
         this.lockTime = lockTime;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
+        this.nonce = 0L;
     }
     
-    public void addInputTransaction(final Transaction transaction) {
+    public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
     }
     
@@ -35,8 +39,25 @@ public class Transaction {
         this.outputs.add(new Output(address, nCrashCoins));
     }
     
-    public byte[] hash() {
-        return null; // TODO
+    /**
+     * Performs SHA-256 hash of the transaction
+     * 
+     * @return A 32 byte long byte[] with the SHA-256 of the transaction
+     * @throws NoSuchAlgorithmException if the machine is unable to perform SHA-256
+     */
+    public byte[] hash() throws NoSuchAlgorithmException {
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        sha256.update(toBytes());
+        return sha256.digest();
+    }
+    
+    /**
+     * Changes the nonce of the transaction. Should only be called when mining!
+     * 
+     * @param nonce The new nonce to set
+     */
+    public void setNonce(Long nonce) {
+        this.nonce = nonce;
     }
     
     public boolean isValid() {
@@ -57,9 +78,12 @@ public class Transaction {
         // TODO: convert inputs and outputs to bytes
         final byte[] srcAddressBytes = srcAddress.toBytes();
         final ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES
+                        + Parameters.NONCE_SIZE);
         buffer.putInt(totalAmount);
         buffer.put(srcAddressBytes);
+        for(int i = 0; i < Parameters.NONCE_SIZE; ++i)
+            buffer.put((byte)(this.nonce & (0xFF << i)));
         return buffer.array();
     }
 
@@ -79,7 +103,7 @@ public class Transaction {
  
         final byte[] previousTx; // Hash value of a previous transaction
         
-        public Input(Transaction previousTransaction) {
+        public Input(Transaction previousTransaction) throws NoSuchAlgorithmException {
             this.previousTx = previousTransaction.hash();
         }
     }
