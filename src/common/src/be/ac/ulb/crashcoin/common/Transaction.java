@@ -79,10 +79,10 @@ public class Transaction {
         final byte[] srcAddressBytes = srcAddress.toBytes();
         final ByteBuffer buffer = ByteBuffer
                 .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES
-                        + Parameters.NONCE_SIZE);
+                        + Parameters.NONCE_N_BYTES);
         buffer.putInt(totalAmount);
         buffer.put(srcAddressBytes);
-        for(int i = 0; i < Parameters.NONCE_SIZE; ++i)
+        for(int i = 0; i < Parameters.NONCE_N_BYTES; ++i)
             buffer.put((byte)(this.nonce & (0xFF << i)));
         return buffer.array();
     }

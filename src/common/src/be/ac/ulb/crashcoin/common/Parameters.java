@@ -7,8 +7,8 @@ public class Parameters {
     /** Primitive data type sizes */
     public static final Integer INTEGER_N_BYTES = Integer.SIZE / Byte.SIZE;
     
-    /** size of a nonce in butes */
-    public static final Integer NONCE_SIZE = Long.SIZE;
+    /** size of a nonce in bytes */
+    public static final Integer NONCE_N_BYTES = Long.SIZE / Byte.SIZE;
     
     /** Wallets directory path */
     public static final String WALLETS_PATH = "./wallets/";
