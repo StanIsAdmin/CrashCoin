@@ -36,3 +36,4 @@ bin/
 
 # CrashCoin folders
 wallets/
+/src/miner/nbproject/

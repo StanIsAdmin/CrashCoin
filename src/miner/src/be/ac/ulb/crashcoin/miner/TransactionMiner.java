@@ -16,7 +16,7 @@ public class TransactionMiner {
     
     /** array of masks such that MASKS[i] contains the first i bits with 1s and
      * the 8-i last bits with 0s */
-    static final byte[] MASKS;
+    static public final byte[] MASKS;
     
     static {
         MASKS = new byte[8];
@@ -41,14 +41,15 @@ public class TransactionMiner {
      */
     public Transaction mine() {
         Long currentNonce = 0L;
-        byte[] currentHash = null;
+        byte[] currentHash;
         do {
             this.transaction.setNonce(currentNonce);
             try {
                 currentHash = this.transaction.hash();
             } catch (NoSuchAlgorithmException ex) {
                 Logger.getLogger(TransactionMiner.class.getName()).log(Level.SEVERE,
-                        "Unable to mine: no SHA-256 available. Aborting!", ex);
+                        "Unable to mine: no " + Parameters.MINING_HASH_ALGORITHM
+                        +" available. Aborting!", ex);
                 return null;
             }
             currentNonce += 1;
@@ -59,9 +60,12 @@ public class TransactionMiner {
     /**
      * Checks if a hash satisfies the difficulty
      *
+     * @param hash The hash of a transaction to test
+     * @return true if the hash starts with the right amount of null bits and
+     * false otherwise
      * @see isValid
      */
-    private boolean isValid(final byte[] hash) {
+    public boolean isValid(final byte[] hash) {
         return isValid(hash, Parameters.MINING_DIFFICULTY);
     }
 
@@ -74,11 +78,11 @@ public class TransactionMiner {
      * false otherwise
      * @see Parameters.MINING_DIFFICULTY
      */
-    private boolean isValid(final byte[] hash, Integer difficulty) {
+    public boolean isValid(final byte[] hash, Integer difficulty) {
         int nbOfNullBytes = difficulty / Byte.SIZE;
         int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
         
-        if(hash == null)
+        if(hash == null || difficulty > Byte.SIZE * hash.length)
             return false;
         
         // check the first complete bytes

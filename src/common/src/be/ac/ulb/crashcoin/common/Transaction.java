@@ -46,7 +46,7 @@ public class Transaction {
      * @throws NoSuchAlgorithmException if the machine is unable to perform SHA-256
      */
     public byte[] hash() throws NoSuchAlgorithmException {
-        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        MessageDigest sha256 = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
         sha256.update(toBytes());
         return sha256.digest();
     }

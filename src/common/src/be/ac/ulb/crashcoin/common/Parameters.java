@@ -30,4 +30,6 @@ public class Parameters {
     /** difficulty for mining in bits */
     public static final Integer MINING_DIFFICULTY = 10;
     
+    public static final String MINING_HASH_ALGORITHM = "SHA-256";
+    
 }
