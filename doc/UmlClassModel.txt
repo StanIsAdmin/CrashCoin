@@ -123,7 +123,7 @@ Main -- ClientApplication
 ClientApplication -- WalletInformation
 ClientApplication *- Wallet
 Transaction -- Parameters
-Transaction *- Input
+Transaction *-left- Input
 Input o- Transaction
 Transaction *- Output
 Transaction *- Address
