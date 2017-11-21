@@ -7,8 +7,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>src/client</module>
-        <module>src/node</module>
         <module>src/common</module>
+        <module>relay</module>
+        <module>master</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
