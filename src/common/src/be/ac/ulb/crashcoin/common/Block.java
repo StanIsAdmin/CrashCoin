@@ -5,7 +5,7 @@ import org.json.JSONObject;
 /**
  * Block that compose BlockChain
  */
-public class Block extends JSONable {
+public class Block implements JSONable {
     
     public Block() {
         super();
