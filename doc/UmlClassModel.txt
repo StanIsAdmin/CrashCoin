@@ -6,7 +6,7 @@
 skinparam shadowing false
 
 'taille de l'image
-skinparam dpi 300 
+skinparam dpi 100 
 
 'couleurs
 skinparam class {
@@ -60,15 +60,22 @@ class WalletInformation {
 }
 
 package "be.ac.ulb.crashcoin.common" {
+class JSONable {
+
+}
+
 class Address {
 - final PublicKey key
 - final byte[] value
 - byte[] applyRIPEMD160()
 + byte[] toBytes()
 + PublicKey getPublicKey()
++ boolean equals()
 }
 
 class Block {
++ JSONObject toJSON()
++ boolean equals()
 }
 
 class BlockChain<extends HashSet<Block>> {
@@ -91,11 +98,14 @@ class Transaction {
 - final Timestamp lockTime
 - ArrayList<Input> inputs
 - ArrayList<Output> outputs
++ JSONObject toJSON()
 + void addInputTransaction()
 + void addOutput()
 + byte[] hash()
 + boolean isValid()
 + byte[] toBytes()
++ String toString()
++ boolean equals()
 }
 
 class Input {
@@ -118,4 +128,7 @@ Input o- Transaction
 Transaction *- Output
 Transaction *- Address
 Output *- Address
+JSONable <|-- Address
+JSONable <|-- Block
+JSONable <|-- Transaction
 @enduml
