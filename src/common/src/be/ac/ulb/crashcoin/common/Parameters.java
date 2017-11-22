@@ -28,6 +28,9 @@ public class Parameters {
     
     public static final Integer MASTER_PORT_LISTENER = 2017;
     
+    /**
+     * Specific port which Relay listen for connection from Miner
+     */
     public static final Integer RELAY_PORT_LISTENER = 2018;
     
 }
