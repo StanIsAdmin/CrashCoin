@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.relay.net;
 
 import be.ac.ulb.crashcoin.common.Parameters;
+import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,14 +15,9 @@ import java.util.logging.Logger;
  * Connection to master node<br>
  * It's a thread and a singleton
  */
-public class MasterConnection extends Thread {
+public class MasterConnection extends AbstractConnection {
     
     private static MasterConnection instance = null;
-    
-    private Socket _sock;
-    private PrintWriter _output;
-    private BufferedReader _input;
-    
     
     private MasterConnection() throws UnsupportedEncodingException, IOException {
         _sock = new Socket(Parameters.MASTER_IP, Parameters.MASTER_PORT_LISTENER);
@@ -46,37 +42,21 @@ public class MasterConnection extends Thread {
         reconnect();
     }
     
-    private void reciveData(final String data) {
+    @Override
+    protected void reciveData(final String data) {
         // TODO analyse data
     }
     
-    private void close() {
+    @Override
+    protected boolean canCreateNewInstance() {
+        boolean isConnected;
         try {
-            _sock.close();
-        } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Could not close socket: {0}", ex.getMessage());
+            instance = new MasterConnection();
+            isConnected = true;
+        } catch(IOException ex) {
+            isConnected = false;
         }
-        
-        if(_input != null) {
-            _input = null;
-        }
-        
-        if(_output != null) {
-            _output = null;
-        }
-    }
-    
-    private void reconnect() {
-        boolean isConnected = false;
-        while(!isConnected) {
-            try {
-                instance = new MasterConnection();
-                isConnected = true;
-            } catch(IOException ex) {
-                isConnected = false;
-            }
-        }
-        
+        return isConnected;
     }
     
     public static MasterConnection getMasterConnection() throws IOException {
