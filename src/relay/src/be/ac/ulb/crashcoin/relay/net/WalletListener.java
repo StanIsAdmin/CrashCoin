@@ -9,27 +9,26 @@ import java.net.Socket;
 /**
  * 
  */
-public class MinerListener extends AbstractListener {
+public class WalletListener extends AbstractListener {
     
-    private static MinerListener instance = null;
+    private static WalletListener instance = null;
     
-    private MinerListener() throws IOException {
-        super("MinerListener", new ServerSocket(Parameters.RELAY_PORT_MINER_LISTENER));
+    private WalletListener() throws IOException {
+        super("WalletListener", new ServerSocket(Parameters.RELAY_PORT_WALLET_LISTENER));
         
         start();
     }
     
     @Override
     protected void createNewConnection(Socket sock) throws IOException {
-        new MinerConnection(sock);
+        new WalletConnection(sock);
     }
     
-    public static MinerListener getListener() throws IOException {
+    public static WalletListener getListener() throws IOException {
         if(instance == null) {
-            instance = new MinerListener();
+            instance = new WalletListener();
         }
         return instance;
     }
-    
     
 }
