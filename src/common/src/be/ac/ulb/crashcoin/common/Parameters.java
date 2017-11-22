@@ -22,4 +22,7 @@ public class Parameters {
     /** Salt size in bytes */
     public static final Integer SALT_SIZE = 32;
     
+    
+    public static final Integer MASTER_PORT_LISTENER = 2017;
+    
 }
