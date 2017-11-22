@@ -8,6 +8,8 @@
     <modules>
         <module>src/client</module>
         <module>src/common</module>
+        <module>src/relay</module>
+        <module>src/master</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.json.JSONObject;
 
-public class Address extends JSONable {
+public class Address implements JSONable {
 
     private final PublicKey key; // Public key
     private final byte[] value; // CrashCoin address, derived from the public key

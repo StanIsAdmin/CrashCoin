@@ -6,12 +6,7 @@ package be.ac.ulb.crashcoin.common;
 import org.json.JSONObject;
 
 
-public abstract class JSONable {
-    /* Creates a class instance from a JSONObject representation */
-    public JSONable(JSONObject json) {};
-    
-    /* Allows other constructors for subclasses */
-    public JSONable() {};
+public interface JSONable {
     
     /** Get a JSON representation of the class instance
      * @return  the JSONObject representation

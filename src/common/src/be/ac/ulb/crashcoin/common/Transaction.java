@@ -5,7 +5,7 @@ import java.security.Timestamp;
 import java.util.ArrayList;
 import org.json.JSONObject;
 
-public class Transaction extends JSONable {
+public class Transaction implements JSONable {
 
     private final Address srcAddress;
     private final Integer totalAmount;
