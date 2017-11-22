@@ -38,7 +38,8 @@ public class RelayListener extends Thread {
     public void close() {
         try {
             _sock.close();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+        }
     }
     
     public static RelayListener getListener() throws IOException {

@@ -23,6 +23,11 @@ public class Parameters {
     public static final Integer SALT_SIZE = 32;
     
     
+    
+    public static final String MASTER_IP = "127.0.0.1";
+    
     public static final Integer MASTER_PORT_LISTENER = 2017;
+    
+    public static final Integer RELAY_PORT_LISTENER = 2018;
     
 }

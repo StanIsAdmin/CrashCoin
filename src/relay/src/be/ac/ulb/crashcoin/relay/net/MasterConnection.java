@@ -1,63 +1,53 @@
-package be.ac.ulb.crashcoin.master.net;
+package be.ac.ulb.crashcoin.relay.net;
 
-import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Parameters;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 
+ * Connection to master node<br>
+ * It's a thread and a singleton
  */
-public class RelayConnection extends Thread {
+public class MasterConnection extends Thread {
     
-    private static HashSet<RelayConnection> allRelay = new HashSet<>();
+    private static MasterConnection instance = null;
     
-    private final Socket _sock;
-    private BufferedReader _input;
+    private Socket _sock;
     private PrintWriter _output;
+    private BufferedReader _input;
     
     
-    protected RelayConnection(final Socket acceptedSock) throws UnsupportedEncodingException, IOException {
-        this._sock = acceptedSock;
+    private MasterConnection() throws UnsupportedEncodingException, IOException {
+        _sock = new Socket(Parameters.MASTER_IP, Parameters.MASTER_PORT_LISTENER);
         _input = new BufferedReader(new InputStreamReader(_sock.getInputStream(), "UTF-8"));
         _output = new PrintWriter(_sock.getOutputStream(), true);
-        allRelay.add(this);
-        
+
         start();
     }
     
     @Override
     public void run() {
-        try {
-            
+        try{
             while(true) {
-                String readLine = _input.readLine();
-                if(readLine == null) {
-                    break;
-                }
-                reciveData(readLine);
+                String data = _input.readLine();
+                reciveData(data);
             }
-            
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
         
         close();
-    }
-    
-    public void sendToRelay(final JSONable jsonData) {
-        _output.write(jsonData.toJSON() + "\n");
-        _output.flush();
+        reconnect();
     }
     
     private void reciveData(final String data) {
-        // TODO convert data and read it
+        // TODO analyse data
     }
     
     private void close() {
@@ -74,8 +64,26 @@ public class RelayConnection extends Thread {
         if(_output != null) {
             _output = null;
         }
+    }
+    
+    private void reconnect() {
+        boolean isConnected = false;
+        while(!isConnected) {
+            try {
+                instance = new MasterConnection();
+                isConnected = true;
+            } catch(IOException ex) {
+                isConnected = false;
+            }
+        }
         
-        allRelay.remove(this);
+    }
+    
+    public static MasterConnection getMasterConnection() throws IOException {
+        if(instance == null) {
+            instance = new MasterConnection();
+        }
+        return instance;
     }
     
 }
