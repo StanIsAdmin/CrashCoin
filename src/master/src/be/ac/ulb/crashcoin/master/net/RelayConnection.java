@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.master.net;
 
+import be.ac.ulb.crashcoin.common.JSONable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,6 +50,12 @@ public class RelayConnection extends Thread {
         
         close();
     }
+    
+    public void sendToRelay(final JSONable jsonData) {
+        _output.write(jsonData.toJSON() + "\n");
+        _output.flush();
+    }
+
     
     private void reciveData(final String data) {
         // TODO convert data and read it
