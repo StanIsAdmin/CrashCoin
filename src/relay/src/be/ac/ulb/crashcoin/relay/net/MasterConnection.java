@@ -27,7 +27,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     @Override
     protected void receiveData(final String data) {
         System.out.println("[DEBUG] get value from master: " + data);
-        JSONObject jsonData = new JSONObject(data);
+        final JSONObject jsonData = new JSONObject(data);
         if(jsonData.get("value") == "BlockChainUpdate") {
             // TODO add a condition to verify that we receive a blockchain
             // even though it is supposed to be the only kind of message expected ?
@@ -35,8 +35,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             BlockChain chain = new BlockChain();
             BlockChain localChain = Main.getBlockChain();
             // localChain.update(chain);
-        }
-        else { // jsonData.get("value") != "BlockChainUpdate"
+        } else { // jsonData.get("value") != "BlockChainUpdate"
             System.out.println("[DEBUG] get value from master: " + data);
         }
     }
