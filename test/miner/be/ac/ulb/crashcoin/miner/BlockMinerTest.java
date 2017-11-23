@@ -10,24 +10,21 @@ public class BlockMinerTest {
     @Test
     public void testIsValidDifficultyTooBig() {
         byte[] array = new byte[1];
-        // no Transaction is needed here
-        BlockMiner transactionMiner = new BlockMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertFalse(transactionMiner.isValid(array, 10));
     }
     
     @Test
     public void testIsValidIsTrue() {
         byte[] array = {0b01001100};
-        // no Transaction is needed here
-        BlockMiner transactionMiner = new BlockMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertTrue(transactionMiner.isValid(array, 1));
     }
     
     @Test
     public void testIsValidIsFalse() {
         byte[] array = {0b01001100};
-        // no Transaction is needed here
-        BlockMiner transactionMiner = new BlockMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertFalse(transactionMiner.isValid(array, 2));
     }
     
