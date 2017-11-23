@@ -11,6 +11,14 @@ import org.json.JSONObject;
  * Stock block
  */
 public class BlockChain extends ArrayList<Block> implements JSONable {
+
+    public BlockChain(JSONObject jsonObject) {
+        // TODO
+    }
+
+    public BlockChain() {
+        // TODO
+    }
     
     @Override
     public boolean add(final Block block) {
