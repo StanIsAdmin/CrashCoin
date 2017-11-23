@@ -6,7 +6,7 @@ public class Miner {
     }
     
     public void startMining() {
-        TransactionMiner transactionMiner;
+        BlockMiner miner = new BlockMiner();
         // TODO
         // + connect to relay node
         // + ask transactions to this relay node

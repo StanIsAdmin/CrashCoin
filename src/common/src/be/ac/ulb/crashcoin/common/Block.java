@@ -1,5 +1,9 @@
 package be.ac.ulb.crashcoin.common;
 
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import org.json.JSONObject;
 
 /**
@@ -7,8 +11,12 @@ import org.json.JSONObject;
  */
 public class Block implements JSONable {
     
+    private ArrayList<Transaction> transactions;
+    private Long nonce = 0L;
+    
     public Block() {
         super();
+        this.transactions = new ArrayList<>();
         //TODO
     }
     
@@ -21,6 +29,31 @@ public class Block implements JSONable {
     public JSONObject toJSON() {
         //TODO
         return new JSONObject();
+    }
+    
+    public byte[] hash() throws NoSuchAlgorithmException {
+        MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
+        sha.update(toBytes());
+        return sha.digest();
+    }
+    
+    public byte[] toBytes() {
+        ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.transactions.size()
+                +  Parameters.NONCE_N_BYTES);
+        for(final Transaction transaction : this.transactions)
+            buffer.put(transaction.toBytes());
+        for(int i = 0; i < Parameters.NONCE_N_BYTES; ++i)
+            buffer.put((byte)((this.nonce & (0xFF << Byte.SIZE * i)) >> (Byte.SIZE * i)));
+        return buffer.array();
+    }
+    
+    /**
+     * Changes the nonce of the block. Should only be called when mining!
+     * 
+     * @param nonce The new nonce to set
+     */
+    public void setNonce(Long nonce) {
+        this.nonce = nonce;
     }
 
     /** Used for test purposes **/
