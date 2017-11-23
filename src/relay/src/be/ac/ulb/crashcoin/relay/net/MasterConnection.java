@@ -1,12 +1,15 @@
 package be.ac.ulb.crashcoin.relay.net;
 
+import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
+import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  * Connection to master node<br>
@@ -24,7 +27,17 @@ public class MasterConnection extends AbstractReconnectConnection {
     @Override
     protected void receiveData(final String data) {
         System.out.println("[DEBUG] get value from master: " + data);
-        // TODO analyse data
+        final JSONObject jsonData = new JSONObject(data);
+        if(jsonData.get("value") == "BlockChainUpdate") {
+            // TODO add a condition to verify that we receive a blockchain
+            // even though it is supposed to be the only kind of message expected ?
+            // DO we receive a full block chain or a part of a block chain ?
+            BlockChain chain = new BlockChain();
+            BlockChain localChain = Main.getBlockChain();
+            // localChain.update(chain);
+        } else { // jsonData.get("value") != "BlockChainUpdate"
+            System.out.println("[DEBUG] get value from master: " + data);
+        }
     }
     
     @Override
