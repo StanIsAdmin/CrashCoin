@@ -28,7 +28,7 @@ public class Transaction implements JSONable {
 
     /**
      * Constructor for transactions
-     * 
+     * Transaction
      * @param srcAddress CrashCoin address of the source
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
@@ -42,16 +42,19 @@ public class Transaction implements JSONable {
         this.outputs = new ArrayList<>();
     }
     
-    /** Create Transaction instance from a JSON representation **/
-    public Transaction(JSONObject json) {
+    /** Create Transaction instance from a JSON representation
+     * @param json 
+     */
+    public Transaction(final JSONObject json) {
         this(new Address((JSONObject) json.get("srcAddress")), 
                 (Integer) json.get("totalAmount"),
                 (Timestamp) json.get("lockTime"));
     }
     
     /** Get a JSON representation of the Address instance **/
+    @Override
     public JSONObject toJSON() {
-        JSONObject json = new JSONObject();
+        final JSONObject json = new JSONObject();
         json.put("srcAddress", srcAddress.toJSON());
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime);
@@ -73,7 +76,7 @@ public class Transaction implements JSONable {
      * @throws NoSuchAlgorithmException if the machine is unable to perform SHA-256
      */
     public byte[] hash() throws NoSuchAlgorithmException {
-        MessageDigest sha256 = MessageDigest.getInstance(Parameters.TRANSACTION_HASH_ALGORITHM);
+        final MessageDigest sha256 = MessageDigest.getInstance(Parameters.TRANSACTION_HASH_ALGORITHM);
         sha256.update(toBytes());
         return sha256.digest();
     }
@@ -115,10 +118,9 @@ public class Transaction implements JSONable {
      * Input of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
      */
     public class Input {
- 
         final byte[] previousTx; // Hash value of a previous transaction
         
-        public Input(Transaction previousTransaction) throws NoSuchAlgorithmException {
+        public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
             this.previousTx = previousTransaction.hash();
         }
     }
@@ -127,11 +129,10 @@ public class Transaction implements JSONable {
      * Output of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
      */
     public class Output {
-        
         final Integer nCrashCoins;
         final Address address;
         
-        public Output(Address address, Integer nCrashCoins) {
+        public Output(final Address address, final Integer nCrashCoins) {
             this.nCrashCoins = nCrashCoins;
             this.address = address;
         }
@@ -139,7 +140,7 @@ public class Transaction implements JSONable {
     
     /** Used for test purposes **/
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }

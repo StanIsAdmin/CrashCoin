@@ -3,6 +3,8 @@ package be.ac.ulb.crashcoin.common.net;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,7 +22,8 @@ public abstract class AbstractListener extends Thread {
     @Override
     public void run() {
         try {
-            while(true){
+            while(true) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "New connection");
                 createNewConnection(_sock.accept());
             }
         } catch(IOException e) { 
@@ -32,6 +35,7 @@ public abstract class AbstractListener extends Thread {
     
     protected void close() {
         try {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Close listener connection !");
             _sock.close();
         } catch (IOException e) {
         }

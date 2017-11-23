@@ -9,7 +9,8 @@ import java.net.Socket;
  */
 public abstract class AbstractReconnectConnection extends AbstractConnection {
 
-    public AbstractReconnectConnection(String name, Socket acceptedSock) throws UnsupportedEncodingException, IOException {
+    public AbstractReconnectConnection(final String name, final Socket acceptedSock) 
+            throws UnsupportedEncodingException, IOException {
         super(name, acceptedSock);
     }
     
@@ -25,6 +26,7 @@ public abstract class AbstractReconnectConnection extends AbstractConnection {
     @Override
     public void run() {
         super.run();
+        System.out.println("Lost connexion");
         reconnect();
     }
     

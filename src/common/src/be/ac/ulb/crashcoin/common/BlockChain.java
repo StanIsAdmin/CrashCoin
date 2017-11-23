@@ -1,12 +1,16 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.util.HashSet;
+import com.sun.istack.internal.logging.Logger;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Stock block
  */
-public class BlockChain extends HashSet<Block> implements JSONable {
+public class BlockChain extends ArrayList<Block> implements JSONable {
     
     @Override
     public boolean add(final Block block) {
@@ -29,8 +33,18 @@ public class BlockChain extends HashSet<Block> implements JSONable {
 
     @Override
     public JSONObject toJSON() {
-        // TODO
-        return new JSONObject();
+        JSONObject jObject = new JSONObject();
+        try {
+            JSONArray jArray = new JSONArray();
+            for (Block block : this) {
+                 JSONObject blockJSON = block.toJSON();
+                 jArray.put(blockJSON);
+            }
+            jObject.put("blockchain", jArray);
+        } catch (JSONException jse) {
+            Logger.getLogger(Block.class).log(Level.SEVERE, null, jse);
+        }
+        return jObject;
     }
     
 }

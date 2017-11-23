@@ -22,22 +22,8 @@ public class MasterConnection extends AbstractReconnectConnection {
     }
     
     @Override
-    public void run() {
-        try{
-            while(true) {
-                final String data = _input.readLine();
-                reciveData(data);
-            }
-        } catch(IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        close();
-        reconnect();
-    }
-    
-    @Override
-    protected void reciveData(final String data) {
+    protected void receiveData(final String data) {
+        System.out.println("[DEBUG] get value from master: " + data);
         // TODO analyse data
     }
     
@@ -55,6 +41,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     
     public static MasterConnection getMasterConnection() throws IOException {
         if(instance == null) {
+            Logger.getLogger(MasterConnection.class.getName()).log(Level.INFO, "Test new connection to master");
             instance = new MasterConnection();
         }
         return instance;

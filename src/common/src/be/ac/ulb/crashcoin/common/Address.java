@@ -16,14 +16,17 @@ public class Address implements JSONable {
         this.value = applyRIPEMD160(key);
     }
     
-    /** Create Address instance from a JSON representation **/
-    public Address(JSONObject json) {
+    /** Create Address instance from a JSON representation
+     * @param json 
+     */
+    public Address(final JSONObject json) {
         this((PublicKey) (json.get("key")));
     }
     
     /** Get a JSON representation of the Address instance **/
+    @Override
     public JSONObject toJSON() {
-        JSONObject json = new JSONObject();
+        final JSONObject json = new JSONObject();
         json.put("key", key);
         return json;
     }
@@ -61,7 +64,7 @@ public class Address implements JSONable {
 
     /** Used for test purposes **/
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
