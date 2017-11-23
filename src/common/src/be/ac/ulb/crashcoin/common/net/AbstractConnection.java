@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  * 
@@ -28,8 +29,8 @@ public abstract class AbstractConnection extends Thread {
         _output = new PrintWriter(_sock.getOutputStream(), true);
     }
     
-    public void sendData(final JSONable jsonData) {
-        _output.write(jsonData.toJSON() + "\n");
+    public void sendData(final JSONObject jsonData) {
+        _output.write(jsonData + "\n");
         _output.flush();
     }
     

@@ -18,7 +18,7 @@ public class Transaction implements JSONable {
 
     /**
      * Constructor for transactions
-     * 
+     * Transaction
      * @param srcAddress CrashCoin address of the source
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp

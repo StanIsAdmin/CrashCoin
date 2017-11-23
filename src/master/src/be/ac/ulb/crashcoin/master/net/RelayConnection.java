@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashSet;
+import org.json.JSONObject;
 
 /**
  * Connection to a Relay
@@ -21,7 +22,8 @@ public class RelayConnection extends AbstractConnection {
         start();
         
         System.out.println("[DEBUG] send TestStrJONable to Relay");
-        sendData(new TestStrJSONable());
+        TestStrJSONable jsonable = new TestStrJSONable();
+        sendData(jsonable.toJSON());
     }
     
     @Override
@@ -38,7 +40,7 @@ public class RelayConnection extends AbstractConnection {
     
     
     
-    public static void sendToAll(final JSONable data) {
+    public static void sendToAll(final JSONObject data) {
         for(final RelayConnection relay : allRelay) {
             relay.sendData(data);
         }
