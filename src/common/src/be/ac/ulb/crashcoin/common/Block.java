@@ -12,12 +12,16 @@ public class Block implements JSONable {
         //TODO
     }
     
-    /** Create Address instance from a JSON representation **/
-    public Block(JSONObject json) {
+    /** 
+     * Create Address instance from a JSON representation
+     * @param json 
+     */
+    public Block(final JSONObject json) {
         this(); //TODO pass json values as parameters to Block() ctr
     }
     
     /** Get a JSON representation of the Block instance **/
+    @Override
     public JSONObject toJSON() {
         //TODO
         return new JSONObject();
@@ -25,7 +29,7 @@ public class Block implements JSONable {
 
     /** Used for test purposes **/
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }

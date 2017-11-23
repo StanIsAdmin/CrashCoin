@@ -5,6 +5,8 @@ import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Connection to master node<br>
@@ -21,6 +23,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     
     @Override
     protected void reciveData(final String data) {
+        System.out.println("[DEBUG] get value from master: " + data);
         // TODO analyse data
     }
     
@@ -38,6 +41,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     
     public static MasterConnection getMasterConnection() throws IOException {
         if(instance == null) {
+            Logger.getLogger(MasterConnection.class.getName()).log(Level.INFO, "Test new connection to master");
             instance = new MasterConnection();
         }
         return instance;
