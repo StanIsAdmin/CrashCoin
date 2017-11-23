@@ -1,14 +1,17 @@
 package be.ac.ulb.crashcoin.common;
 
+import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Block that compose BlockChain
  */
-public class Block implements JSONable {
+public class Block extends ArrayList<Transaction> implements JSONable {
     
     public Block() {
-        //TODO
+        //
     }
     
     /** 
@@ -19,11 +22,30 @@ public class Block implements JSONable {
         this(); //TODO pass json values as parameters to Block() ctr
     }
     
+    @Override
+    public boolean add(Transaction transaction) {
+        boolean res = false;
+        if(this.size() < Parameters.BLOCK_SIZE) {
+            res = super.add(transaction);
+        }
+        return res;
+    }
+    
     /** Get a JSON representation of the Block instance **/
     @Override
     public JSONObject toJSON() {
-        //TODO
-        return new JSONObject();
+        JSONObject jObject = new JSONObject();
+        try {
+            JSONArray jArray = new JSONArray();
+            for (Transaction trans : this) {
+                 JSONObject transJSON = trans.toJSON();
+                 jArray.put(transJSON);
+            }
+            jObject.put("block", jArray);
+        } catch (JSONException jse) {
+            // don't care
+        }
+        return jObject;
     }
 
     /** Used for test purposes **/

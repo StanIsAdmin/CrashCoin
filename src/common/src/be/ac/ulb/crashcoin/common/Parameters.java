@@ -25,6 +25,10 @@ public class Parameters {
     /** Salt size in bytes */
     public static final Integer SALT_SIZE = 32;
     
+    // For Block
+    
+    public static final Integer BLOCK_SIZE = 6; // arbitrarily choosen number
+    
     // For Mining
     
     /** difficulty for mining in bits */
