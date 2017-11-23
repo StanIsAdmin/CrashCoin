@@ -1,6 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
+import com.sun.istack.internal.logging.Logger;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +42,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             }
             jObject.put("blockchain", jArray);
         } catch (JSONException jse) {
-            // don't care
+            Logger.getLogger(Block.class).log(Level.SEVERE, null, jse);
         }
         return jObject;
     }
