@@ -30,7 +30,7 @@ public class RelayConnection extends AbstractReconnectConnection {
     }
 
     @Override
-    protected void reciveData(String data) {
+    protected void receiveData(String data) {
         // TODO use data
     }
     

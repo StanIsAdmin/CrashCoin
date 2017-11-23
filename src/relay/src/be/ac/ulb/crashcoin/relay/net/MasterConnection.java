@@ -22,7 +22,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     }
     
     @Override
-    protected void reciveData(final String data) {
+    protected void receiveData(final String data) {
         System.out.println("[DEBUG] get value from master: " + data);
         // TODO analyse data
     }

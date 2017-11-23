@@ -21,7 +21,7 @@ class MinerConnection extends AbstractConnection {
     }
 
     @Override
-    protected void reciveData(String data) {
+    protected void receiveData(String data) {
         // TODO 
     }
     

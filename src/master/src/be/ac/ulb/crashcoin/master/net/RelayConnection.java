@@ -25,7 +25,7 @@ public class RelayConnection extends AbstractConnection {
     }
     
     @Override
-    protected void reciveData(final String data) {
+    protected void receiveData(final String data) {
         System.out.println("[DEBUG] get value from relay: " + data);
         // TODO convert data and read it
     }

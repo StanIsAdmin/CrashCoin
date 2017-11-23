@@ -41,7 +41,7 @@ public abstract class AbstractConnection extends Thread {
                 if(readLine == null) {
                     break;
                 }
-                reciveData(readLine);
+                receiveData(readLine);
             }
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
@@ -66,6 +66,6 @@ public abstract class AbstractConnection extends Thread {
         }
     }
     
-    protected abstract void reciveData(final String data);
+    protected abstract void receiveData(final String data);
     
 }
