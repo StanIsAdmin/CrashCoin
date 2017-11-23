@@ -1,0 +1,134 @@
+@startuml
+'accessibilité
+
+
+'pas d'ombre
+skinparam shadowing false
+
+'taille de l'image
+skinparam dpi 100 
+
+'couleurs
+skinparam class {
+  BackgroundColor AliceBlue
+  ArrowColor CornflowerBlue
+  BorderColor CornflowerBlue
+}
+skinparam stereotypeCBackgroundColor OldLace
+
+package "be.ac.ulb.crashcoin.client" {
+class Main {
++ static void main()
+}
+
+class ClientApplication {
+- final Console console
+- final Scanner reader
+- Wallet wallet
+- secretKey computeSecretKey()
+- KeyPair createKeyPairFromEncodedKeys()
++ void signUp()
++ writeWalletFile()
++ WalletInformation readWalletFile()
++ void signIn()
++ Boolean verifyPrivateKey()
++ Transaction createTransaction()
+}
+
+class Wallet {
+- PublicKey publicKey
+- KeyPairGenerator dsaKeyGen
++ KeyPair generateKeys()
++ ArrayList<Transaction> getTransactions()
++ Signature dsaFromPrivateKey()
++ Signature dsaFromPublicKey()
++ byte[] signTransaction()
++ boolean verifySignature()
++ PublicKey getPublicKey()
+}
+
+class WalletInformation {
+- byte[] salt
+- byte[] iv
+- byte[] encryptedPrivateKey
+- byte[] publicKey
++ byte[] getSalt()
++ byte[] getIv()
++ byte[] getEncryptedPrivateKey()
++ byte[] getPublicKey()
+}
+}
+
+package "be.ac.ulb.crashcoin.common" {
+class JSONable {
+
+}
+
+class Address {
+- final PublicKey key
+- final byte[] value
+- byte[] applyRIPEMD160()
++ byte[] toBytes()
++ PublicKey getPublicKey()
++ boolean equals()
+}
+
+class Block {
++ JSONObject toJSON()
++ boolean equals()
+}
+
+class BlockChain<extends HashSet<Block>> {
++ boolean add()
+# boolean checkValideBlock()
+}
+
+class Parameters {
++ static final Integer DSA_KEYS_N_BITS = 1024
++ static final Integer INTEGER_N_BYTES
++ static final String WALLETS_PATH
++ static final Integer KEY_DERIVATION_ITERATION
++ static final Integer KEY_SIZE = 128
++ static final Integer SALT_SIZE = 32;
+}
+
+class Transaction {
+- final Address srcAddress
+- final Integer totalAmount
+- final Timestamp lockTime
+- ArrayList<Input> inputs
+- ArrayList<Output> outputs
++ JSONObject toJSON()
++ void addInputTransaction()
++ void addOutput()
++ byte[] hash()
++ boolean isValid()
++ byte[] toBytes()
++ String toString()
++ boolean equals()
+}
+
+class Input {
++ byte[] previousTx
+}
+
+class Output {
++ final Integer nCrashCoins
++ final Address address
+}
+
+}
+
+Main -- ClientApplication
+ClientApplication -- WalletInformation
+ClientApplication *- Wallet
+Transaction -- Parameters
+Transaction *-left- Input
+Input o- Transaction
+Transaction *- Output
+Transaction *- Address
+Output *- Address
+JSONable <|-- Address
+JSONable <|-- Block
+JSONable <|-- Transaction
+@enduml

@@ -5,8 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Timestamp;
 import java.util.ArrayList;
+import org.json.JSONObject;
 
-public class Transaction {
+public class Transaction implements JSONable {
 
     private final Address srcAddress;
     private final Integer totalAmount;
@@ -23,12 +24,29 @@ public class Transaction {
      * @param lockTime Transaction timestamp
      */
     public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
+        super();
         this.srcAddress = srcAddress;
         this.totalAmount = totalAmount;
         this.lockTime = lockTime;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
         this.nonce = 0L;
+    }
+    
+    /** Create Transaction instance from a JSON representation **/
+    public Transaction(JSONObject json) {
+        this(new Address((JSONObject) json.get("srcAddress")), 
+                (Integer) json.get("totalAmount"),
+                (Timestamp) json.get("lockTime"));
+    }
+    
+    /** Get a JSON representation of the Address instance **/
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("srcAddress", srcAddress.toJSON());
+        json.put("totalAmount", totalAmount);
+        json.put("lockTime", lockTime);
+        return json;
     }
     
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
@@ -120,5 +138,23 @@ public class Transaction {
             this.nCrashCoins = nCrashCoins;
             this.address = address;
         }
+    }
+    
+    /** Used for test purposes **/
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Transaction other = (Transaction) obj;
+        return this.srcAddress.equals(other.srcAddress) 
+                && this.totalAmount.equals(other.totalAmount) 
+                && this.lockTime.equals(other.lockTime);
     }
 }

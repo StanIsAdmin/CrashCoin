@@ -27,6 +27,7 @@ hs_err_pid*
 /dist/*
 nb-configuration.xml
 nbproject/*
+/src/*/nbproject/
 
 # Eclipse
 *.prefs
@@ -36,4 +37,3 @@ bin/
 
 # CrashCoin folders
 wallets/
-/src/miner/nbproject/

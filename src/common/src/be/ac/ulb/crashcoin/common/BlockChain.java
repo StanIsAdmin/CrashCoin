@@ -1,11 +1,12 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.util.HashSet;
+import org.json.JSONObject;
 
 /**
  * Stock block
  */
-public class BlockChain extends HashSet<Block> {
+public class BlockChain extends HashSet<Block> implements JSONable {
     
     @Override
     public boolean add(final Block block) {
@@ -24,6 +25,12 @@ public class BlockChain extends HashSet<Block> {
     protected boolean checkValideBlock(final Block block) {
         // TODO 
         return true;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        // TODO
+        return new JSONObject();
     }
     
 }
