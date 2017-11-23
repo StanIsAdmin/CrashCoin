@@ -1,4 +1,4 @@
-package be.ac.ulb.crashcoin.relay.net;
+package be.ac.ulb.crashcoin.miner.net;
 
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
@@ -7,15 +7,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 /**
- * Connection to master node<br>
+ * Connection to relay node<br>
  * It's a thread and a singleton
  */
-public class MasterConnection extends AbstractReconnectConnection {
+public class RelayConnection extends AbstractReconnectConnection {
     
-    private static MasterConnection instance = null;
+    private static RelayConnection instance = null;
     
-    private MasterConnection() throws UnsupportedEncodingException, IOException {
-        super("master", new Socket(Parameters.MASTER_IP, Parameters.MASTER_PORT_LISTENER));
+    private RelayConnection() throws UnsupportedEncodingException, IOException {
+        super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_MINER_LISTENER));
         start();
     }
     
@@ -24,11 +24,12 @@ public class MasterConnection extends AbstractReconnectConnection {
         // TODO analyse data
     }
     
+    
     @Override
     protected boolean canCreateNewInstance() {
         boolean isConnected;
         try {
-            instance = new MasterConnection();
+            instance = new RelayConnection();
             isConnected = true;
         } catch(IOException ex) {
             isConnected = false;
@@ -36,9 +37,9 @@ public class MasterConnection extends AbstractReconnectConnection {
         return isConnected;
     }
     
-    public static MasterConnection getMasterConnection() throws IOException {
+    public static RelayConnection getRelayConnection() throws IOException {
         if(instance == null) {
-            instance = new MasterConnection();
+            instance = new RelayConnection();
         }
         return instance;
     }
