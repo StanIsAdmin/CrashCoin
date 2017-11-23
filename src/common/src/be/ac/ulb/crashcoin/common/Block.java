@@ -8,7 +8,6 @@ import org.json.JSONObject;
 public class Block implements JSONable {
     
     public Block() {
-        super();
         //TODO
     }
     
