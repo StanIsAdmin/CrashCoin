@@ -26,6 +26,8 @@ hs_err_pid*
 /src/*/target/
 /dist/*
 nb-configuration.xml
+nbproject/*
+/src/*/nbproject/
 
 # Eclipse
 *.prefs

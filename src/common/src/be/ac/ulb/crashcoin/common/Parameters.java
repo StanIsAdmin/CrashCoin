@@ -7,6 +7,9 @@ public class Parameters {
     /** Primitive data type sizes */
     public static final Integer INTEGER_N_BYTES = Integer.SIZE / Byte.SIZE;
     
+    /** size of a nonce in bytes */
+    public static final Integer NONCE_N_BYTES = Long.SIZE / Byte.SIZE;
+    
     /** Wallets directory path */
     public static final String WALLETS_PATH = "./wallets/";
     
@@ -22,7 +25,12 @@ public class Parameters {
     /** Salt size in bytes */
     public static final Integer SALT_SIZE = 32;
     
+    // For Mining
     
+    /** difficulty for mining in bits */
+    public static final Integer MINING_DIFFICULTY = 10;
+    
+    public static final String MINING_HASH_ALGORITHM = "SHA-256";
     
     public static final String MASTER_IP = "127.0.0.1";
     
