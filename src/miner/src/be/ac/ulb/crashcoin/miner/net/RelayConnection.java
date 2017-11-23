@@ -21,6 +21,7 @@ public class RelayConnection extends AbstractReconnectConnection {
     
     @Override
     protected void receiveData(final String data) {
+        System.out.println("[DEBUG] get value from relay: " + data);
         // TODO analyse data
     }
     
