@@ -13,9 +13,6 @@ public class Parameters {
     /** Wallets directory path */
     public static final String WALLETS_PATH = "./wallets/";
     
-    /** Number of transactions required to form a block */
-    public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
-    
     // For AES private key encryption
     
     /** Secret key derivation iteration */
@@ -29,7 +26,8 @@ public class Parameters {
     
     // For Block
     
-    public static final Integer BLOCK_SIZE = 6; // arbitrarily choosen number
+    /** Number of transactions required to form a block */
+    public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
     
     // For Mining
     

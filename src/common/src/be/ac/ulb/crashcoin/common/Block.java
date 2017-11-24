@@ -33,7 +33,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     @Override
     public boolean add(final Transaction transaction) {
         boolean res = false;
-        if(this.size() < Parameters.BLOCK_SIZE) {
+        if(this.size() < Parameters.NB_TRANSACTIONS_PER_BLOCK) {
             res = super.add(transaction);
         }
         return res;
