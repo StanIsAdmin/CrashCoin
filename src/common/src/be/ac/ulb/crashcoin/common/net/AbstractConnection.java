@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.common.net;
 
-import be.ac.ulb.crashcoin.common.JSONable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

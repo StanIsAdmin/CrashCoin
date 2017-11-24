@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.master.net;
 
-import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.common.net.TestStrJSONable;
 import java.io.IOException;
