@@ -36,6 +36,8 @@ public class Parameters {
     
     public static final String MINING_HASH_ALGORITHM = "SHA-256";
     
+    public static final String TRANSACTION_HASH_ALGORITHM = "SHA-256";
+    
     public static final String MASTER_IP = "127.0.0.1";
     
     public static final Integer MASTER_PORT_LISTENER = 2017;
@@ -50,6 +52,5 @@ public class Parameters {
     /**
      * Specific port which Relay listen for connection from Wallet
      */
-    public static final Integer RELAY_PORT_WALLET_LISTENER = 2019;
-    
+    public static final Integer RELAY_PORT_WALLET_LISTENER = 2019;    
 }

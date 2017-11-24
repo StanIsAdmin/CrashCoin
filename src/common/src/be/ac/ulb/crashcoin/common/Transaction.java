@@ -9,12 +9,22 @@ import org.json.JSONObject;
 
 public class Transaction implements JSONable {
 
+    private static Integer TRANSACTION_SIZE = 16;  // TODO: change this!
+    
     private final Address srcAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
     private ArrayList<Input> inputs;
     private ArrayList<Output> outputs;
-    private Long nonce;  
+    
+    /**
+     * Get the size of a single transaction in bytes
+     * 
+     * @return the size in butes of a transaction
+     */
+    public static Integer getSize() {
+        return TRANSACTION_SIZE;
+    }
 
     /**
      * Constructor for transactions
@@ -30,7 +40,6 @@ public class Transaction implements JSONable {
         this.lockTime = lockTime;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
-        this.nonce = 0L;
     }
     
     /** Create Transaction instance from a JSON representation
@@ -67,18 +76,9 @@ public class Transaction implements JSONable {
      * @throws NoSuchAlgorithmException if the machine is unable to perform SHA-256
      */
     public byte[] hash() throws NoSuchAlgorithmException {
-        final MessageDigest sha256 = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
+        final MessageDigest sha256 = MessageDigest.getInstance(Parameters.TRANSACTION_HASH_ALGORITHM);
         sha256.update(toBytes());
         return sha256.digest();
-    }
-    
-    /**
-     * Changes the nonce of the transaction. Should only be called when mining!
-     * 
-     * @param nonce The new nonce to set
-     */
-    public void setNonce(final Long nonce) {
-        this.nonce = nonce;
     }
     
     public boolean isValid() {
@@ -99,12 +99,9 @@ public class Transaction implements JSONable {
         // TODO: convert inputs and outputs to bytes
         final byte[] srcAddressBytes = srcAddress.toBytes();
         final ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES
-                        + Parameters.NONCE_N_BYTES);
+                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
         buffer.putInt(totalAmount);
         buffer.put(srcAddressBytes);
-        for(int i = 0; i < Parameters.NONCE_N_BYTES; ++i)
-            buffer.put((byte)(this.nonce & (0xFF << i)));
         return buffer.array();
     }
 
