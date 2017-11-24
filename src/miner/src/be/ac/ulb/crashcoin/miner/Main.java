@@ -30,8 +30,19 @@ public class Main {
         // -------------------------
         
         // create a miner... And start mining... Whut else?
-        Miner miner = new Miner();
-        miner.startMining();
+        Miner miner;
+        try {
+            miner = Miner.getInstance();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        try {
+            miner.startMining();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
     }
     
 }
