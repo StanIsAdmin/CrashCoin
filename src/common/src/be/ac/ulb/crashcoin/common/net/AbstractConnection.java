@@ -79,7 +79,7 @@ public abstract class AbstractConnection extends Thread {
     
     private JSONable getObjectFromJsonObject(final JSONObject jsonData) {
         JSONable result = null;
-        switch(jsonData.getString("value")) {
+        switch(jsonData.getString("type")) {
             
             case "Block":
                 result = new Block(jsonData);
