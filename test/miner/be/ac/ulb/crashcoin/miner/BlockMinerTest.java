@@ -5,29 +5,26 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 
-public class TransactionMinerTest {
+public class BlockMinerTest {
     
     @Test
     public void testIsValidDifficultyTooBig() {
         byte[] array = new byte[1];
-        // no Transaction is needed here
-        TransactionMiner transactionMiner = new TransactionMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertFalse(transactionMiner.isValid(array, 10));
     }
     
     @Test
     public void testIsValidIsTrue() {
         byte[] array = {0b01001100};
-        // no Transaction is needed here
-        TransactionMiner transactionMiner = new TransactionMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertTrue(transactionMiner.isValid(array, 1));
     }
     
     @Test
     public void testIsValidIsFalse() {
         byte[] array = {0b01001100};
-        // no Transaction is needed here
-        TransactionMiner transactionMiner = new TransactionMiner(null);
+        BlockMiner transactionMiner = new BlockMiner();
         assertFalse(transactionMiner.isValid(array, 2));
     }
     
@@ -46,6 +43,6 @@ public class TransactionMinerTest {
             (byte)0b11111100,
             (byte)0b11111110
         };
-        assertTrue(Arrays.equals(a, TransactionMiner.MASKS));
+        assertTrue(Arrays.equals(a, BlockMiner.MASKS));
     }
 }

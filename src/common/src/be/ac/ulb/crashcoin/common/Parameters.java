@@ -13,7 +13,6 @@ public class Parameters {
     /** Wallets directory path */
     public static final String WALLETS_PATH = "./wallets/";
     
-    
     // For AES private key encryption
     
     /** Secret key derivation iteration */
@@ -25,12 +24,32 @@ public class Parameters {
     /** Salt size in bytes */
     public static final Integer SALT_SIZE = 32;
     
+    // For Block
+    
+    /** 
+     * Size of a block header in bytes.
+     * 
+     * @see Block
+     */
+    public static final Integer BLOCK_HEADER_SIZE = 84;
+    
+    /** Number of transactions required to form a block */
+    public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
+    
+    /** Magic number in the beginning of a block. */
+    public static final Long MAGIC_NUMBER = 0xCAFE0000L;  // I <3 0xCAFE
+    
     // For Mining
     
     /** difficulty for mining in bits */
     public static final Integer MINING_DIFFICULTY = 10;
     
     public static final String MINING_HASH_ALGORITHM = "SHA-256";
+    
+    public static final String TRANSACTION_HASH_ALGORITHM = "SHA-256";
+    
+    /** hash algorithm is SHA-256, then on 256 bits. */
+    public static final Integer NB_BYTES_PER_HASH = 256 / Byte.SIZE;
     
     public static final String MASTER_IP = "127.0.0.1";
     
@@ -46,6 +65,5 @@ public class Parameters {
     /**
      * Specific port which Relay listen for connection from Wallet
      */
-    public static final Integer RELAY_PORT_WALLET_LISTENER = 2019;
-    
+    public static final Integer RELAY_PORT_WALLET_LISTENER = 2019;    
 }

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
  */
 public class Main {
     
-    public static void main(final String main) {
+    public static void main(final String[] args) {
         
         // Init listener
         try {

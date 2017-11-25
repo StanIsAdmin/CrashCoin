@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.relay;
 
+import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.relay.net.MasterConnection;
 import be.ac.ulb.crashcoin.relay.net.MinerListener;
 import be.ac.ulb.crashcoin.relay.net.WalletListener;
@@ -12,8 +13,11 @@ import java.util.logging.Logger;
  */
 public class Main {
     
-    public static void main(final String main) {
+    private static BlockChain _blockChain;
+    
+    public static void main(final String[] main) {
         // TODO
+        _blockChain = new BlockChain();
             
         // Enable listener
         try {
@@ -29,6 +33,10 @@ public class Main {
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public static BlockChain getBlockChain() {
+        return _blockChain;
     }
     
 }

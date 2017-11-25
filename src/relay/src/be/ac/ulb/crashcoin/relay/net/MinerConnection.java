@@ -1,10 +1,15 @@
 package be.ac.ulb.crashcoin.relay.net;
 
+import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
+import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -21,8 +26,25 @@ class MinerConnection extends AbstractConnection {
     }
 
     @Override
-    protected void reciveData(String data) {
-        // TODO 
+    protected void receiveData(final JSONable jsonData) {
+        System.out.println("[DEBUG] get value from miner/client: " + jsonData);
+        
+        // TODO add method in ManageJSON.getObjectFromJsonObject ton convert JSONObject to Block
+        if(jsonData instanceof Block) {
+            final Block block = (Block) jsonData;
+            
+            // Local blockChain management
+            BlockChain chain = Main.getBlockChain();
+            chain.add(block);
+            
+            // Relay the data to the master node
+            try {
+                MasterConnection.getMasterConnection().sendData(block);
+            } catch (IOException ex) {
+                Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
     }
     
     @Override

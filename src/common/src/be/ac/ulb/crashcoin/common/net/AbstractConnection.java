@@ -1,6 +1,10 @@
 package be.ac.ulb.crashcoin.common.net;
 
+import be.ac.ulb.crashcoin.common.Address;
+import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Transaction;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONObject;
 
 /**
  * 
@@ -41,7 +46,13 @@ public abstract class AbstractConnection extends Thread {
                 if(readLine == null) {
                     break;
                 }
-                reciveData(readLine);
+                final JSONable resultObject = getObjectFromJsonObject(new JSONObject(readLine));
+                
+                if(resultObject == null) {
+                    Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Recieved unknow JSONObject: {0}", readLine);
+                } else {
+                    receiveData(resultObject);
+                }
             }
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
@@ -66,6 +77,34 @@ public abstract class AbstractConnection extends Thread {
         }
     }
     
-    protected abstract void reciveData(final String data);
+    private JSONable getObjectFromJsonObject(final JSONObject jsonData) {
+        JSONable result = null;
+        switch(jsonData.getString("type")) {
+            
+            case "Block":
+                result = new Block(jsonData);
+                break;
+                
+            case "BlockChain":
+                result = new BlockChain(jsonData);
+                break;
+                
+            case "Address":
+                result = new Address(jsonData);
+                break;
+                
+            case "Transaction":
+                result = new Transaction(jsonData);
+                break;
+                
+            case "TestStr":
+                result = new TestStrJSONable(jsonData);
+                break;
+        }
+        
+        return result;
+    }
+    
+    protected abstract void receiveData(final JSONable data);
     
 }

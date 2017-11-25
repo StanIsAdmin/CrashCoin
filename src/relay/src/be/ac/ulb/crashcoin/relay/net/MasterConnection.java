@@ -1,5 +1,7 @@
 package be.ac.ulb.crashcoin.relay.net;
 
+import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
@@ -22,23 +24,25 @@ public class MasterConnection extends AbstractReconnectConnection {
     }
     
     @Override
-    public void run() {
-        try{
-            while(true) {
-                final String data = _input.readLine();
-                reciveData(data);
-            }
-        } catch(IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+    protected void receiveData(final JSONable jsonData) {
+        System.out.println("[DEBUG] get value from master: " + jsonData);
+        
+        // TODO adapt code
+        if(jsonData instanceof Block) {
+            
         }
         
-        close();
-        reconnect();
-    }
-    
-    @Override
-    protected void reciveData(final String data) {
-        // TODO analyse data
+        
+//        if(jsonData.get("value") == "BlockChainUpdate") {
+//            // TODO add a condition to verify that we receive a blockchain
+//            // even though it is supposed to be the only kind of message expected ?
+//            // DO we receive a full block chain or a part of a block chain ?
+//            BlockChain chain = new BlockChain();
+//            BlockChain localChain = Main.getBlockChain();
+//            // localChain.update(chain);
+//        } else { // jsonData.get("value") != "BlockChainUpdate"
+//            System.out.println("[DEBUG] get value from master: " + jsonData);
+//        }
     }
     
     @Override
@@ -55,6 +59,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     
     public static MasterConnection getMasterConnection() throws IOException {
         if(instance == null) {
+            Logger.getLogger(MasterConnection.class.getName()).log(Level.INFO, "Test new connection to master");
             instance = new MasterConnection();
         }
         return instance;

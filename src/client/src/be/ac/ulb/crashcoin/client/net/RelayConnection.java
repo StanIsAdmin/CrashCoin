@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client.net;
 
+import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class RelayConnection extends AbstractReconnectConnection {
     }
 
     @Override
-    protected void reciveData(String data) {
+    protected void receiveData(JSONable data) {
         // TODO use data
     }
     

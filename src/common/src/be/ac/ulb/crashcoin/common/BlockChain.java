@@ -1,12 +1,24 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Stock block
  */
-public class BlockChain extends HashSet<Block> implements JSONable {
+public class BlockChain extends ArrayList<Block> implements JSONable {
+
+    public BlockChain(final JSONObject jsonObject) {
+        // TODO
+    }
+
+    public BlockChain() {
+        // TODO
+    }
     
     @Override
     public boolean add(final Block block) {
@@ -26,11 +38,26 @@ public class BlockChain extends HashSet<Block> implements JSONable {
         // TODO 
         return true;
     }
-
+    
+    private String getJsonType() {
+        return "BlockChain";
+    }
+    
     @Override
     public JSONObject toJSON() {
-        // TODO
-        return new JSONObject();
+        final JSONObject jObject = new JSONObject();
+        jObject.put("type", getJsonType());
+        
+        try {
+            final JSONArray jArray = new JSONArray();
+            for (final Block block : this) {
+                 jArray.put(block.toJSON());
+            }
+            jObject.put("blockchain", jArray);
+        } catch (JSONException jse) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
+        }
+        return jObject;
     }
     
 }

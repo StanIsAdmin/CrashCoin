@@ -1,15 +1,15 @@
 package be.ac.ulb.crashcoin.miner;
 
+import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.Parameters;
-import be.ac.ulb.crashcoin.common.Transaction;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class TransactionMiner {
+public final class BlockMiner {
     
-    private final Transaction transaction;
+    private Block block = null;
     
     /** array of masks such that MASKS[i] contains the first i bits with 1s and
      * the 8-i last bits with 0s */
@@ -25,33 +25,41 @@ public class TransactionMiner {
     /**
      * Constructor
      * 
-     * @param transaction The transaction to mine
+     * @param block The block to mine
      */
-    public TransactionMiner(Transaction transaction) {
-        this.transaction = transaction;
+    public BlockMiner(Block block) {
+        this();
+        setBlockToMine(block);
+    }
+    
+    public BlockMiner() {
+    }
+    
+    public void setBlockToMine(Block block) {
+        this.block = block;
     }
 
     /**
-     * Mines the transaction until it satisfies the PoW
+     * Mines the block until it satisfies the PoW
      * 
-     * @return the transaction with the correct nonce
+     * @return the block with the correct nonce
      */
-    public Transaction mine() {
+    public Block mine() {
         Long currentNonce = 0L;
         byte[] currentHash;
         do {
-            this.transaction.setNonce(currentNonce);
+            this.block.setNonce(currentNonce);
             try {
-                currentHash = this.transaction.hash();
+                currentHash = this.block.hashHeader();
             } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(TransactionMiner.class.getName()).log(Level.SEVERE,
+                Logger.getLogger(BlockMiner.class.getName()).log(Level.SEVERE,
                         "Unable to mine: no " + Parameters.MINING_HASH_ALGORITHM
                         +" available. Aborting!", ex);
                 return null;
             }
             currentNonce += 1;
         } while(!isValid(currentHash));
-        return this.transaction;
+        return this.block;
     }
     
     /**
