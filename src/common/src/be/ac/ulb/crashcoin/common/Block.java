@@ -11,7 +11,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Block that compose BlockChain
+ * Block that compose BlockChain.
+ * 
+ * Shape of the block:
+ * + 4 byte long of magic number to mark the beginning of a block
+ * + 4 byte long giving the block size in bytes
+ * + 32 byte (256 bit) long hash of the previous block
+ * + 32 byte long merkle root
+ * + 4 byte long timestamp
+ * + 4 byte long difficulty (expected nb of 0s at the beginning of the hash)
+ * + 4 byte long Nonce
+ * + variable size(?): Transaction list
  */
 public class Block extends ArrayList<Transaction> implements JSONable {
     
@@ -61,7 +71,42 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return sha.digest();
     }
     
-    public byte[] toBytes() {
+    public byte[] hashHeader() throws NoSuchAlgorithmException {
+        MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
+        sha.update(headerToBytes());
+        return sha.digest();
+    }
+    
+    /**
+     * Set the header into a single byte array.
+     * 
+     * @return a byte[] representing the header
+     * @throws NoSuchAlgorithmException if unable to hash
+     */
+    public byte[] headerToBytes() throws NoSuchAlgorithmException {
+        ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
+        // insert magic number (4 bytes)
+        buffer.putLong(Parameters.MAGIC_NUMBER);
+        // insert block size (4 bytes)
+        buffer.putLong(getTotalSize());
+        // TODO: complete the following lines starting with '/////'
+        // insert reference to previous block (32 bytes)
+        ///// buffer.put( HASH OF PREVIOUS BLOCK )
+        // insert merkle root
+        ////// for(final Transaction transaction : this)
+        //////    buffer.put(transaction.hash());
+        // insert timestamp (4 bytes)
+        ///// ...
+        buffer.putLong(nonce);
+        return buffer.array();
+    }
+    
+    /**
+     * Set the transactions list in a single byte array.
+     * 
+     * @return a byte[] representing the transactions list
+     */
+    public byte[] transactionsToBytes() {
         ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.size()
                 +  Parameters.NONCE_N_BYTES);
         for(final Transaction transaction : this)
@@ -69,6 +114,25 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         for(int i = 0; i < Parameters.NONCE_N_BYTES; ++i)
             buffer.put((byte)((this.nonce & (0xFF << Byte.SIZE * i)) >> (Byte.SIZE * i)));
         return buffer.array();
+    }
+    
+    /**
+     * Set the whole block in a single byte array.
+     * 
+     * @return a byte[] representing the block
+     * @throws NoSuchAlgorithmException if unable to perform hashing
+     */
+    public byte[] toBytes() throws NoSuchAlgorithmException {
+        byte[] headerBytes = headerToBytes();
+        byte[] transactionBytes = transactionsToBytes();
+        ByteBuffer buffer = ByteBuffer.allocate(headerBytes.length + transactionBytes.length);
+        buffer.put(headerBytes);
+        buffer.put(transactionBytes);
+        return buffer.array();
+    }
+    
+    private Long getTotalSize() {
+        return Parameters.BLOCK_HEADER_SIZE + (long)this.size()*Transaction.getSize();  
     }
     
     /**

@@ -50,7 +50,7 @@ public final class BlockMiner {
         do {
             this.block.setNonce(currentNonce);
             try {
-                currentHash = this.block.hash();
+                currentHash = this.block.hashHeader();
             } catch (NoSuchAlgorithmException ex) {
                 Logger.getLogger(BlockMiner.class.getName()).log(Level.SEVERE,
                         "Unable to mine: no " + Parameters.MINING_HASH_ALGORITHM

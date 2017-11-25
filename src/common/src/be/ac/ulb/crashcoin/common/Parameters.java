@@ -26,8 +26,18 @@ public class Parameters {
     
     // For Block
     
+    /** 
+     * Size of a block header in bytes.
+     * 
+     * @see Block
+     */
+    public static final Integer BLOCK_HEADER_SIZE = 84;
+    
     /** Number of transactions required to form a block */
     public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
+    
+    /** Magic number in the beginning of a block. */
+    public static final Long MAGIC_NUMBER = 0xCAFE0000L;  // I <3 0xCAFE
     
     // For Mining
     
@@ -37,6 +47,9 @@ public class Parameters {
     public static final String MINING_HASH_ALGORITHM = "SHA-256";
     
     public static final String TRANSACTION_HASH_ALGORITHM = "SHA-256";
+    
+    /** hash algorithm is SHA-256, then on 256 bits. */
+    public static final Integer NB_BYTES_PER_HASH = 256 / Byte.SIZE;
     
     public static final String MASTER_IP = "127.0.0.1";
     

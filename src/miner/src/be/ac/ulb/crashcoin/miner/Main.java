@@ -13,12 +13,13 @@ public class Main {
     
     public static void main(final String[] args) {
         
-        RelayConnection connection = null;
+        RelayConnection connection;
         // Connect to relay
         try {
             connection = RelayConnection.getRelayConnection();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            return;
         }
         
         // Test : transacton sending
