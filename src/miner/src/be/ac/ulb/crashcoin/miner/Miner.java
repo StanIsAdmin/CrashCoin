@@ -48,8 +48,7 @@ public class Miner {
                 this.transactions.addAll(this.connection.getTransactions());
                 if(this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
                     miner.setBlockToMine(createBlock());
-                    Block minedBlock = miner.mine();
-                    this.connection.sendData(minedBlock.toJSON());
+                    this.connection.sendData(miner.mine());
                 }
             }
         }

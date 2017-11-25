@@ -1,5 +1,7 @@
 package be.ac.ulb.crashcoin.common.net;
 
+import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.ManageJSON;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,8 +30,8 @@ public abstract class AbstractConnection extends Thread {
         _output = new PrintWriter(_sock.getOutputStream(), true);
     }
     
-    public void sendData(final JSONObject jsonData) {
-        _output.write(jsonData + "\n");
+    public void sendData(final JSONable jsonData) {
+        _output.write(jsonData.toJSON() + "\n");
         _output.flush();
     }
     
@@ -41,7 +43,8 @@ public abstract class AbstractConnection extends Thread {
                 if(readLine == null) {
                     break;
                 }
-                receiveData(readLine);
+                final JSONable resultObject = ManageJSON.getObjectFromJsonObject(new JSONObject(readLine));
+                receiveData(resultObject);
             }
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
@@ -66,6 +69,6 @@ public abstract class AbstractConnection extends Thread {
         }
     }
     
-    protected abstract void receiveData(final String data);
+    protected abstract void receiveData(final JSONable data);
     
 }

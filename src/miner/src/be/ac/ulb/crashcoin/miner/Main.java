@@ -1,10 +1,10 @@
 package be.ac.ulb.crashcoin.miner;
 
+import be.ac.ulb.crashcoin.common.net.TestStrJSONable;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONObject;
 
 /**
  * Entry point of the miner program. 
@@ -23,8 +23,7 @@ public class Main {
         }
         
         // Test : transacton sending
-        final JSONObject json = new JSONObject();
-        json.put("value", "Test");
+        final TestStrJSONable json = new TestStrJSONable();
         connection.sendData(json);
         // -------------------------
         

@@ -1,12 +1,12 @@
 package be.ac.ulb.crashcoin.master.net;
 
+import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.common.net.TestStrJSONable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashSet;
-import org.json.JSONObject;
 
 /**
  * Connection to a Relay
@@ -22,11 +22,11 @@ public class RelayConnection extends AbstractConnection {
         
         System.out.println("[DEBUG] send TestStrJONable to Relay");
         TestStrJSONable jsonable = new TestStrJSONable();
-        sendData(jsonable.toJSON());
+        sendData(jsonable);
     }
     
     @Override
-    protected void receiveData(final String data) {
+    protected void receiveData(final JSONable data) {
         System.out.println("[DEBUG] get value from relay: " + data);
         // TODO convert data and read it
     }
@@ -39,7 +39,7 @@ public class RelayConnection extends AbstractConnection {
     
     
     
-    public static void sendToAll(final JSONObject data) {
+    public static void sendToAll(final JSONable data) {
         for(final RelayConnection relay : allRelay) {
             relay.sendData(data);
         }

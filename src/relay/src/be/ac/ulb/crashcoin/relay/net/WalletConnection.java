@@ -1,9 +1,9 @@
 package be.ac.ulb.crashcoin.relay.net;
 
+import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import java.io.IOException;
 import java.net.Socket;
-import org.json.JSONObject;
 
 /**
  * 
@@ -20,8 +20,8 @@ public class WalletConnection extends AbstractConnection {
      * @param data
      */
     @Override
-    protected void receiveData(String data) {
-        MinerConnection.sendToAll(new JSONObject(data)); // TODO does reconstructing a JSONObject is useless
+    protected void receiveData(final JSONable data) {
+        MinerConnection.sendToAll(data);
     }
     
 }
