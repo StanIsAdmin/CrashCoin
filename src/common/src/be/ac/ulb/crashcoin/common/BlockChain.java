@@ -38,10 +38,16 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         // TODO 
         return true;
     }
-
+    
+    private String getJsonType() {
+        return "BlockChain";
+    }
+    
     @Override
     public JSONObject toJSON() {
         final JSONObject jObject = new JSONObject();
+        jObject.put("type", getJsonType());
+        
         try {
             final JSONArray jArray = new JSONArray();
             for (final Block block : this) {

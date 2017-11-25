@@ -33,7 +33,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     }
     
     /** 
-     * Create Address instance from a JSON representation
+     * Create Block instance from a JSON representation
      * @param json 
      */
     public Block(final JSONObject json) {
@@ -49,10 +49,16 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return res;
     }
     
+    private String getJsonType() {
+        return "Block";
+    }
+    
     /** Get a JSON representation of the Block instance **/
     @Override
     public JSONObject toJSON() {
         final JSONObject jObject = new JSONObject();
+        jObject.put("type", getJsonType());
+        
         try {
             final JSONArray jArray = new JSONArray();
             for(final Transaction trans : this) {
@@ -66,13 +72,13 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     }
     
     public byte[] hash() throws NoSuchAlgorithmException {
-        MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
+        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
         sha.update(toBytes());
         return sha.digest();
     }
     
     public byte[] hashHeader() throws NoSuchAlgorithmException {
-        MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
+        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
         sha.update(headerToBytes());
         return sha.digest();
     }
@@ -84,7 +90,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @throws NoSuchAlgorithmException if unable to hash
      */
     public byte[] headerToBytes() throws NoSuchAlgorithmException {
-        ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
+        final ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
         // insert magic number (4 bytes)
         buffer.putLong(Parameters.MAGIC_NUMBER);
         // insert block size (4 bytes)
@@ -107,7 +113,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @return a byte[] representing the transactions list
      */
     public byte[] transactionsToBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.size()
+        final ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.size()
                 +  Parameters.NONCE_N_BYTES);
         for(final Transaction transaction : this)
             buffer.put(transaction.toBytes());
@@ -123,9 +129,9 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @throws NoSuchAlgorithmException if unable to perform hashing
      */
     public byte[] toBytes() throws NoSuchAlgorithmException {
-        byte[] headerBytes = headerToBytes();
-        byte[] transactionBytes = transactionsToBytes();
-        ByteBuffer buffer = ByteBuffer.allocate(headerBytes.length + transactionBytes.length);
+        final byte[] headerBytes = headerToBytes();
+        final byte[] transactionBytes = transactionsToBytes();
+        final ByteBuffer buffer = ByteBuffer.allocate(headerBytes.length + transactionBytes.length);
         buffer.put(headerBytes);
         buffer.put(transactionBytes);
         return buffer.array();
@@ -140,7 +146,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * 
      * @param nonce The new nonce to set
      */
-    public void setNonce(Long nonce) {
+    public void setNonce(final Long nonce) {
         this.nonce = nonce;
     }
 

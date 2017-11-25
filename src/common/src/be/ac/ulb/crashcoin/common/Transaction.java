@@ -51,10 +51,15 @@ public class Transaction implements JSONable {
                 (Timestamp) json.get("lockTime"));
     }
     
+    private String getJsonType() {
+        return "Transaction";
+    }
+    
     /** Get a JSON representation of the Address instance **/
     @Override
     public JSONObject toJSON() {
         final JSONObject json = new JSONObject();
+        json.put("type", getJsonType());
         json.put("srcAddress", srcAddress.toJSON());
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime);

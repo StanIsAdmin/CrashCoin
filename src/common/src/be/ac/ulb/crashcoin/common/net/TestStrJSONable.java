@@ -7,11 +7,30 @@ import org.json.JSONObject;
  * 
  */
 public class TestStrJSONable implements JSONable {
-
+    
+    private String _value;
+    
+    public TestStrJSONable() {
+        this("Test");
+    }
+    
+    public TestStrJSONable(final JSONObject jsonObject) {
+        this(jsonObject.getString("value"));
+    }
+    
+    public TestStrJSONable(final String value) {
+        _value = value;
+    }
+    
+    private String getJsonType() {
+        return "TestStr";
+    }
+    
     @Override
     public JSONObject toJSON() {
         final JSONObject json = new JSONObject();
-        json.put("value", "Test");
+        json.put("type", getJsonType());
+        json.put("value", _value);
         return json;
     }
 

@@ -23,10 +23,15 @@ public class Address implements JSONable {
         this((PublicKey) (json.get("key")));
     }
     
+    private String getJsonType() {
+        return "Address";
+    }
+    
     /** Get a JSON representation of the Address instance **/
     @Override
     public JSONObject toJSON() {
         final JSONObject json = new JSONObject();
+        json.put("type", getJsonType());
         json.put("key", key);
         return json;
     }
