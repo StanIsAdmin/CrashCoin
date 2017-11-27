@@ -3,7 +3,7 @@ package be.ac.ulb.crashcoin.common;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.json.JSONObject;
 
