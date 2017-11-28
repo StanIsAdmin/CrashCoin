@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.miner.net;
 
+import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
@@ -17,22 +18,31 @@ public class RelayConnection extends AbstractReconnectConnection {
     
     private static RelayConnection instance = null;
     
+    // Transactions to mined (make a block)
     private final ArrayList<Transaction> transactionsBuffer;
     private boolean hasNewTransactions = false;
+    // Mined blocks containing transaction to not mine anymore
+    private final ArrayList<Block> blocksBuffer;
+    private boolean hasNewBlocks = false;
     
     private RelayConnection() throws UnsupportedEncodingException, IOException {
         super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_MINER_LISTENER));
         this.transactionsBuffer = new ArrayList<>();
+        this.blocksBuffer = new ArrayList<>();
         start();
     }
     
     @Override
     protected void receiveData(final JSONable data) {
         System.out.println("[DEBUG] get value from relay: " + data);
-        // TODO analyse data
-        // if a new transaction is received:
-        // + set hasNewTransactions to true
-        // + add it to transactionsBuffer
+        
+        if(data instanceof Transaction) {
+            hasNewTransactions = true;
+            transactionsBuffer.add((Transaction)data);
+        } else if(data instanceof Block) {
+            hasNewBlocks = true;
+            blocksBuffer.add((Block)data);
+        }
     }
     
     @Override
@@ -78,7 +88,24 @@ public class RelayConnection extends AbstractReconnectConnection {
     }
     
     /**
-     * Clears the buffer of pendingtransactions.
+     * 
+     * @return true if the connection has pending blocks and false otherwise
+     */
+    public boolean hasBlocks() {
+        return this.blocksBuffer.isEmpty();
+    }
+
+    /**
+     * 
+     * @return the list of pending blocks
+     */
+    public ArrayList<Block> getBlocks() {
+        this.hasNewBlocks = false;
+        return this.blocksBuffer;
+    }
+    
+    /**
+     * Clears the buffer of pending transactions.
      * 
      * @throws InternalError if the the relay has sent unfetched transactions
      */
