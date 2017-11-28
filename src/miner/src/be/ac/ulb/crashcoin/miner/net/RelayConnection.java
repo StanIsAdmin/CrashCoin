@@ -100,8 +100,11 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the list of pending blocks
      */
     public ArrayList<Block> getBlocks() {
+        // TODO add semaphore
         this.hasNewBlocks = false;
-        return this.blocksBuffer;
+        ArrayList<Block> tmp = this.blocksBuffer;
+        this.blocksBuffer.clear();
+        return tmp;
     }
     
     /**
@@ -110,6 +113,7 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @throws InternalError if the the relay has sent unfetched transactions
      */
     public void clearBuffer() throws InternalError {
+        // TODO add semaphore
         if(this.hasNewTransactions)
             throw new InternalError("Unable to clear the transactions buffer: "
                    +  "new transactions have been received since last fetch!");
