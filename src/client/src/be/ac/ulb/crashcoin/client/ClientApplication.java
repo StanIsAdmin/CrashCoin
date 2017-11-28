@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Scanner;
+import java.sql.Timestamp;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -51,41 +53,46 @@ public class ClientApplication {
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
+    private boolean registered;
     
-    private char[] createPassword() {
-        boolean check = false;
-        char[] password = null;
-        while (!check) {
-            System.out.print("Password : ");
-            password = System.console().readPassword();
-            System.out.print("Confirm password : ");
-            char[] confirmPassword = System.console().readPassword();
-            check = Arrays.equals(password, confirmPassword);
-        }
-        return password;
-    }
-
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException, 
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, 
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
+        
         console = System.console();
+        registered = false;
         int choice;
         do {
             System.out.println("Menu");
             System.out.println("----\n");
-            System.out.println("1. Sign in");
-            System.out.println("2. Sign up");
+            if (!registered) {
+                System.out.println("1. Sign in");
+                System.out.println("2. Sign up");
+                System.out.println("3. Exit");
+            } else {
+                System.out.println("1. New transaction");
+                System.out.println("2. Show wallet");
+                System.out.println("3. Exit");
+                System.out.println("4. Disconnect");
+            }
             System.out.println("3. Exit\n");
             System.out.print("Please enter your choice : ");
 
             choice = reader.nextInt();
-            if(choice == 1) {
+            if(choice == 1 && !registered) {
                 signIn();
-            } else if(choice == 2) {
+                registered = true;
+            } else if(choice == 2 && !registered) {
                 signUp();
+            } else if (choice == 1 && registered) {
+                createTransaction();
+            } else if (choice == 2 && registered) {
+                // TODO : show wallet;
+            } else if (choice == 4 && registered) {
+                registered = false;
+                choice = 0;
             }
-
-        } while(choice != 3);
+        } while(!( choice == 3 && registered == false));
         reader.close();
     }
 
@@ -106,8 +113,27 @@ public class ClientApplication {
         	System.out.println("The wallet identifier that you specified already exists, please sign in");
         	
         } else {
-            // Ask a password from the user (
-            final char[] userPassword = createPassword();
+            
+            // Ask a password from the user
+            char[] userPassword = null;
+            boolean check = false;
+            while (!check) {
+                char[] passwordChecker;
+                System.out.print("Password : ");
+                if (console != null) {
+                    userPassword = console.readPassword();
+                } else {
+                    userPassword = reader.next().toCharArray();
+                }
+                System.out.print("Confirm password : ");
+                if (console != null) {
+                    passwordChecker = console.readPassword();
+                } else {
+                    passwordChecker = reader.next().toCharArray();
+                }                
+                check = Arrays.equals(userPassword, passwordChecker);
+                check = check && (userPassword != null);
+            }
         	
             // Create a new empty wallet and generate a key pair
             this.wallet = new Wallet();
@@ -364,13 +390,25 @@ public class ClientApplication {
     }
     
     public Transaction createTransaction() {
-		    	
-    	/*
-         * Get input from client and return a transaction object
-         * 
-         * TODO
+	/**
+         * Ask the user to create the transaction.
+         * It returns the checked transaction and -1 in the case that the 
+         * transaction was aborded.
          */
-    	
+        Transaction transaction = null;
+        int amount = 0;
+        do {
+            System.out.println("Please enter the amount of the transaction,");
+            System.out.println("Or enter -1 to escape the curent transaction.");
+            System.out.println("Amount : ");
+            amount = reader.nextInt();
+            Address srcAddress = new Address(wallet.getPublicKey());
+            Timestamp lockTime = new Timestamp(System.currentTimeMillis());
+            transaction = new Transaction(srcAddress, amount, lockTime);
+        } while (!(transaction.isValid()) && amount != -1);
+        if (amount != -1) {
+            return transaction;
+        }    	
     	return null;
     	
     }
