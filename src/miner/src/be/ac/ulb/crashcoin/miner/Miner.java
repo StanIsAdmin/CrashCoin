@@ -33,6 +33,19 @@ public class Miner {
         this.transactions = new ArrayList<>();
     }
     
+    private void removeAlreadyMinedTransactions() {
+        this.transactions.addAll(this.connection.getTransactions());
+        ArrayList<Block> blocks = this.connection.getBlocks();
+        for (Block block : blocks) {
+            for (Transaction transaction : block) {
+                if(this.transactions.contains(transaction)) {
+                    this.transactions.remove(transaction);
+                }
+            }
+        }
+        // TODO remove those currently mined
+    }
+    
     /**
      * Start to wait for transactions and mine them when received.
      * 
@@ -44,6 +57,8 @@ public class Miner {
         while(true) {
             if(!this.connection.hasTransactions()) {
                 sleep(100);
+            } else if(this.connection.hasBlocks()) {
+                this.removeAlreadyMinedTransactions();
             } else {
                 this.transactions.addAll(this.connection.getTransactions());
                 if(this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
