@@ -5,6 +5,7 @@
         <groupId>be.ac.ulb.crashcoin</groupId>
         <artifactId>CrashCoin</artifactId>
         <version>1.0</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>master</artifactId>
     <packaging>jar</packaging>
