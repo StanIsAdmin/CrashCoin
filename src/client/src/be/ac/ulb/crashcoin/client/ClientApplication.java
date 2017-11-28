@@ -38,6 +38,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 import java.util.Random;
 
@@ -50,6 +51,19 @@ public class ClientApplication {
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
+    
+    private char[] createPassword() {
+        boolean check = false;
+        char[] password = null;
+        while (!check) {
+            System.out.print("Password : ");
+            password = System.console().readPassword();
+            System.out.print("Confirm password : ");
+            char[] confirmPassword = System.console().readPassword();
+            check = Arrays.equals(password, confirmPassword);
+        }
+        return password;
+    }
 
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException, 
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, 
@@ -72,7 +86,6 @@ public class ClientApplication {
             }
 
         } while(choice != 3);
-
         reader.close();
     }
 
@@ -93,11 +106,10 @@ public class ClientApplication {
         	System.out.println("The wallet identifier that you specified already exists, please sign in");
         	
         } else {
-        	// Ask a password from the user (// TODO hidden password + confirmation)
-        	System.out.print("Please enter the desired password: ");
-        	final char[] userPassword = reader.next().toCharArray();
+            // Ask a password from the user (
+            final char[] userPassword = createPassword();
         	
-        	// Create a new empty wallet and generate a key pair
+            // Create a new empty wallet and generate a key pair
             this.wallet = new Wallet();
             final KeyPair keyPair = this.wallet.generateKeys();
             
