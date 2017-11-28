@@ -37,7 +37,7 @@ public class Parameters {
     public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
     
     /** Magic number in the beginning of a block. */
-    public static final Long MAGIC_NUMBER = 0xCAFE0000L;  // I <3 0xCAFE
+    public static final int MAGIC_NUMBER = 0xCAFE;  // I <3 0xCAFE <3
     
     // For Mining
     
