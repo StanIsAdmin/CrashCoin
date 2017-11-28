@@ -30,8 +30,7 @@ public class Address implements JSONable {
     /** Get a JSON representation of the Address instance **/
     @Override
     public JSONObject toJSON() {
-        final JSONObject json = new JSONObject();
-        json.put("type", getJsonType());
+        final JSONObject json = JSONable.super.toJSON();
         json.put("key", key);
         return json;
     }

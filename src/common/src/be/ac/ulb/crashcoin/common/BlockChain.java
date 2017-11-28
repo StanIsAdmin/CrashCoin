@@ -39,25 +39,20 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         return true;
     }
     
-    private String getJsonType() {
-        return "BlockChain";
-    }
-    
     @Override
     public JSONObject toJSON() {
-        final JSONObject jObject = new JSONObject();
-        jObject.put("type", getJsonType());
+        final JSONObject json = JSONable.super.toJSON();
         
         try {
             final JSONArray jArray = new JSONArray();
             for (final Block block : this) {
                  jArray.put(block.toJSON());
             }
-            jObject.put("blockchain", jArray);
+            json.put("blockchain", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
-        return jObject;
+        return json;
     }
     
 }

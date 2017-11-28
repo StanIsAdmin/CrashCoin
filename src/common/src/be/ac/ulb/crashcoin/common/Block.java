@@ -49,26 +49,21 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return res;
     }
     
-    private String getJsonType() {
-        return "Block";
-    }
-    
     /** Get a JSON representation of the Block instance **/
     @Override
     public JSONObject toJSON() {
-        final JSONObject jObject = new JSONObject();
-        jObject.put("type", getJsonType());
+        final JSONObject json = JSONable.super.toJSON();
         
         try {
             final JSONArray jArray = new JSONArray();
             for(final Transaction trans : this) {
                 jArray.put(trans.toJSON());
             }
-            jObject.put("block", jArray);
+            json.put("blockArray", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
-        return jObject;
+        return json;
     }
     
     public byte[] hash() throws NoSuchAlgorithmException {
