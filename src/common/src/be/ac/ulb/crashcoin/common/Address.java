@@ -1,8 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
+import static be.ac.ulb.crashcoin.common.utils.Cryptography.deriveKey;
 import java.security.PublicKey;
 import java.util.Arrays;
-import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.json.JSONObject;
 
 public class Address implements JSONable {
@@ -13,7 +13,7 @@ public class Address implements JSONable {
     public Address(final PublicKey key) {
         super();
         this.key = key;
-        this.value = applyRIPEMD160(key);
+        this.value = deriveKey(key);
     }
     
     /** Create Address instance from a JSON representation
@@ -33,21 +33,6 @@ public class Address implements JSONable {
         final JSONObject json = JSONable.super.toJSON();
         json.put("key", key);
         return json;
-    }
-
-    /**
-     * Apply RIPEMD160 algorithm to retrieve the CrashCoin address from the public
-     * key.
-     * 
-     * @param key Public key
-     * @return Byte representation of the CrashCoin address
-     */
-    private byte[] applyRIPEMD160(final PublicKey key) {
-        final byte[] bytes = key.getEncoded();
-        final RIPEMD160Digest d = new RIPEMD160Digest();
-        d.update(bytes, 0, bytes.length); // Copute RIPEMD160 digest
-        d.doFinal(bytes, 0); // Copy digest into bytes
-        return bytes;
     }
 
     /** 
