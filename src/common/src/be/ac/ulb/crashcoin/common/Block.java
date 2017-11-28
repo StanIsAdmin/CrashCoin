@@ -26,9 +26,12 @@ import org.json.JSONObject;
 public class Block extends ArrayList<Transaction> implements JSONable {
     
     private Long nonce = 0L;
+    private Long previousBlock;
+    private Long merkleRoot;
     
-    public Block() {
+    public Block(final Long previousBlock) {
         super();
+        this.previousBlock = previousBlock;
         //TODO
     }
     
@@ -37,7 +40,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param json 
      */
     public Block(final JSONObject json) {
-        this(); //TODO pass json values as parameters to Block() ctr
+        this((long) 0); //TODO pass json values as parameters to Block() ctr
     }
     
     @Override
@@ -71,10 +74,16 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return jObject;
     }
     
+    @Deprecated
     public byte[] hash() throws NoSuchAlgorithmException {
         final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
         sha.update(toBytes());
         return sha.digest();
+    }
+    
+    public boolean isValid() {
+        // TODO
+        return false;
     }
     
     public byte[] hashHeader() throws NoSuchAlgorithmException {
@@ -95,9 +104,10 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         buffer.putLong(Parameters.MAGIC_NUMBER);
         // insert block size (4 bytes)
         buffer.putLong(getTotalSize());
-        // TODO: complete the following lines starting with '/////'
         // insert reference to previous block (32 bytes)
+        buffer.putLong(previousBlock);
         ///// buffer.put( HASH OF PREVIOUS BLOCK )
+        // TODO: complete the following lines starting with '/////'
         // insert merkle root
         ////// for(final Transaction transaction : this)
         //////    buffer.put(transaction.hash());
