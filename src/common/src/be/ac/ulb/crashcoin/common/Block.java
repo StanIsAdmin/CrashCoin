@@ -1,7 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -64,18 +63,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
         return json;
-    }
-    
-    public byte[] hash() throws NoSuchAlgorithmException {
-        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
-        sha.update(toBytes());
-        return sha.digest();
-    }
-    
-    public byte[] hashHeader() throws NoSuchAlgorithmException {
-        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
-        sha.update(headerToBytes());
-        return sha.digest();
     }
     
     /**

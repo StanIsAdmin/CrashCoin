@@ -1,6 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import static be.ac.ulb.crashcoin.common.utils.Cryptography.hashBytes;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
@@ -109,7 +109,7 @@ public class Transaction implements JSONable {
         final byte[] previousTx; // Hash value of a previous transaction
         
         public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
-            this.previousTx = Cryptography.hashTransaction(previousTransaction);
+            this.previousTx = hashBytes(previousTransaction.toBytes());
         }
     }
     
