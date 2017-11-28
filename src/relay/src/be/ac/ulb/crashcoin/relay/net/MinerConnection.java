@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.relay.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
@@ -43,6 +44,8 @@ class MinerConnection extends AbstractConnection {
             } catch (IOException ex) {
                 Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else if(jsonData instanceof Transaction) {
+            // TODO new transaction management
         }
         
     }

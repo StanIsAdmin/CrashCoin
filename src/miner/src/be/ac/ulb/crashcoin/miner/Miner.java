@@ -72,7 +72,7 @@ public class Miner {
      * @return a Block made of the transactions
      */
     private Block createBlock() {
-        Block ret = new Block();
+        Block ret = new Block(); // TODO get previous block hash and difficulty
         for(int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK; ++i)
             ret.add(this.transactions.get(i));
         // remove the transactions that have been set into the block

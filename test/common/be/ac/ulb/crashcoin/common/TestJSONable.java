@@ -1,25 +1,11 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.Timestamp;
-import java.security.cert.CertPath;
-import java.security.cert.CertPathBuilder;
-import java.security.cert.CertPathBuilderException;
-import java.security.cert.CertPathBuilderResult;
-import java.security.cert.CertificateException;
-import java.security.cert.PKIXBuilderParameters;
-import java.security.cert.X509CertSelector;
-import java.util.Date;
+import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -43,8 +29,12 @@ public class TestJSONable {
     }
     
     public Block createBlock() {
-        //TODO fill with relevant data
-        return new Block();
+        Block block = new Block(null);
+        Transaction transaction = null;
+        do {
+            transaction = createTransaction();
+        } while(block.add(transaction));
+        return block;
     }
     
     public BlockChain createBlockchain() {
@@ -53,26 +43,9 @@ public class TestJSONable {
     }
     
     public Transaction createTransaction() {
-        Transaction transaction = null;
-        try {
-            //TODO I have no idea how to create a Transaction and give up.
-            final Date date = new Date();
-            final CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
-            final X509CertSelector cs = new X509CertSelector();
-            final KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            final char[] password = "password".toCharArray();
-            ks.load(null, password);
-            try (FileOutputStream fos = new FileOutputStream("testKeyStore")) {
-                ks.store(fos, password);
-            }
-            final PKIXBuilderParameters cpp = new PKIXBuilderParameters(ks, cs);
-            final CertPathBuilderResult cpbResult = cpb.build(cpp);
-            final CertPath certPath = cpbResult.getCertPath();
-            final Timestamp timestamp = new Timestamp(date, certPath);
-            transaction = new Transaction(createAddress(), 20, timestamp);
-        } catch (InvalidAlgorithmParameterException | KeyStoreException | NoSuchAlgorithmException | CertPathBuilderException | IOException | CertificateException ex) {
-            fail("Could not generate a Transaction instance: " + ex.toString());
-        }
+        Timestamp timestamp;
+        timestamp = new Timestamp(System.currentTimeMillis());
+        Transaction transaction = new Transaction(createAddress(), 20, timestamp);
         return transaction;
     }
     
@@ -92,9 +65,9 @@ public class TestJSONable {
     
     @Test
     public void testTransactionJSONConversion() {
-        //Transaction transaction = createTransaction();
-        //Transaction copy = new Transaction(transaction.toJSON());
-        //assertEquals(transaction, copy);
-        assertTrue(true); //TODO remove when we know how to make transactions
+        Transaction transaction = createTransaction();
+        Transaction copy = new Transaction(transaction.toJSON());
+        assertEquals(transaction, copy);
     }
+
 }
