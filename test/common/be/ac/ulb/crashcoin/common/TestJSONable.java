@@ -35,8 +35,12 @@ public class TestJSONable {
     }
     
     public Block createBlock() {
-        //TODO fill with relevant data
-        return new Block();
+        Block block = new Block();
+        Transaction transaction = null;
+        do {
+            transaction = createTransaction();
+        } while(block.add(transaction));
+        return block;
     }
     
     public BlockChain createBlockchain() {
@@ -70,6 +74,6 @@ public class TestJSONable {
         Transaction transaction = createTransaction();
         Transaction copy = new Transaction(transaction.toJSON());
         assertEquals(transaction, copy);
-        assertTrue(true); //TODO remove when we know how to make transactions
     }
+
 }
