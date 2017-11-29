@@ -29,8 +29,8 @@ public class TestJSONable {
     }
     
     public Block createBlock() {
-        Block block = new Block(null);
-        Transaction transaction = null;
+        Block block = new Block(new byte[] {(byte)0x00}, 0);
+        Transaction transaction;
         do {
             transaction = createTransaction();
         } while(block.add(transaction));

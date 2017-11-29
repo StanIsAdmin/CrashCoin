@@ -48,14 +48,20 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         this((byte[]) json.get("previousBlock"), json.getInt("difficulty"), json.getInt("nonce"));
         final JSONArray blockArray = json.getJSONArray("blockArray");
         
-        for(final Object transaction : blockArray.toList()) {
-            this.add((Transaction) transaction);
+        for(int i = 0; i < blockArray.length(); ++i) {
+            final Object type = blockArray.get(0);
+            if(type instanceof JSONObject) {
+                this.add(new Transaction((JSONObject) type));
+            } else {
+                throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
+            }
         }
     }
     
     @Override
     public boolean add(final Transaction transaction) {
         boolean res = false;
+        // TODO "NB_TRANSACTIONS_PER_BLOCK" is the minimal number... Not the maximal !
         if(this.size() < Parameters.NB_TRANSACTIONS_PER_BLOCK) {
             res = super.add(transaction);
         }
