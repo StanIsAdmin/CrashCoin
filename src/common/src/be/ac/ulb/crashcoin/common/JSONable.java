@@ -11,6 +11,10 @@ public interface JSONable {
     /** Get a JSON representation of the class instance
      * @return  the JSONObject representation
      **/
-    public abstract JSONObject toJSON();
+    public default JSONObject toJSON() {
+        final JSONObject json = new JSONObject();
+        json.put("type", this.getClass().getName());
+        return json;
+    }
     
 }

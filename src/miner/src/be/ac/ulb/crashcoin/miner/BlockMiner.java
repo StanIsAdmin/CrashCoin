@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.Parameters;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,10 +51,10 @@ public final class BlockMiner {
         do {
             this.block.setNonce(currentNonce);
             try {
-                currentHash = this.block.hashHeader();
+                currentHash = Cryptography.hashBytes(this.block.headerToBytes());
             } catch (NoSuchAlgorithmException ex) {
                 Logger.getLogger(BlockMiner.class.getName()).log(Level.SEVERE,
-                        "Unable to mine: no " + Parameters.MINING_HASH_ALGORITHM
+                        "Unable to mine: no " + Parameters.HASH_ALGORITHM
                         +" available. Aborting!", ex);
                 return null;
             }
