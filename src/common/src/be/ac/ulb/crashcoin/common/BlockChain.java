@@ -34,8 +34,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     }
     
     // Must may be move to Block
+    // Used by [master node]
     protected boolean checkValideBlock(final Block block) {
-        // TODO 
+        // TODO
+        // 1. le hashage stocké dans le bloc contient le nb de 0 voulu
+        // 2. le hashage stocké dans le bloc correspond à celui qu'on retrouve
+        // 3. les transactions ont comme input des transactions déjà validées (i.e. existent dans un bloc précédent – ou le bloc courant(?))
         return true;
     }
     
