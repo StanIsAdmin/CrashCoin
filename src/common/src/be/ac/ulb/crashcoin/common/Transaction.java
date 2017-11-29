@@ -48,7 +48,7 @@ public class Transaction implements JSONable {
     public Transaction(final JSONObject json) {
         this(new Address((JSONObject) json.get("srcAddress")), 
                 (Integer) json.get("totalAmount"),
-                (Timestamp) json.get("lockTime"));
+                new Timestamp(json.getLong("lockTime")));
     }
     
     private String getJsonType() {
@@ -62,7 +62,7 @@ public class Transaction implements JSONable {
         json.put("type", getJsonType());
         json.put("srcAddress", srcAddress.toJSON());
         json.put("totalAmount", totalAmount);
-        json.put("lockTime", lockTime);
+        json.put("lockTime", lockTime.getTime());
         return json;
     }
     

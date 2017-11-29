@@ -1,14 +1,22 @@
 package be.ac.ulb.crashcoin.common;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Address implements JSONable {
 
-    private final PublicKey key; // Public key
-    private final byte[] value; // CrashCoin address, derived from the public key
+    private PublicKey key; // Public key
+    private byte[] value; // CrashCoin address, derived from the public key
 
     public Address(final PublicKey key) {
         super();
@@ -20,7 +28,17 @@ public class Address implements JSONable {
      * @param json 
      */
     public Address(final JSONObject json) {
-        this((PublicKey) (json.get("key")));
+        String bytesStr = json.getString("key");
+        byte keyArray[] = DatatypeConverter.parseBase64Binary(bytesStr);
+        X509EncodedKeySpec ks = new X509EncodedKeySpec(keyArray);
+        KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance("DSA");
+            this.key = kf.generatePublic(ks);
+            this.value = applyRIPEMD160(this.key);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            Logger.getLogger(Address.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private String getJsonType() {
@@ -32,7 +50,7 @@ public class Address implements JSONable {
     public JSONObject toJSON() {
         final JSONObject json = new JSONObject();
         json.put("type", getJsonType());
-        json.put("key", key);
+        json.put("key", DatatypeConverter.printBase64Binary(key.getEncoded()));
         return json;
     }
 
