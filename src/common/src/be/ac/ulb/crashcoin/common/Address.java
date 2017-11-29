@@ -1,6 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
-import static be.ac.ulb.crashcoin.common.utils.Cryptography.deriveKey;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.PublicKey;
 import java.util.Arrays;
 import org.json.JSONObject;
@@ -13,7 +13,7 @@ public class Address implements JSONable {
     public Address(final PublicKey key) {
         super();
         this.key = key;
-        this.value = deriveKey(key);
+        this.value = Cryptography.deriveKey(key);
     }
     
     /** Create Address instance from a JSON representation
