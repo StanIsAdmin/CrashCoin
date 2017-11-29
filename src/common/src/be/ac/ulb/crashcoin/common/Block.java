@@ -37,7 +37,11 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param json 
      */
     public Block(final JSONObject json) {
-        this(); //TODO pass json values as parameters to Block() ctr
+        super();
+        JSONArray array = json.getJSONArray("transactions");
+        for (Object object : array) {
+            this.add(new Transaction((JSONObject) object));
+        }
     }
     
     @Override
@@ -64,7 +68,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
             for(final Transaction trans : this) {
                 jArray.put(trans.toJSON());
             }
-            jObject.put("block", jArray);
+            jObject.put("transactions", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
