@@ -63,38 +63,87 @@ public class ClientApplication {
         registered = false;
         int choice;
         do {
-            System.out.println("Menu");
-            System.out.println("----\n");
-            if (!registered) {
-                System.out.println("1. Sign in");
-                System.out.println("2. Sign up");
-                System.out.println("3. Exit");
-            } else {
-                System.out.println("1. New transaction");
-                System.out.println("2. Show wallet");
-                System.out.println("3. Exit");
-                System.out.println("4. Disconnect");
-            }
-            System.out.println("3. Exit\n");
-            System.out.print("Please enter your choice : ");
-
+            printMenu();
+            
             choice = reader.nextInt();
-            if(choice == 1 && !registered) {
-                signIn();
-                registered = true;
-            } else if(choice == 2 && !registered) {
-                signUp();
-            } else if (choice == 1 && registered) {
-                createTransaction();
-            } else if (choice == 2 && registered) {
-                // TODO : show wallet;
-            } else if (choice == 4 && registered) {
-                registered = false;
-                choice = 0;
+            
+            if(!registered) { // If not register/login
+                actionMenuNotRegistered(choice);
+                
+            } else {
+                choice = actionMenuRegistred(choice);
             }
+            
         } while(!( choice == 3 && registered == false));
         reader.close();
     }
+    
+    private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException, 
+            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, 
+            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, 
+            InvalidParameterSpecException {
+        switch(choice) {
+            case 1:
+                signIn();
+                registered = true;
+                break;
+
+            case 2:
+                signUp();
+                break;
+
+            case 3: // close with condition in while
+                break;
+
+            default:
+                System.out.println("Unknow choice " + choice);
+                break;
+
+        }
+    }
+    
+    private int actionMenuRegistred(int choice) {
+        switch(choice) {
+            case 1:
+                createTransaction();
+                break;
+
+            case 2:
+                // TODO : show wallet;
+                break;
+
+            case 4:
+                registered = false;
+                choice = 0;
+                break;
+
+            case 3: // close with condition in while
+                break;
+
+            default:
+                System.out.println("Unknow choice " + choice);
+                break;
+        }
+        return choice;
+    }
+    
+    private void printMenu() {
+        System.out.println("Menu");
+        System.out.println("----\n");
+        if (!registered) {
+            System.out.println("1. Sign in");
+            System.out.println("2. Sign up");
+            System.out.println("3. Exit");
+        } else {
+            System.out.println("1. New transaction");
+            System.out.println("2. Show wallet");
+            System.out.println("3. Exit");
+            System.out.println("4. Disconnect");
+        }
+        System.out.println("3. Exit\n");
+        System.out.print("Please enter your choice : ");
+    }
+    
 
     public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, 
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, 
@@ -214,11 +263,10 @@ public class ClientApplication {
         
         // Creates new wallet file
     	final File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
-    	ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+    	final ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
     	oos.writeObject(walletInformation);
     	oos.flush();
     	oos.close();
-    	
     }
     
     public WalletInformation readWalletFile(final File f) throws FileNotFoundException, IOException, ClassNotFoundException {
@@ -402,8 +450,8 @@ public class ClientApplication {
             System.out.println("Or enter -1 to escape the curent transaction.");
             System.out.println("Amount : ");
             amount = reader.nextInt();
-            Address srcAddress = new Address(wallet.getPublicKey());
-            Timestamp lockTime = new Timestamp(System.currentTimeMillis());
+            final Address srcAddress = new Address(wallet.getPublicKey());
+            final Timestamp lockTime = new Timestamp(System.currentTimeMillis());
             transaction = new Transaction(srcAddress, amount, lockTime);
         } while (!(transaction.isValid()) && amount != -1);
         if (amount != -1) {
