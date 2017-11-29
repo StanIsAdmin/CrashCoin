@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
@@ -72,7 +73,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("previousBlock", previousBlock);
+        json.put("previousBlock", JsonUtils.encodeBytes(previousBlock));
         json.put("difficulty", difficulty);
         json.put("nonce", nonce);
         
