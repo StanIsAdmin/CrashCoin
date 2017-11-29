@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Address;
+import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.TestStrJSONable;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
@@ -32,6 +33,22 @@ public class Main {
         return new Address(pk);
     }
     
+    public static Transaction getTrasaction() {
+        Timestamp timestamp;
+        timestamp = new Timestamp(System.currentTimeMillis());
+        return new Transaction(getAddress(), 20, timestamp);
+    }
+    
+    public static Block getBlock() {
+        Block block = new Block();
+        boolean res = true;
+        while(res) {
+            Transaction transaction = getTrasaction();
+            res = block.add(transaction);
+        }
+        return block;
+    }
+    
     public static void main(final String[] args) {
         
         RelayConnection connection;
@@ -44,10 +61,8 @@ public class Main {
         }
         
         // Test : reward transacton sending
-        Timestamp timestamp;
-        timestamp = new Timestamp(System.currentTimeMillis());
-        Transaction transaction = new Transaction(getAddress(), 20, timestamp);
-        connection.sendData(transaction);
+        Block block = getBlock();
+        connection.sendData(block);
         // -------------------------
         
         // create a miner... And start mining... Whut else?
