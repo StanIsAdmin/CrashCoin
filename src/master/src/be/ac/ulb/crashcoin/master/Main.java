@@ -14,6 +14,7 @@ public class Main {
     private static BlockChain blockChain;
     
     public static void main(final String[] args) {
+        blockChain = new BlockChain();
         
         // Init listener
         try {
