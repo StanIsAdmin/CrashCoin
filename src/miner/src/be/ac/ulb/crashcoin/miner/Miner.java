@@ -7,6 +7,7 @@ import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.lang.Thread;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to mine.
@@ -50,8 +51,9 @@ public class Miner {
      * Start to wait for transactions and mine them when received.
      * 
      * @throws InterruptedException if the thread has an error when sleeping
+     * @throws java.security.NoSuchAlgorithmException if unable to mine
      */
-    public void startMining() throws InterruptedException {
+    public void startMining() throws InterruptedException, NoSuchAlgorithmException {
         final BlockMiner miner = new BlockMiner();
         // TODO: find better than a while True?
         while(true) {

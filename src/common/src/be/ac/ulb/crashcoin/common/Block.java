@@ -30,6 +30,17 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     private final byte[] previousBlock;
     private final int difficulty;
     
+    /** array of masks such that MASKS[i] contains the first i bits with 1s and
+     * the 8-i last bits with 0s */
+    static public final byte[] MASKS;
+    
+    static {
+        MASKS = new byte[8];
+        for(int i = 1; i < 8; ++i) {
+            MASKS[i] = (byte) ((1 << (Byte.SIZE - i)) | MASKS[i-1]);
+        }
+    }
+    
     public Block(final byte[] previousBlock, final int difficulty) {
         this(previousBlock, difficulty, 0);
     }
@@ -88,24 +99,41 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return json;
     }
     
-    public boolean isHashValid() {
-        boolean valid = false;
-        byte[] blockHash;
-        try {
-            blockHash = Cryptography.hashBytes(headerToBytes());
-            int index = 0;
-            while(blockHash[index] == 0 && index < getDifficulty()) {
-                ++index;
-            }
-            
-            if(index == getDifficulty()) {
-                valid = true;
-            }
-            
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return valid;
+    /**
+     * Checks if a hash satisfies the difficulty
+     *
+     * @return true if the hash starts with the right amount of null bits and
+     * false otherwise
+     * @see isValid
+     */
+    public boolean isHashValid() throws NoSuchAlgorithmException {
+        return isHashValid(Cryptography.hashBytes(headerToBytes()), this.difficulty);
+    }
+    
+    /**
+     * Checks if a hash satisfies the difficulty
+     * 
+     * @param hash The hash of a transaction to test
+     * @param difficulty The number of null bits that are required
+     * @return true if the hash starts with the right amount of null bits and
+     * false otherwise
+     * @see Parameters.MINING_DIFFICULTY
+     */
+    public boolean isHashValid(final byte[] hash, Integer difficulty) {
+        final int nbOfNullBytes = difficulty / Byte.SIZE;
+        final int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
+        
+        if(hash == null || difficulty > Byte.SIZE * hash.length)
+            return false;
+        
+        // check the first complete bytes
+        for(int byteIdx = 0; byteIdx < nbOfNullBytes; ++byteIdx)
+            if(hash[byteIdx] != 0)
+                return false;
+        // and then check the last remaining bits
+        if(nbOfRemaningNullBits > 0 && (hash[nbOfNullBytes] & MASKS[nbOfRemaningNullBits]) != 0)
+            return false;
+        return true;
     }
     
     /**
