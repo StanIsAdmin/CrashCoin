@@ -46,7 +46,7 @@ public final class BlockMiner {
      * @return the block with the correct nonce
      */
     public Block mine() {
-        Long currentNonce = 0L;
+        Integer currentNonce = 0;
         byte[] currentHash;
         do {
             this.block.setNonce(currentNonce);

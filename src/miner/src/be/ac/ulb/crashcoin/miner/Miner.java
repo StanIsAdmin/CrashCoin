@@ -5,8 +5,8 @@ import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.util.ArrayList;
+import java.lang.Thread;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to mine.
@@ -39,11 +39,11 @@ public class Miner {
      * @throws InterruptedException if the thread has an error when sleeping
      */
     public void startMining() throws InterruptedException {
-        BlockMiner miner = new BlockMiner();
+        final BlockMiner miner = new BlockMiner();
         // TODO: find better than a while True?
         while(true) {
             if(!this.connection.hasTransactions()) {
-                sleep(100);
+                Thread.sleep(100);
             } else {
                 this.transactions.addAll(this.connection.getTransactions());
                 if(this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
@@ -72,7 +72,8 @@ public class Miner {
      * @return a Block made of the transactions
      */
     private Block createBlock() {
-        Block ret = new Block();
+        // TODO get previous block hash and difficulty correctly
+        final Block ret = new Block(Main.getLastBlockInChain(), Main.getDifficulty()); 
         for(int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK; ++i)
             ret.add(this.transactions.get(i));
         // remove the transactions that have been set into the block
