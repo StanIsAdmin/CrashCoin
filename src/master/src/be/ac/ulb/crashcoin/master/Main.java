@@ -16,13 +16,7 @@ import org.json.simple.parser.ParseException;
  */
 public class Main {
     
-    private static BlockChain blockChain;
-    
-    private static final String BLOCKCHAIN_SAVE_PATH = "./master/blockchain.json";
-    
     public static void main(final String[] args) {
-        blockChain = createBlockChain();
-        
         // Init listener
         try {
             RelayListener.getListener();
@@ -30,30 +24,4 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public static BlockChain getBlockChain() {
-        return blockChain;
-    }
-    
-    private static BlockChain createBlockChain() {
-        FileReader fr;
-        try {
-            fr = new FileReader(BLOCKCHAIN_SAVE_PATH);
-        } catch (FileNotFoundException ex) {
-            // Returns a new BlockChain if none has been saved
-            return new BlockChain();
-        }
-        
-        JSONParser parser = new JSONParser();
-        JSONObject jsonBlockChain;
-        try {
-            jsonBlockChain = (JSONObject) parser.parse(fr);
-        } catch (ParseException | IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-        
-        return new BlockChain(jsonBlockChain);
-    }
-    
 }
