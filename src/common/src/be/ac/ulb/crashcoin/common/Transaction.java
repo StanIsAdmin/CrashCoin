@@ -47,7 +47,7 @@ public class Transaction implements JSONable {
      */
     public Transaction(final JSONObject json) {
         this(new Address((JSONObject) json.get("srcAddress")), 
-                (Integer) json.get("totalAmount"),
+                json.getInt("totalAmount"),
                 new Timestamp(json.getLong("lockTime")));
     }
     
