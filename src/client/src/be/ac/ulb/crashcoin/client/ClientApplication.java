@@ -40,6 +40,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.Random;
@@ -116,7 +117,7 @@ public class ClientApplication {
                 break;
 
             case 2:
-                // TODO : show wallet;
+                showWallet();
                 break;
 
             case 4:
@@ -492,6 +493,13 @@ public class ClientApplication {
         }
         
     	return result;
+    }
+    
+    public void showWallet() {
+        ArrayList<Transaction> transactionList = wallet.getTransactions();
+        for (Transaction transaction: transactionList) {
+            System.out.println(transaction.toString());
+        }
     }
 
 }
