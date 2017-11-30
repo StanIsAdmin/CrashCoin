@@ -29,7 +29,7 @@ public class TestJSONable {
     }
     
     public Block createBlock() {
-        Block block = new Block(new byte[] {(byte)0x00}, 0);
+        final Block block = new Block(new byte[] {(byte)0x00}, 0);
         Transaction transaction;
         do {
             transaction = createTransaction();

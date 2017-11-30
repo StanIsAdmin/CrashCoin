@@ -46,7 +46,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param json 
      */
     public Block(final JSONObject json) {
-        this((byte[]) json.get("previousBlock"), json.getInt("difficulty"), json.getInt("nonce"));
+        this(JsonUtils.decodeBytes(json.getString("previousBlock")), json.getInt("difficulty"), json.getInt("nonce"));
         final JSONArray blockArray = json.getJSONArray("blockArray");
         
         for(int i = 0; i < blockArray.length(); ++i) {
