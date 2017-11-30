@@ -72,7 +72,7 @@ public class Transaction implements JSONable {
     public boolean isValid() {
         // TODO: check whether sum of inputs is lower than the sum of outputs
         // The difference is considered as transaction fee
-        return false; // TODO
+        return true; // TODO
     }
 
     /**
