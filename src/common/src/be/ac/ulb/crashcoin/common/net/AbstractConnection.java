@@ -4,6 +4,7 @@ import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Transaction;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,7 +35,11 @@ public abstract class AbstractConnection extends Thread {
     }
     
     public void sendData(final JSONable jsonData) {
-        _output.write(jsonData.toJSON() + "\n");
+        sendData(jsonData.toJSON());
+    }
+    
+    public void sendData(final JSONObject jobject) {
+        _output.write(jobject + "\n");
         _output.flush();
     }
     
@@ -99,6 +104,10 @@ public abstract class AbstractConnection extends Thread {
                 
             case "TestStr":
                 result = new TestStrJSONable(jsonData);
+                break;
+                
+            case "Message":
+                result = new Message(jsonData);
                 break;
         }
         
