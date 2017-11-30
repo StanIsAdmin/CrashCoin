@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Objects;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
@@ -46,7 +47,7 @@ public class Transaction implements JSONable {
      * @param json 
      */
     public Transaction(final JSONObject json) {
-        this(new Address((JSONObject) json.get("srcAddress")), 
+        this(new Address((JSONObject) json.get("srcAddress")),
                 json.getInt("totalAmount"),
                 new Timestamp(json.getLong("lockTime")));
     }
@@ -61,6 +62,14 @@ public class Transaction implements JSONable {
         return json;
     }
     
+    // Create a new transaction to a final destinator
+    public boolean createTransaction(final Transaction transaction, 
+            final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
+        this.addInputTransaction(transaction);
+        this.addOutput(dstAddress, nCrashCoins);
+        return this.isValid();
+    }
+    
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
     }
@@ -69,10 +78,14 @@ public class Transaction implements JSONable {
         this.outputs.add(new Output(address, nCrashCoins));
     }
     
-    public boolean isValid() {
-        // TODO: check whether sum of inputs is lower than the sum of outputs
+    private boolean isValid() {
+        // Check whether sum of inputs is lower than the sum of outputs
+        Integer sum = 0;
+        for (Output output: this.outputs) {
+            sum += output.nCrashCoins;
+        }
         // The difference is considered as transaction fee
-        return true; // TODO
+        return Objects.equals(sum, totalAmount);
     }
 
     /**

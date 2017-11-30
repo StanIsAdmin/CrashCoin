@@ -90,7 +90,7 @@ public class ClientApplication {
         }
     }
     
-    private void actionMenuRegistred(final int choice) {
+    private void actionMenuRegistred(final int choice) throws NoSuchAlgorithmException {
         switch(choice) {
             case 1:
                 createTransaction();
@@ -238,11 +238,12 @@ public class ClientApplication {
      * 
      * @return The created transaction
      */
-    public Transaction createTransaction() {
+    public Transaction createTransaction() throws NoSuchAlgorithmException {
+        final Address srcAddress = new Address(wallet.getPublicKey());
         Transaction result = null;
         Transaction transaction;
+        Transaction input;
         int amount = 0;
-        byte[] destAdress = null;
         
         do {
             System.out.println("Please enter the amount of the transaction,");
@@ -252,14 +253,15 @@ public class ClientApplication {
             
             System.out.print("Destination : ");
             String strDest = reader.next();
-            destAdress = hexToByteArray(strDest);
             
-            final Address srcAddress = new Address(wallet.getPublicKey());
+            
             final Timestamp lockTime = new Timestamp(System.currentTimeMillis());
-            // TODO create output
-            // Transaction.Output
+            // TODO : get Input transaction
+            // Input is only for test.
+            input = new Transaction(srcAddress, amount, lockTime);
+            
             transaction = new Transaction(srcAddress, amount, lockTime);
-        } while (!(transaction.isValid()) && amount != -1);
+        } while (!(transaction.createTransaction(input,  srcAddress, amount)) && amount != -1);
         
         if (amount != -1) {
             result = transaction;
