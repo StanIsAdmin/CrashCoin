@@ -1,9 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -41,23 +38,14 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     
     // Must may be move to Block
     // Used by [master node]
-    protected boolean checkValidBlock(final Block block, int difficulty) {
+    protected boolean checkValidBlock(final Block block, final int difficulty) {
+        boolean result = block.isHashValid();
+        
         // TODO
-        // 1. le hashage stocké dans le bloc contient le nb de 0 voulu
-        
-        byte[] blockBytes = block.transactionsToBytes();
-        try {
-            BitSet hashed = BitSet.valueOf(Cryptography.hashBytes(blockBytes));
-            if (hashed.nextSetBit(0) < difficulty) {
-                return false;
-            }
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(BlockChain.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        // 2. le hashage stocké dans le bloc correspond à celui qu'on retrouve
-        // 3. les transactions ont comme input des transactions déjà validées (i.e. existent dans un bloc précédent – ou le bloc courant(?))
-        return true;
+        // 1. Le hash du block précédent dans le block est bien égal au hash du dernier block présent dans la blockchain
+        // 2. les transactions ont comme input des transactions déjà validées 
+        //    (i.e. existent dans un bloc précédent – ou le bloc courant(?))
+        return result;
     }
     
     @Override
