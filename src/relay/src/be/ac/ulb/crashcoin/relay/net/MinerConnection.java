@@ -46,6 +46,15 @@ class MinerConnection extends AbstractConnection {
             }
         } else if(jsonData instanceof Transaction) {
             // TODO new transaction management
+            Transaction transaction = (Transaction) jsonData;
+            // Broadcast to the miners directly connected to the relay.
+            sendToAll(transaction);
+            // Relay the transaction to the master.
+            try {
+                MasterConnection.getMasterConnection().sendData(transaction);
+            } catch (IOException ex) {
+                Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
     }

@@ -4,6 +4,7 @@ import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
+import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -27,9 +28,16 @@ public class MasterConnection extends AbstractReconnectConnection {
     protected void receiveData(final JSONable jsonData) {
         System.out.println("[DEBUG] get value from master: " + jsonData);
         
-        // TODO adapt code
+        // Receive a mined block
         if(jsonData instanceof Block) {
+            // Broadcast to the miners the validate/mined block so that they can
+            // either remove the mined transaction from their pool or stop
+            // the block mining if the transaction is in the block.
+            MinerConnection.sendToAll(jsonData);
             
+            // local mined block management
+            Block block = (Block)jsonData;
+            Main.getBlockChain().add(block);
         }
         
         
