@@ -62,7 +62,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     @Override
     public boolean add(final Transaction transaction) {
         boolean res = false;
-        // TODO "NB_TRANSACTIONS_PER_BLOCK" is the minimal number... Not the maximal !
         if(this.size() < Parameters.NB_TRANSACTIONS_PER_BLOCK) {
             res = super.add(transaction);
         }
@@ -123,10 +122,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         buffer.putInt(getTotalSize());
         // insert reference to previous block (32 bytes)
         buffer.put(previousBlock);
-        // insert merkle root
-        buffer.put(getMerkelRoot());
-        // insert timestamp (4 bytes)
-        
+        // insert hash of all transaction
+        buffer.put(getTransactionHash());
         // insert difficulty (4 bytes)
         buffer.putInt(difficulty);
         // TODO Transaction counter ?
@@ -136,12 +133,13 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     }
     
     /**
-     * TODO @Antoine
+     * Get hash of all transaction
      * 
      * @return 32 bytes !
+     * @throws java.security.NoSuchAlgorithmException
      */
-    public byte[] getMerkelRoot() {
-        return null;
+    public byte[] getTransactionHash() throws NoSuchAlgorithmException {
+        return Cryptography.hashBytes(this.transactionsToBytes());
     }
     
     /**
