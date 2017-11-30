@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 public class Transaction implements JSONable {
 
-    private static Integer TRANSACTION_SIZE = 16;  // TODO: change this!
+    private static Integer TRANSACTION_SIZE = 16 + Parameters.INTEGER_N_BYTES;  // TODO: change this!
     
     private final Address srcAddress;
     private final Integer totalAmount;

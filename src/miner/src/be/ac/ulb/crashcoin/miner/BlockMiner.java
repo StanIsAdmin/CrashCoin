@@ -36,7 +36,7 @@ public final class BlockMiner {
     public BlockMiner() {
     }
     
-    public void setBlockToMine(Block block) {
+    public void setBlockToMine(final Block block) {
         this.block = block;
     }
 
@@ -85,8 +85,8 @@ public final class BlockMiner {
      * @see Parameters.MINING_DIFFICULTY
      */
     public boolean isValid(final byte[] hash, Integer difficulty) {
-        int nbOfNullBytes = difficulty / Byte.SIZE;
-        int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
+        final int nbOfNullBytes = difficulty / Byte.SIZE;
+        final int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
         
         if(hash == null || difficulty > Byte.SIZE * hash.length)
             return false;

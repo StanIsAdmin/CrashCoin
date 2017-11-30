@@ -89,11 +89,14 @@ public class Miner {
     private Block createBlock() {
         // TODO get previous block hash and difficulty correctly
         final Block ret = new Block(Main.getLastBlockInChain(), Main.getDifficulty()); 
-        for(int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK; ++i)
+        // Add Parameters.NB_TRANSACTIONS_PER_BLOCK-1 transaction because, the last transaction is for the miner !
+        for(int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK-1; ++i) {
             ret.add(this.transactions.get(i));
+        }
+        // TODO Add transaction to pay the miner
+        
         // remove the transactions that have been set into the block
         this.transactions.subList(0, Parameters.NB_TRANSACTIONS_PER_BLOCK-1).clear();
-        // TODO: complete the block
         return ret;
     }
 }

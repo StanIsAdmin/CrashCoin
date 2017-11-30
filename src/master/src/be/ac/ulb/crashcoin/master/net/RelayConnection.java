@@ -4,7 +4,6 @@ import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
-import be.ac.ulb.crashcoin.common.net.TestStrJSONable;
 import be.ac.ulb.crashcoin.master.Main;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -23,9 +22,7 @@ public class RelayConnection extends AbstractConnection {
         allRelay.add(this);
         start();
         
-        System.out.println("[DEBUG] send TestStrJONable to Relay");
-        TestStrJSONable jsonable = new TestStrJSONable();
-        sendData(jsonable);
+        sendData(Main.getBlockChain());
     }
     
     @Override
@@ -35,11 +32,14 @@ public class RelayConnection extends AbstractConnection {
             final Block block = (Block) data;
             
             // Local blockChain management
-            BlockChain chain = Main.getBlockChain();
-            chain.add(block);
+            final BlockChain chain = Main.getBlockChain();
+            // If block could be add
+            if(chain.add(block)) {
+                // Broadcast the block to all the relay nodes
+                sendToAll(data);
+                
+            } // TODO ? Inform Relay (and Miner that block have be rejected) ?
             
-            // Broadcast the block to all the relay nodes
-            sendToAll(data);
         }
     }
     

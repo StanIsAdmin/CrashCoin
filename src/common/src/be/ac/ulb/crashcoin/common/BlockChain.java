@@ -1,5 +1,7 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,8 +15,17 @@ import org.json.JSONObject;
 public class BlockChain extends ArrayList<Block> implements JSONable {
 
     // Used by [Relay Node]
-    public BlockChain(final JSONObject jsonObject) {
+    public BlockChain(final JSONObject json) {
+        final JSONArray blockArray = json.getJSONArray("blockArray");
         
+        for(int i = 0; i < blockArray.length(); ++i) {
+            final Object type = blockArray.get(0);
+            if(type instanceof JSONObject) {
+                this.add(new Block((JSONObject) type));
+            } else {
+                throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
+            }
+        }
         // TODO
     }
 
@@ -26,24 +37,36 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     @Override
     public boolean add(final Block block) {
         if(!this.contains(block)) {
-            if(checkValidBlock(block, 8)) { // TODO difficulty
-                super.add(block);
-            } else {
-                // TODO not valide !
+            try {
+                if(checkValidBlock(block, Parameters.MINING_DIFFICULTY)) {
+                    super.add(block);
+                    return true;
+                } else {
+                    // TODO not valide !
+                }
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(BlockChain.class.getName()).log(Level.SEVERE, null, ex);
             }
-            return true;
         }
         return false;
     }
     
+    private byte[] getLastBlockToBytes() throws NoSuchAlgorithmException {
+        return Cryptography.hashBytes(get(this.size()-1).headerToBytes());
+    }
+    
+    
     // Must may be move to Block
     // Used by [master node]
-    protected boolean checkValidBlock(final Block block, final int difficulty) {
-        boolean result = block.isHashValid();
+    protected boolean checkValidBlock(final Block block, final int difficulty) throws NoSuchAlgorithmException {
+        boolean result = block.isHashValid() && 
+                difficulty == block.getDifficulty() &&
+                // Previous hash block is valid
+                Cryptography.isArrayByteEquals(block.getPreviousBlock(), 
+                            this.getLastBlockToBytes());
         
         // TODO
-        // 1. Le hash du block précédent dans le block est bien égal au hash du dernier block présent dans la blockchain
-        // 2. les transactions ont comme input des transactions déjà validées 
+        // Vérifier que les transactions ont comme input des transactions déjà validées 
         //    (i.e. existent dans un bloc précédent – ou le bloc courant(?))
         return result;
     }
@@ -57,7 +80,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             for (final Block block : this) {
                  jArray.put(block.toJSON());
             }
-            json.put("blockchain", jArray);
+            json.put("blockArray", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }

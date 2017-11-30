@@ -38,14 +38,14 @@ public class TestJSONable {
     }
     
     public BlockChain createBlockchain() {
-        //TODO fill with relevant data
-        return new BlockChain();
+        final BlockChain newBlockChain = new BlockChain();
+        newBlockChain.add(createBlock());
+        return newBlockChain;
     }
     
     public Transaction createTransaction() {
-        Timestamp timestamp;
-        timestamp = new Timestamp(System.currentTimeMillis());
-        Transaction transaction = new Transaction(createAddress(), 20, timestamp);
+        final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        final Transaction transaction = new Transaction(createAddress(), 20, timestamp);
         return transaction;
     }
     
@@ -65,9 +65,16 @@ public class TestJSONable {
     
     @Test
     public void testTransactionJSONConversion() {
-        Transaction transaction = createTransaction();
-        Transaction copy = new Transaction(transaction.toJSON());
+        final Transaction transaction = createTransaction();
+        final Transaction copy = new Transaction(transaction.toJSON());
         assertEquals(transaction, copy);
+    }
+    
+    @Test
+    public void testBlockChainJSONConcversion() {
+        final BlockChain blockChain = createBlockchain();
+        final BlockChain copy = new BlockChain(blockChain.toJSON());
+        assertEquals(blockChain, copy);
     }
 
 }
