@@ -48,17 +48,4 @@ public class Cryptography {
         return bytes;
     }
     
-    public static boolean isArrayByteEquals(final byte[] firstArrayByte, final byte[] secondArrayByte) {
-        boolean result = false;
-        if(firstArrayByte.length == secondArrayByte.length) {
-            result = true;
-            int i = 0;
-            while(result && i < firstArrayByte.length) {
-                result &= (firstArrayByte[i] == secondArrayByte[i]);
-                ++i;
-            }
-        }
-        return result;
-    }
-    
 }

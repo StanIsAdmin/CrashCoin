@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -62,8 +63,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         boolean result = block.isHashValid() && 
                 difficulty == block.getDifficulty() &&
                 // Previous hash block is valid
-                Cryptography.isArrayByteEquals(block.getPreviousBlock(), 
-                            this.getLastBlockToBytes());
+                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
         
         // TODO
         // Vérifier que les transactions ont comme input des transactions déjà validées 
