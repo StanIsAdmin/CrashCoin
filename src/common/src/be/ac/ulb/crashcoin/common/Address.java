@@ -9,10 +9,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.DatatypeConverter;
-import org.bouncycastle.crypto.digests.RIPEMD160Digest;
-import org.json.JSONArray;
 import org.json.JSONObject;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 
 public class Address implements JSONable {
 
@@ -29,28 +27,23 @@ public class Address implements JSONable {
      * @param json 
      */
     public Address(final JSONObject json) {
-        String bytesStr = json.getString("key");
-        byte keyArray[] = DatatypeConverter.parseBase64Binary(bytesStr);
-        X509EncodedKeySpec ks = new X509EncodedKeySpec(keyArray);
-        KeyFactory kf;
+        final byte[] keyBytes = JsonUtils.decodeBytes(json.getString("key"));
+        final X509EncodedKeySpec ks = new X509EncodedKeySpec(keyBytes);
+        final KeyFactory kf;
         try {
             kf = KeyFactory.getInstance("DSA");
             this.key = kf.generatePublic(ks);
-            this.value = applyRIPEMD160(this.key);
+            this.value = Cryptography.deriveKey(this.key);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(Address.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    
-    private String getJsonType() {
-        return "Address";
     }
     
     /** Get a JSON representation of the Address instance **/
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("key", key);
+        json.put("key", JsonUtils.encodeBytes(key.getEncoded()));
         return json;
     }
 

@@ -42,8 +42,8 @@ public class Main {
         return new Transaction(getAddress(), 20, timestamp);
     }
     
-    public static Block getBlock() {
-        Block block = new Block();
+    private static Block getBlock() { // Only for test
+        Block block = new Block(new byte[] {}, 0);
         boolean res = true;
         while(res) {
             Transaction transaction = getTrasaction();
@@ -64,7 +64,7 @@ public class Main {
         }
         
         // Test : reward transacton sending
-        Block block = getBlock();
+        final Block block = getBlock();
         connection.sendData(block);
         // -------------------------
         
