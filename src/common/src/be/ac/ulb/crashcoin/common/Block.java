@@ -2,6 +2,8 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -174,11 +176,17 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @return a byte[] representing the transactions list
      */
     private byte[] transactionsToBytes() {
-        final ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.size());
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         for(final Transaction transaction : this) {
-            buffer.put(transaction.toBytes());
+            try {
+                //buffer.
+                buffer.write(transaction.toBytes());
+            } catch (IOException ex) {
+                // TODO: what to do?
+                Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        return buffer.array();
+        return buffer.toByteArray();
     }
     
     /**

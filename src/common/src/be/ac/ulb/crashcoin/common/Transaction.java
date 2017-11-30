@@ -8,23 +8,12 @@ import java.util.ArrayList;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
-
-    private static Integer TRANSACTION_SIZE = 16 + Parameters.INTEGER_N_BYTES;  // TODO: change this!
     
     private final Address srcAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
     private ArrayList<Input> inputs;
     private ArrayList<Output> outputs;
-    
-    /**
-     * Get the size of a single transaction in bytes
-     * 
-     * @return the size in butes of a transaction
-     */
-    public static Integer getSize() {
-        return TRANSACTION_SIZE;
-    }
 
     /**
      * Constructor for transactions
