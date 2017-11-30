@@ -1,17 +1,11 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.cert.CertPathBuilderException;
-import java.security.cert.CertificateException;
 import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -35,8 +29,8 @@ public class TestJSONable {
     }
     
     public Block createBlock() {
-        Block block = new Block();
-        Transaction transaction = null;
+        final Block block = new Block(new byte[] {(byte)0x00}, 0);
+        Transaction transaction;
         do {
             transaction = createTransaction();
         } while(block.add(transaction));

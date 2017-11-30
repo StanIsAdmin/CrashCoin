@@ -1,7 +1,7 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -51,15 +51,10 @@ public class Transaction implements JSONable {
                 new Timestamp(json.getLong("lockTime")));
     }
     
-    private String getJsonType() {
-        return "Transaction";
-    }
-    
     /** Get a JSON representation of the Address instance **/
     @Override
     public JSONObject toJSON() {
-        final JSONObject json = new JSONObject();
-        json.put("type", getJsonType());
+        final JSONObject json = JSONable.super.toJSON();
         json.put("srcAddress", srcAddress.toJSON());
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
@@ -74,22 +69,10 @@ public class Transaction implements JSONable {
         this.outputs.add(new Output(address, nCrashCoins));
     }
     
-    /**
-     * Performs SHA-256 hash of the transaction
-     * 
-     * @return A 32 byte long byte[] with the SHA-256 of the transaction
-     * @throws NoSuchAlgorithmException if the machine is unable to perform SHA-256
-     */
-    public byte[] hash() throws NoSuchAlgorithmException {
-        final MessageDigest sha256 = MessageDigest.getInstance(Parameters.TRANSACTION_HASH_ALGORITHM);
-        sha256.update(toBytes());
-        return sha256.digest();
-    }
-    
     public boolean isValid() {
         // TODO: check whether sum of inputs is lower than the sum of outputs
         // The difference is considered as transaction fee
-        return false; // TODO
+        return true; // TODO
     }
 
     /**
@@ -126,7 +109,7 @@ public class Transaction implements JSONable {
         final byte[] previousTx; // Hash value of a previous transaction
         
         public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
-            this.previousTx = previousTransaction.hash();
+            this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
         }
     }
     

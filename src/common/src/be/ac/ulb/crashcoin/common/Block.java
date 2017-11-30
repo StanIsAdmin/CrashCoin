@@ -1,7 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -18,18 +19,26 @@ import org.json.JSONObject;
  * + 4 byte long giving the block size in bytes
  * + 32 byte (256 bit) long hash of the previous block
  * + 32 byte long merkle root
- * + 4 byte long timestamp
+ * + 4 byte long timestamp TODO not add (only if needed)
  * + 4 byte long difficulty (expected nb of 0s at the beginning of the hash)
  * + 4 byte long Nonce
  * + variable size(?): Transaction list
  */
 public class Block extends ArrayList<Transaction> implements JSONable {
     
-    private Long nonce = 0L;
+    private Integer nonce = 0;
+    private final byte[] previousBlock;
+    private final int difficulty;
     
-    public Block() {
+    public Block(final byte[] previousBlock, final int difficulty) {
+        this(previousBlock, difficulty, 0);
+    }
+    
+    public Block(final byte[] previousBlock, final int difficulty, final int nonce) {
         super();
-        //TODO
+        this.previousBlock = previousBlock;
+        this.difficulty = difficulty;
+        this.nonce = nonce;
     }
     
     /** 
@@ -37,10 +46,16 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param json 
      */
     public Block(final JSONObject json) {
-        super();
-        JSONArray array = json.getJSONArray("transactions");
-        for (Object object : array) {
-            this.add(new Transaction((JSONObject) object));
+        this(JsonUtils.decodeBytes(json.getString("previousBlock")), json.getInt("difficulty"), json.getInt("nonce"));
+        final JSONArray blockArray = json.getJSONArray("blockArray");
+        
+        for(int i = 0; i < blockArray.length(); ++i) {
+            final Object type = blockArray.get(0);
+            if(type instanceof JSONObject) {
+                this.add(new Transaction((JSONObject) type));
+            } else {
+                throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
+            }
         }
     }
     
@@ -53,38 +68,44 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return res;
     }
     
-    private String getJsonType() {
-        return "Block";
-    }
-    
     /** Get a JSON representation of the Block instance **/
     @Override
     public JSONObject toJSON() {
-        final JSONObject jObject = new JSONObject();
-        jObject.put("type", getJsonType());
+        final JSONObject json = JSONable.super.toJSON();
+        json.put("previousBlock", JsonUtils.encodeBytes(previousBlock));
+        json.put("difficulty", difficulty);
+        json.put("nonce", nonce);
         
         try {
             final JSONArray jArray = new JSONArray();
             for(final Transaction trans : this) {
                 jArray.put(trans.toJSON());
             }
-            jObject.put("transactions", jArray);
+            json.put("blockArray", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
-        return jObject;
+        return json;
     }
     
-    public byte[] hash() throws NoSuchAlgorithmException {
-        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
-        sha.update(toBytes());
-        return sha.digest();
-    }
-    
-    public byte[] hashHeader() throws NoSuchAlgorithmException {
-        final MessageDigest sha = MessageDigest.getInstance(Parameters.MINING_HASH_ALGORITHM);
-        sha.update(headerToBytes());
-        return sha.digest();
+    public boolean isHashValid() {
+        boolean valid = false;
+        byte[] blockHash;
+        try {
+            blockHash = Cryptography.hashBytes(headerToBytes());
+            int index = 0;
+            while(blockHash[index] == 0 && index < getDifficulty()) {
+                ++index;
+            }
+            
+            if(index == getDifficulty()) {
+                valid = true;
+            }
+            
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return valid;
     }
     
     /**
@@ -96,19 +117,29 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     public byte[] headerToBytes() throws NoSuchAlgorithmException {
         final ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
         // insert magic number (4 bytes)
-        buffer.putLong(Parameters.MAGIC_NUMBER);
+        buffer.putInt(Parameters.MAGIC_NUMBER);
         // insert block size (4 bytes)
-        buffer.putLong(getTotalSize());
-        // TODO: complete the following lines starting with '/////'
+        buffer.putInt(getTotalSize());
         // insert reference to previous block (32 bytes)
-        ///// buffer.put( HASH OF PREVIOUS BLOCK )
-        // insert merkle root
-        ////// for(final Transaction transaction : this)
-        //////    buffer.put(transaction.hash());
-        // insert timestamp (4 bytes)
-        ///// ...
-        buffer.putLong(nonce);
+        buffer.put(previousBlock);
+        // insert hash of all transaction
+        buffer.put(getTransactionHash());
+        // insert difficulty (4 bytes)
+        buffer.putInt(difficulty);
+        // TODO Transaction counter ?
+        // insert nonce (4 bytes)
+        buffer.putInt(nonce);
         return buffer.array();
+    }
+    
+    /**
+     * Get hash of all transaction
+     * 
+     * @return 32 bytes !
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public byte[] getTransactionHash() throws NoSuchAlgorithmException {
+        return Cryptography.hashBytes(this.transactionsToBytes());
     }
     
     /**
@@ -141,8 +172,14 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return buffer.array();
     }
     
-    private Long getTotalSize() {
-        return Parameters.BLOCK_HEADER_SIZE + (long)this.size()*Transaction.getSize();  
+    private int getTotalSize() {
+        int result = -1;
+        try {
+            result = toBytes().length;
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
     }
     
     /**
@@ -150,8 +187,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * 
      * @param nonce The new nonce to set
      */
-    public void setNonce(final Long nonce) {
+    public void setNonce(final Integer nonce) {
         this.nonce = nonce;
+    }
+    
+    private int getDifficulty() {
+        return difficulty;
     }
 
     /** Used for test purposes **/
