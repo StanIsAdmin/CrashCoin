@@ -2,6 +2,8 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -32,7 +34,8 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     // Used by [Master node]
     public BlockChain() {
-        // TODO
+        final Block genesis = createGenesisBlock();
+        super.add(genesis);
     }
     
     @Override
@@ -85,6 +88,16 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
         return json;
+    }
+
+    protected Block createGenesisBlock() {
+        Block genesisBlock = new Block(new byte[0], 0);
+        PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
+        Address masterWallet = new Address(masterPublicKey);
+        Timestamp genesisTime = new Timestamp(0L);
+        Transaction reward = new Transaction(masterWallet, Parameters.MINING_REWARD, genesisTime);
+        genesisBlock.add(reward);
+        return genesisBlock;
     }
     
 }

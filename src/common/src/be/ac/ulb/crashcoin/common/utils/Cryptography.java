@@ -1,9 +1,12 @@
 package be.ac.ulb.crashcoin.common.utils;
 
 import be.ac.ulb.crashcoin.common.Parameters;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 /**
@@ -48,4 +51,21 @@ public class Cryptography {
         return bytes;
     }
     
+    /**
+     * Converts a string representation of a public key to a PublicKey instance.
+     * @param key the string representation of the public key
+     * @return a PublicKey instance
+     */
+    public static PublicKey createPublicKeyFromBytes(byte[] key) {
+        PublicKey pk = null;
+        try{
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
+            KeyFactory kf = KeyFactory.getInstance("DSA");
+            pk = kf.generatePublic(X509publicKey);
+        }
+        catch(NoSuchAlgorithmException | InvalidKeySpecException e){
+            e.printStackTrace();
+        }
+        return pk;
+    }
 }
