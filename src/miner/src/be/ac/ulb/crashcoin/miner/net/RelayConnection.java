@@ -5,9 +5,11 @@ import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 /**
@@ -23,10 +25,13 @@ public class RelayConnection extends AbstractReconnectConnection {
     private boolean hasNewTransactions = false;
     // Mined blocks containing transaction to not mine anymore
     private final ArrayList<Block> blocksBuffer;
+    /** Copy of the last block of the blockchain. */
+    private Block lastBlock;
     private boolean hasNewBlocks = false;
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
-        super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_MINER_LISTENER));
+        super("RelayConnection", new Socket(Parameters.RELAY_IP,
+                Parameters.RELAY_PORT_MINER_LISTENER));
         this.transactionsBuffer = new ArrayList<>();
         this.blocksBuffer = new ArrayList<>();
         start();
@@ -42,6 +47,7 @@ public class RelayConnection extends AbstractReconnectConnection {
         } else if (data instanceof Block) {
             hasNewBlocks = true;
             blocksBuffer.add((Block) data);
+            lastBlock = blocksBuffer.get(blocksBuffer.size()-1);
         }
     }
 
@@ -122,4 +128,13 @@ public class RelayConnection extends AbstractReconnectConnection {
         this.transactionsBuffer.clear();
     }
 
+    /**
+     * Gives the hash of the last byte in the blockchain.
+     * 
+     * @return the hash of the last block
+     * @throws NoSuchAlgorithmException if unable to hash last block
+     */
+    public byte[] getLastBlockOfBlockChainHash() throws NoSuchAlgorithmException {
+        return Cryptography.hashBytes(lastBlock.headerToBytes());
+    }
 }

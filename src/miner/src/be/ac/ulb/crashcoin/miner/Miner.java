@@ -6,8 +6,9 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.lang.Thread;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to
@@ -71,7 +72,12 @@ public class Miner {
             } else {
                 this.transactions.addAll(this.connection.getTransactions());
                 if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
-                    miner.setBlockToMine(createBlock());
+                    try {
+                        miner.setBlockToMine(createBlock());
+                    } catch (IOException ex) {
+                        Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, "Error when asking for relay connection. Abort.", ex);
+                        return;
+                    }
                     this.connection.sendData(miner.mine());
                 }
             }
@@ -96,9 +102,9 @@ public class Miner {
      *
      * @return a Block made of the transactions
      */
-    private Block createBlock() {
-        // TODO get previous block hash and difficulty correctly
-        final Block ret = new Block(Main.getLastBlockInChain(), Main.getDifficulty());
+    private Block createBlock() throws IOException, NoSuchAlgorithmException {
+        // TODO get difficulty properly
+        final Block ret = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), Main.getDifficulty());
         // Add Parameters.NB_TRANSACTIONS_PER_BLOCK-1 transaction because, the last transaction is for the miner !
         for (int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK - 1; ++i) {
             ret.add(this.transactions.get(i));
