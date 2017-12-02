@@ -6,8 +6,8 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.lang.Thread;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to
@@ -103,10 +103,19 @@ public class Miner {
         for (int i = 0; i < Parameters.NB_TRANSACTIONS_PER_BLOCK - 1; ++i) {
             ret.add(this.transactions.get(i));
         }
-        // TODO Add transaction to pay the miner
+        ret.add(this.selfRewarding());
 
         // remove the transactions that have been set into the block
         this.transactions.subList(0, Parameters.NB_TRANSACTIONS_PER_BLOCK - 1).clear();
         return ret;
+    }
+
+    private Transaction selfRewarding() {
+        Timestamp timestamp;
+        timestamp = new Timestamp(System.currentTimeMillis());
+        //return new Transaction(Genesis.address, Parameters.MINING_REWARD, timestamp);
+        Transaction transaction = new Transaction(Main.getAddress(), Parameters.MINING_REWARD, timestamp);
+        transaction.sign(Main.privateKey());
+        return transaction;
     }
 }
