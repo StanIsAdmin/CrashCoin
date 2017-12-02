@@ -13,6 +13,7 @@ import org.json.JSONObject;
 public class Transaction implements JSONable {
 
     private final Address srcAddress;
+    private final Address destAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
     private byte[] signature;
@@ -23,11 +24,17 @@ public class Transaction implements JSONable {
      * Constructor for transactions Transaction
      *
      * @param srcAddress CrashCoin address of the source
+     * @param destAddress CrashCoin address of the destination
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
      */    
-    public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
+    public Transaction(final Address destAddress, final Integer totalAmount, final Timestamp lockTime) {
+        this(destAddress, null, totalAmount, lockTime);
+    }
+    
+    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
         super();
+        this.destAddress = destAddress;
         this.srcAddress = srcAddress;
         this.totalAmount = totalAmount;
         this.lockTime = lockTime;
@@ -42,7 +49,8 @@ public class Transaction implements JSONable {
      * @param json
      */
     public Transaction(final JSONObject json) {
-        this(new Address((JSONObject) json.get("srcAddress")),
+        this(new Address((JSONObject) json.get("destAddress")),
+                new Address((JSONObject) json.get("srcAddress")),
                 json.getInt("totalAmount"),
                 new Timestamp(json.getLong("lockTime")));
     }
@@ -53,6 +61,7 @@ public class Transaction implements JSONable {
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
+        json.put("destAddress", destAddress.toJSON());
         json.put("srcAddress", srcAddress.toJSON());
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
@@ -99,11 +108,13 @@ public class Transaction implements JSONable {
      */
     public byte[] toBytes() {
         // TODO: convert inputs and outputs to bytes
+        final byte[] destAddressBytes = destAddress.toBytes();
         final byte[] srcAddressBytes = srcAddress.toBytes();
         final ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
-        buffer.putInt(totalAmount);
+                .allocate(destAddressBytes.length + srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+        buffer.put(destAddressBytes);
         buffer.put(srcAddressBytes);
+        buffer.putInt(totalAmount);
         return buffer.array();
     }
 

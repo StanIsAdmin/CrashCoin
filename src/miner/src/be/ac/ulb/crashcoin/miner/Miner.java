@@ -111,9 +111,7 @@ public class Miner {
     }
 
     private Transaction selfRewarding() {
-        Timestamp timestamp;
-        timestamp = new Timestamp(System.currentTimeMillis());
-        //return new Transaction(Genesis.address, Parameters.MINING_REWARD, timestamp);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         Transaction transaction = new Transaction(Main.getAddress(), Parameters.MINING_REWARD, timestamp);
         transaction.sign(Main.privateKey());
         return transaction;
