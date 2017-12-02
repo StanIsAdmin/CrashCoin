@@ -31,6 +31,11 @@ public class Miner {
      * list of transactions received from the Relay
      */
     private final ArrayList<Transaction> transactions;
+    
+    /**
+     * 
+     */
+    private final BlockMiner miner;
 
     /**
      * Constructor of Miner.
@@ -40,13 +45,13 @@ public class Miner {
     protected Miner() throws IOException {
         this.connection = RelayConnection.getRelayConnection();
         this.transactions = new ArrayList<>();
+        this.miner = new BlockMiner();
     }
 
     private void removeAlreadyMinedTransactions() {
         this.transactions.addAll(this.connection.getTransactions());
-        ArrayList<Block> blocks = this.connection.getBlocks();
-        for (Block block : blocks) {
-            for (Transaction transaction : block) {
+        for (final Block block : this.connection.getBlocks()) {
+            for (final Transaction transaction : block) {
                 if (this.transactions.contains(transaction)) {
                     this.transactions.remove(transaction);
                 }
@@ -62,7 +67,6 @@ public class Miner {
      * @throws java.security.NoSuchAlgorithmException if unable to mine
      */
     public void startMining() throws InterruptedException, NoSuchAlgorithmException {
-        final BlockMiner miner = new BlockMiner();
         // TODO: find better than a while True?
         while (true) {
             if (!this.connection.hasTransactions()) {
@@ -70,16 +74,7 @@ public class Miner {
             } else if (this.connection.hasBlocks()) {
                 this.removeAlreadyMinedTransactions();
             } else {
-                this.transactions.addAll(this.connection.getTransactions());
-                if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
-                    try {
-                        miner.setBlockToMine(createBlock());
-                    } catch (IOException ex) {
-                        Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, "Error when asking for relay connection. Abort.", ex);
-                        return;
-                    }
-                    this.connection.sendData(miner.mine());
-                }
+                makeBlockAndMineIt();
             }
         }
     }
@@ -114,5 +109,24 @@ public class Miner {
         // remove the transactions that have been set into the block
         this.transactions.subList(0, Parameters.NB_TRANSACTIONS_PER_BLOCK - 1).clear();
         return ret;
+    }
+    
+    /**
+     * Creates a block from transactions in buffer and mines it.
+     * 
+     * @throws NoSuchAlgorithmException if unable to create the block because
+     * of unability to hash last block
+     */
+    private void makeBlockAndMineIt() throws NoSuchAlgorithmException {
+        this.transactions.addAll(this.connection.getTransactions());
+        if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
+            try {
+                miner.setBlockToMine(createBlock());
+                this.connection.sendData(miner.mine());
+            } catch (IOException ex) {
+                Logger.getLogger(Miner.class.getName()).log(Level.SEVERE,
+                        "Error when asking for relay connection. Abort.", ex);
+            }
+        }
     }
 }
