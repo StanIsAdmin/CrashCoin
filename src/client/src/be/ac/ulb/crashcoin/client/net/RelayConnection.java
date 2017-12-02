@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.client.net;
 
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
+import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -31,7 +32,16 @@ public class RelayConnection extends AbstractReconnectConnection {
     }
 
     @Override
-    protected void receiveData(JSONable data) {
+    protected void receiveData(final JSONable data) {
+        
+        if(data instanceof Transaction) {
+            final Transaction transaction = (Transaction) data;
+            System.out.println("Receve transaction: " + transaction);
+            
+        } else {
+            System.err.println("Receive unknowed object: " + data.toString());
+        }
+        
         // TODO use data
     }
 

@@ -1,6 +1,8 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.client.net.RelayConnection;
 import be.ac.ulb.crashcoin.common.Address;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.io.IOException;
 import java.io.File;
@@ -168,8 +170,7 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            this.wallet = new Wallet();
-            wallet.writeWalletFile(userPassword, accountName);
+            new Wallet().writeWalletFile(userPassword, accountName);
         }
 
     }
@@ -203,27 +204,29 @@ public class ClientApplication {
                 userPassword = reader.next().toCharArray();
             }
             this.wallet = Wallet.readWalletFile(f, userPassword);
+            RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
+                    wallet.getAddress().toJSON()));
         } else {
             System.out.println("The wallet identifier that you entered cannot be found");
 
         }
 
     }
-
-    // TODO method for debug and must me be move
-    public static String byteArrayToHex(final byte[] a) {
-        final StringBuilder sb = new StringBuilder(a.length * 2);
-        for (final byte b : a) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
-    // TODO method for debug and must me be move
-    public static byte[] hexToByteArray(final String strOfHex) {
-        // TODO
-        return new byte[]{};
-    }
+//
+//    // TODO method for debug and must me be move
+//    public static String byteArrayToHex(final byte[] a) {
+//        final StringBuilder sb = new StringBuilder(a.length * 2);
+//        for (final byte b : a) {
+//            sb.append(String.format("%02x", b));
+//        }
+//        return sb.toString();
+//    }
+//
+//    // TODO method for debug and must me be move
+//    public static byte[] hexToByteArray(final String strOfHex) {
+//        // TODO
+//        return new byte[]{};
+//    }
 
     /**
      * Ask the user to create the transaction.<br>
@@ -233,7 +236,7 @@ public class ClientApplication {
      * @return The created transaction
      */
     public Transaction createTransaction() throws NoSuchAlgorithmException {
-        final Address srcAddress = new Address(wallet.getPublicKey());
+        final Address srcAddress = wallet.getAddress();
         Transaction result = null;
         Transaction transaction;
         Transaction input;
