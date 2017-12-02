@@ -34,7 +34,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     
     /** array of masks such that MASKS[i] contains the first i bits with 1s and
      * the 8-i last bits with 0s */
-    static public final byte[] MASKS;
+    public static final byte[] MASKS;
     
     static {
         MASKS = new byte[8];
