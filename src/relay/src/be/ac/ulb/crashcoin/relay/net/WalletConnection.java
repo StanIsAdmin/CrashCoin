@@ -78,14 +78,22 @@ public class WalletConnection extends AbstractConnection {
         }
         final Address walletAddress = new Address(option);
         final BlockChain currentBlockChain = Main.getBlockChain();
+        
+        int index = 0;
         for (final Block block : currentBlockChain) {
-            for (final Transaction transaction : block) {
-                // Not send transaction created by the miner
-                if (transaction.getDestAddress().equals(walletAddress)
-                        || transaction.getSrcAddress().equals(walletAddress)) {
-                    sendData(transaction);
+            // Do not test with empty block
+            if(!block.isEmpty()) {
+                for (final Transaction transaction : block) {
+                    // Not send transaction created by the miner
+                    if (transaction.getDestAddress().equals(walletAddress)
+                            || transaction.getSrcAddress().equals(walletAddress)) {
+                        sendData(transaction);
+                    }
                 }
+            } else {
+                System.err.println("Empty block (index: " + index + ")");
             }
+            ++index;
         }
     }
 }
