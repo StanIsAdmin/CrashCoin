@@ -15,45 +15,45 @@ import java.util.logging.Logger;
 import static org.junit.Assert.fail;
 
 /**
- * Entry point of the miner program. 
+ * Entry point of the miner program.
  */
 public class Main {
-    
+
     // TODO store this at the right place
     private static int difficulty;
     private static byte[] lastHashBlockInChain;
-    
+
     // Temporay --- for test purposes
     public static Address getAddress() {
         KeyPairGenerator kpg = null;
-        try { 
-            kpg = KeyPairGenerator.getInstance("DSA"); 
-        } catch(NoSuchAlgorithmException e) {
+        try {
+            kpg = KeyPairGenerator.getInstance("DSA");
+        } catch (NoSuchAlgorithmException e) {
             fail("Could not create key pair generator");
         }
         final KeyPair kp = kpg.generateKeyPair();
         final PublicKey pk = kp.getPublic();
         return new Address(pk);
     }
-    
+
     public static Transaction getTrasaction() {
         Timestamp timestamp;
         timestamp = new Timestamp(System.currentTimeMillis());
         return new Transaction(getAddress(), 20, timestamp);
     }
-    
+
     private static Block getBlock() { // Only for test
-        Block block = new Block(new byte[] {}, 0);
+        Block block = new Block(new byte[]{}, 0);
         boolean res = true;
-        while(res) {
+        while (res) {
             Transaction transaction = getTrasaction();
             res = block.add(transaction);
         }
         return block;
     }
-    
+
     public static void main(final String[] args) {
-        
+
         RelayConnection connection;
         // Connect to relay
         try {
@@ -62,12 +62,12 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-        
+
         // Test : reward transacton sending
         final Block block = getBlock();
         connection.sendData(block);
         // -------------------------
-        
+
         // create a miner... And start mining... Whut else?
         Miner miner;
         try {
@@ -82,13 +82,13 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static byte[] getLastBlockInChain() {
         return lastHashBlockInChain;
     }
-    
+
     public static int getDifficulty() {
         return difficulty;
     }
-    
+
 }

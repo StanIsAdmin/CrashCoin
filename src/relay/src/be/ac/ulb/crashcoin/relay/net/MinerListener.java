@@ -7,29 +7,28 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * 
+ *
  */
 public class MinerListener extends AbstractListener {
-    
+
     private static MinerListener instance = null;
-    
+
     private MinerListener() throws IOException {
         super("MinerListener", new ServerSocket(Parameters.RELAY_PORT_MINER_LISTENER));
-        
+
         start();
     }
-    
+
     @Override
     protected void createNewConnection(Socket sock) throws IOException {
         new MinerConnection(sock);
     }
-    
+
     public static MinerListener getListener() throws IOException {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MinerListener();
         }
         return instance;
     }
-    
-    
+
 }

@@ -14,9 +14,9 @@ import javax.crypto.NoSuchPaddingException;
 
 public class Main {
 
-    public static void main(final String[] args) throws IOException, NoSuchAlgorithmException, 
-            NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, 
-            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, 
+    public static void main(final String[] args) throws IOException, NoSuchAlgorithmException,
+            NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
+            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, ClassNotFoundException {
 
         // TODO GUI or Terminal application ?

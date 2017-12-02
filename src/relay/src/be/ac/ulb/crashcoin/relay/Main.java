@@ -9,16 +9,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 
+ *
  */
 public class Main {
-    
+
     private static BlockChain _blockChain;
-    
+
     public static void main(final String[] main) {
         // TODO
         _blockChain = new BlockChain();
-            
+
         // Enable listener
         try {
             MinerListener.getListener();
@@ -26,7 +26,7 @@ public class Main {
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         // Connect to master
         try {
             MasterConnection.getMasterConnection();
@@ -34,13 +34,13 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static BlockChain getBlockChain() {
         return _blockChain;
     }
-    
+
     public static void setBlockChain(final BlockChain blockChain) {
         _blockChain = blockChain;
     }
-    
+
 }

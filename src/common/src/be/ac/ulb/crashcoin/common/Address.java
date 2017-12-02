@@ -22,9 +22,11 @@ public class Address implements JSONable {
         this.key = key;
         this.value = Cryptography.deriveKey(key);
     }
-    
-    /** Create Address instance from a JSON representation
-     * @param json 
+
+    /**
+     * Create Address instance from a JSON representation
+     *
+     * @param json
      */
     public Address(final JSONObject json) {
         final byte[] keyBytes = JsonUtils.decodeBytes(json.getString("key"));
@@ -38,8 +40,10 @@ public class Address implements JSONable {
             Logger.getLogger(Address.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    /** Get a JSON representation of the Address instance **/
+
+    /**
+     * Get a JSON representation of the Address instance *
+     */
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
@@ -47,23 +51,27 @@ public class Address implements JSONable {
         return json;
     }
 
-    /** 
+    /**
      * Byte representation of the CrashCoin address
+     *
      * @return the byte
      */
     public byte[] toBytes() {
         return value;
     }
 
-    /** 
+    /**
      * Get public key, from which the address has been derived
+     *
      * @return the public key
      */
     public PublicKey getPublicKey() {
         return key;
     }
 
-    /** Used for test purposes **/
+    /**
+     * Used for test purposes *
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {

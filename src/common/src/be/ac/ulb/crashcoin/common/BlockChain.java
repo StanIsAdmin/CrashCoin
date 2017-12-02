@@ -21,10 +21,10 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     public BlockChain(final JSONObject json) {
         this(); // Creates BC containing genesis bloc
         final JSONArray blockArray = json.getJSONArray("blockArray");
-        
-        for(int i = 0; i < blockArray.length(); ++i) {
+
+        for (int i = 0; i < blockArray.length(); ++i) {
             final Object type = blockArray.get(0);
-            if(type instanceof JSONObject) {
+            if (type instanceof JSONObject) {
                 this.add(new Block((JSONObject) type));
             } else {
                 throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
@@ -38,11 +38,11 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         final Block genesis = createGenesisBlock();
         super.add(genesis); // call to super does not perform validity check
     }
-    
+
     @Override
     public boolean add(final Block block) {
         try {
-            if(isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
+            if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
                 super.add(block);
                 return true;
             } else {
@@ -53,35 +53,34 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         }
         return false;
     }
-    
+
     private byte[] getLastBlockToBytes() throws NoSuchAlgorithmException {
-        return Cryptography.hashBytes(get(this.size()-1).headerToBytes());
+        return Cryptography.hashBytes(get(this.size() - 1).headerToBytes());
     }
-    
-    
+
     // Must may be move to Block
     // Used by [master node]
     protected boolean isValidNextBlock(final Block block, final int difficulty) throws NoSuchAlgorithmException {
-        boolean result = block.isHashValid() && 
-                difficulty == block.getDifficulty() &&
-                // Previous hash block is valid
+        boolean result = block.isHashValid()
+                && difficulty == block.getDifficulty()
+                && // Previous hash block is valid
                 Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
-        
+
         // TODO
         // Vérifier que les transactions ont comme input des transactions déjà validées 
         //    (i.e. existent dans un bloc précédent – ou le bloc courant(?))
         return result;
     }
-    
+
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        
+
         try {
             final JSONArray jArray = new JSONArray();
             // Add every block except for the genesis block
             for (final Block block : this.subList(1, this.size())) {
-                 jArray.put(block.toJSON());
+                jArray.put(block.toJSON());
             }
             json.put("blockArray", jArray);
         } catch (JSONException jse) {
@@ -99,5 +98,5 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         genesisBlock.add(reward);
         return genesisBlock;
     }
-    
+
 }

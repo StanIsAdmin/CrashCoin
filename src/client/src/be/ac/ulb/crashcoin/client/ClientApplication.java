@@ -24,10 +24,8 @@ import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
 /**
- * Handle IO from user 
- * Handle network communication between nodes and wallet  
+ * Handle IO from user Handle network communication between nodes and wallet
  */
 public class ClientApplication {
 
@@ -35,42 +33,42 @@ public class ClientApplication {
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
     private boolean registered;
-    
-    public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException, 
-            InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, 
+
+    public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
-        
+
         console = System.console();
         registered = false;
         int choice;
         do {
             printMenu();
-            
-            if(reader.hasNextInt()) {
+
+            if (reader.hasNextInt()) {
                 choice = reader.nextInt();
             } else {
                 choice = -1;
                 System.out.println("You must choose a number !\n");
                 reader.next();
             }
-            
-            if(choice > 0) {
-                if(!registered) { // If not register/login
+
+            if (choice > 0) {
+                if (!registered) { // If not register/login
                     actionMenuNotRegistered(choice);
                 } else { // If login/register
                     actionMenuRegistred(choice);
                 }
             }
-            
-        } while(choice != 3);
+
+        } while (choice != 3);
         reader.close();
     }
-    
-    private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException, 
-            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, 
-            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException, 
+
+    private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException,
+            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
+            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException,
             InvalidParameterSpecException {
-        switch(choice) {
+        switch (choice) {
             case 1:
                 signIn();
                 registered = true;
@@ -89,9 +87,9 @@ public class ClientApplication {
 
         }
     }
-    
+
     private void actionMenuRegistred(final int choice) throws NoSuchAlgorithmException {
-        switch(choice) {
+        switch (choice) {
             case 1:
                 createTransaction();
                 break;
@@ -112,7 +110,7 @@ public class ClientApplication {
                 break;
         }
     }
-    
+
     private void printMenu() {
         System.out.println("Menu");
         System.out.println("----\n");
@@ -129,26 +127,25 @@ public class ClientApplication {
         System.out.println(""); // Add space
         System.out.print("Please enter your choice : ");
     }
-    
 
-    public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException, 
-            NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, 
+    public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
+            NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
-    	
-    	System.out.println("\n");
+
+        System.out.println("\n");
         System.out.println("Sign up");
         System.out.println("-------\n");
-        
-    	// Ask the user to specify a wallet identifier
+
+        // Ask the user to specify a wallet identifier
         System.out.print("Please choose a wallet identifier : ");
         final String accountName = reader.next();
-        
+
         final File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
-        if(f.exists()) { 
-        	System.out.println("The wallet identifier that you specified already exists, please sign in");
-        	
+        if (f.exists()) {
+            System.out.println("The wallet identifier that you specified already exists, please sign in");
+
         } else {
-            
+
             // Ask a password from the user
             char[] userPassword = null;
             boolean check = false;
@@ -165,32 +162,32 @@ public class ClientApplication {
                     passwordChecker = console.readPassword();
                 } else {
                     passwordChecker = reader.next().toCharArray();
-                }                
+                }
                 check = Arrays.equals(userPassword, passwordChecker);
                 check = check && (userPassword != null);
             }
-        	
+
             // Create a new empty wallet and generate a key pair
             this.wallet = new Wallet();
             wallet.writeWalletFile(userPassword, accountName);
         }
-        
+
     }
 
-    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException, NoSuchAlgorithmException, 
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException, 
+    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException, NoSuchAlgorithmException,
+            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException,
             IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
-    	
+
         System.out.println("\n");
         System.out.println("Sign in");
         System.out.println("-------\n");
-        
+
         // Ask the user to enter his wallet identifier
         System.out.print("Please enter your wallet identifier : ");
         final String accountName = reader.next();
-        
+
         final File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
-        if(f.exists()) {
+        if (f.exists()) {
             // Ask the password of the user, and hides input
             // Using Console.readPassword because it is safer than reader.next() for 2 reasons:
             // 1) Hides user input, to protect from an attacker who potentially monitors the screen
@@ -203,39 +200,36 @@ public class ClientApplication {
                 userPassword = console.readPassword("Enter your secret password: ");
             } else { // Is using an IDE
                 System.out.print("Please enter your password: ");
-                userPassword = reader.next().toCharArray();   
+                userPassword = reader.next().toCharArray();
             }
-            this.wallet = Wallet.readWalletFile(f, userPassword);  
+            this.wallet = Wallet.readWalletFile(f, userPassword);
         } else {
-        	System.out.println("The wallet identifier that you entered cannot be found");
-        	
+            System.out.println("The wallet identifier that you entered cannot be found");
+
         }
 
     }
-    
+
     // TODO method for debug and must me be move
     public static String byteArrayToHex(final byte[] a) {
         final StringBuilder sb = new StringBuilder(a.length * 2);
-        for(final byte b: a) {
+        for (final byte b : a) {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
     }
-    
+
     // TODO method for debug and must me be move
     public static byte[] hexToByteArray(final String strOfHex) {
         // TODO
-        return new byte[] {};
+        return new byte[]{};
     }
 
-
-    
-    
     /**
      * Ask the user to create the transaction.<br>
-     * It returns the checked transaction and -1 in the case that the 
+     * It returns the checked transaction and -1 in the case that the
      * transaction was aborded.
-     * 
+     *
      * @return The created transaction
      */
     public Transaction createTransaction() throws NoSuchAlgorithmException {
@@ -244,35 +238,34 @@ public class ClientApplication {
         Transaction transaction;
         Transaction input;
         int amount = 0;
-        
+
         do {
             System.out.println("Please enter the amount of the transaction,");
             System.out.println("Or enter -1 to escape the curent transaction.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
-            
+
             System.out.print("Destination : ");
             String strDest = reader.next();
-            
-            
+
             final Timestamp lockTime = new Timestamp(System.currentTimeMillis());
             // TODO : get Input transaction
             // Input is only for test.
             input = new Transaction(srcAddress, amount, lockTime);
-            
+
             transaction = new Transaction(srcAddress, amount, lockTime);
-        } while (!(transaction.createTransaction(input,  srcAddress, amount)) && amount != -1);
-        
+        } while (!(transaction.createTransaction(input, srcAddress, amount)) && amount != -1);
+
         if (amount != -1) {
             result = transaction;
         }
-        
-    	return result;
+
+        return result;
     }
-    
+
     public void showWallet() {
         ArrayList<Transaction> transactionList = wallet.getTransactions();
-        for (Transaction transaction: transactionList) {
+        for (Transaction transaction : transactionList) {
             System.out.println(transaction.toString());
         }
     }

@@ -9,7 +9,7 @@ import java.util.Objects;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
-    
+
     private final Address srcAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
@@ -17,8 +17,8 @@ public class Transaction implements JSONable {
     private ArrayList<Output> outputs;
 
     /**
-     * Constructor for transactions
-     * Transaction
+     * Constructor for transactions Transaction
+     *
      * @param srcAddress CrashCoin address of the source
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
@@ -31,17 +31,21 @@ public class Transaction implements JSONable {
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
     }
-    
-    /** Create Transaction instance from a JSON representation
-     * @param json 
+
+    /**
+     * Create Transaction instance from a JSON representation
+     *
+     * @param json
      */
     public Transaction(final JSONObject json) {
         this(new Address((JSONObject) json.get("srcAddress")),
                 json.getInt("totalAmount"),
                 new Timestamp(json.getLong("lockTime")));
     }
-    
-    /** Get a JSON representation of the Address instance **/
+
+    /**
+     * Get a JSON representation of the Address instance *
+     */
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
@@ -50,27 +54,27 @@ public class Transaction implements JSONable {
         json.put("lockTime", lockTime.getTime());
         return json;
     }
-    
+
     // Create a new transaction to a final destinator
-    public boolean createTransaction(final Transaction transaction, 
+    public boolean createTransaction(final Transaction transaction,
             final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
         this.addInputTransaction(transaction);
         this.addOutput(dstAddress, nCrashCoins);
         return this.isValid();
     }
-    
+
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
     }
-    
+
     public void addOutput(final Address address, final Integer nCrashCoins) {
         this.outputs.add(new Output(address, nCrashCoins));
     }
-    
+
     private boolean isValid() {
         // Check whether sum of inputs is lower than the sum of outputs
         Integer sum = 0;
-        for (Output output: this.outputs) {
+        for (Output output : this.outputs) {
             sum += output.nCrashCoins;
         }
         // The difference is considered as transaction fee
@@ -79,10 +83,10 @@ public class Transaction implements JSONable {
 
     /**
      * Creates a byte representation of a transaction. The attributes of the
-     * transaction are converted to byte arrays and then concatenated. A transaction
-     * requires a byte representation to be able to pass it to a signature
-     * algorithm.
-     * 
+     * transaction are converted to byte arrays and then concatenated. A
+     * transaction requires a byte representation to be able to pass it to a
+     * signature algorithm.
+     *
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
@@ -95,68 +99,75 @@ public class Transaction implements JSONable {
         return buffer.array();
     }
 
-    /** 
+    /**
      * String representation of a transaction
+     *
      * @return String
      */
     @Override
     public String toString() {
         return "src: " + srcAddress + " | amount: " + totalAmount;
     }
-    
+
     /**
-     * Input of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     * Input of a transaction, from the doc
+     * https://en.bitcoin.it/wiki/Transaction
      */
     public class Input {
+
         final byte[] previousTx; // Hash value of a previous transaction
-        
+
         public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
             this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
         }
     }
-    
+
     /**
      * Return the address of the payee.
-     * 
-     * @return 
+     *
+     * @return
      */
     public Address getDestAddress() {
         Address ret = null;
-        for(final Output output : outputs) {
-            if(output.getAddress().equals(srcAddress)) {
+        for (final Output output : outputs) {
+            if (output.getAddress().equals(srcAddress)) {
                 ret = output.getAddress();
             }
         }
         return ret;
     }
-    
+
     /**
      * Return the address of the payer.
-     * 
-     * @return 
+     *
+     * @return
      */
     public Address getSrcAddress() {
         return this.srcAddress;
     }
-    
+
     /**
-     * Output of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
+     * Output of a transaction, from the doc
+     * https://en.bitcoin.it/wiki/Transaction
      */
     public class Output {
+
         final Integer nCrashCoins;
         final Address address;
-        
+
         public Output(final Address address, final Integer nCrashCoins) {
             this.nCrashCoins = nCrashCoins;
             this.address = address;
         }
-        
+
         public Address getAddress() {
             return this.address;
         }
     }
-    
-    /** Used for test purposes **/
+
+    /**
+     * Used for test purposes *
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -169,8 +180,8 @@ public class Transaction implements JSONable {
             return false;
         }
         final Transaction other = (Transaction) obj;
-        return this.srcAddress.equals(other.srcAddress) 
-            && this.totalAmount.equals(other.totalAmount) 
-            && this.lockTime.equals(other.lockTime);
+        return this.srcAddress.equals(other.srcAddress)
+                && this.totalAmount.equals(other.totalAmount)
+                && this.lockTime.equals(other.lockTime);
     }
 }

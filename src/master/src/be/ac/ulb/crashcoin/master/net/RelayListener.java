@@ -11,26 +11,25 @@ import java.net.Socket;
  * It's a singleton and a thread
  */
 public class RelayListener extends AbstractListener {
-    
+
     private static RelayListener instance = null;
-    
+
     private RelayListener() throws IOException {
         super("RelayListener", new ServerSocket(Parameters.MASTER_PORT_LISTENER));
-        
+
         start();
     }
-    
+
     @Override
     protected void createNewConnection(Socket sock) throws IOException {
         new RelayConnection(sock);
     }
-    
+
     public static RelayListener getListener() throws IOException {
-        if(instance == null) {
+        if (instance == null) {
             instance = new RelayListener();
         }
         return instance;
     }
-    
-    
+
 }

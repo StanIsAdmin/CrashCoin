@@ -12,10 +12,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * 
+ *
  */
 public class Main {
-    
+
     public static void main(final String[] args) {
         // Init listener
         try {
