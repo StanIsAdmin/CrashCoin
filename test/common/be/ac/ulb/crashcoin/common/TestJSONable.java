@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.common;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
@@ -15,6 +16,17 @@ import org.junit.Test;
  */
 public class TestJSONable {
 
+    public PrivateKey genPrivateKey() {
+        KeyPairGenerator kpg = null;
+        try {
+            kpg = KeyPairGenerator.getInstance("DSA");
+        } catch (NoSuchAlgorithmException e) {
+            fail("Could not create key pair generator");
+        }
+        final KeyPair kp = kpg.generateKeyPair();
+        return kp.getPrivate();
+    }
+    
     public Address createAddress() {
         KeyPairGenerator kpg = null;
         try {
@@ -45,6 +57,7 @@ public class TestJSONable {
     public Transaction createTransaction() {
         final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         final Transaction transaction = new Transaction(createAddress(), 20, timestamp);
+        transaction.sign(genPrivateKey());
         return transaction;
     }
 
