@@ -6,7 +6,6 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.lang.Thread;
 import java.security.NoSuchAlgorithmException;
 
 /**
