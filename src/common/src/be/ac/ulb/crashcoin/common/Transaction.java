@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
@@ -33,12 +34,16 @@ public class Transaction implements JSONable {
     }
     
     public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
+        this(destAddress, srcAddress, totalAmount, lockTime, null);
+    }
+    
+    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime, final byte[] signature) {
         super();
         this.destAddress = destAddress;
         this.srcAddress = srcAddress;
         this.totalAmount = totalAmount;
         this.lockTime = lockTime;
-        this.signature = null;
+        this.signature = signature;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
     }
@@ -50,9 +55,10 @@ public class Transaction implements JSONable {
      */
     public Transaction(final JSONObject json) {
         this(new Address((JSONObject) json.get("destAddress")),
-                new Address((JSONObject) json.get("srcAddress")),
+                (json.has("srcAddress"))? new Address((JSONObject) json.get("srcAddress")) : null,
                 json.getInt("totalAmount"),
-                new Timestamp(json.getLong("lockTime")));
+                new Timestamp(json.getLong("lockTime")),
+                JsonUtils.decodeBytes(json.getString("signature")));
     }
 
     /**
@@ -62,9 +68,12 @@ public class Transaction implements JSONable {
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
         json.put("destAddress", destAddress.toJSON());
-        json.put("srcAddress", srcAddress.toJSON());
+        json.put("signature", JsonUtils.encodeBytes(signature));
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
+        if(srcAddress != null) {
+            json.put("srcAddress", srcAddress.toJSON());
+        }
         return json;
     }
 
@@ -109,11 +118,18 @@ public class Transaction implements JSONable {
     public byte[] toBytes() {
         // TODO: convert inputs and outputs to bytes
         final byte[] destAddressBytes = destAddress.toBytes();
-        final byte[] srcAddressBytes = srcAddress.toBytes();
-        final ByteBuffer buffer = ByteBuffer
-                .allocate(destAddressBytes.length + srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+        Integer totalSize = null;
+        ByteBuffer buffer = null;
+        if(srcAddress != null) {
+            final byte[] srcAddressBytes = srcAddress.toBytes();
+            totalSize = destAddressBytes.length + srcAddressBytes.length + Parameters.INTEGER_N_BYTES;
+            buffer = ByteBuffer.allocate(totalSize);
+            buffer.put(srcAddressBytes);
+        } else {
+            totalSize = destAddressBytes.length + Parameters.INTEGER_N_BYTES;
+            buffer = ByteBuffer.allocate(totalSize);
+        }
         buffer.put(destAddressBytes);
-        buffer.put(srcAddressBytes);
         buffer.putInt(totalAmount);
         return buffer.array();
     }
@@ -189,18 +205,21 @@ public class Transaction implements JSONable {
      */
     @Override
     public boolean equals(final Object obj) {
+        Boolean res = true;
         if (this == obj) {
-            return true;
+            res = true;
         }
         if (obj == null) {
-            return false;
+            res = false;
         }
         if (getClass() != obj.getClass()) {
-            return false;
+            res = false;
         }
         final Transaction other = (Transaction) obj;
-        return this.srcAddress.equals(other.srcAddress)
-                && this.totalAmount.equals(other.totalAmount)
-                && this.lockTime.equals(other.lockTime);
+        res = this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
+        if(this.srcAddress != null && other.srcAddress != null) {
+            res = this.srcAddress.equals(other.srcAddress);
+        }
+        return res;
     }
 }
