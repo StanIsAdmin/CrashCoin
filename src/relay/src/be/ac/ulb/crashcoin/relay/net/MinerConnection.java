@@ -30,10 +30,6 @@ class MinerConnection extends AbstractConnection {
         if(jsonData instanceof Block) {
             final Block block = (Block) jsonData;
             
-            // TODO: voir question #todo Slack - Local blockChain management
-//            final BlockChain chain = Main.getBlockChain();
-//            chain.add(block);
-            
             // Relay the data to the master node
             try {
                 MasterConnection.getMasterConnection().sendData(block);
