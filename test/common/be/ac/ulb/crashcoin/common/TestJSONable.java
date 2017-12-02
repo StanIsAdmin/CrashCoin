@@ -39,7 +39,7 @@ public class TestJSONable {
     
     public BlockChain createBlockchain() {
         final BlockChain newBlockChain = new BlockChain();
-        newBlockChain.add(createBlock());
+        newBlockChain.add(createBlock()); //TODO this does not work (block is not valid)
         return newBlockChain;
     }
     
