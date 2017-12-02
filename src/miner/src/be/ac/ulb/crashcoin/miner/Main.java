@@ -78,7 +78,7 @@ public class Main {
         }
         try {
             miner.startMining();
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | NoSuchAlgorithmException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

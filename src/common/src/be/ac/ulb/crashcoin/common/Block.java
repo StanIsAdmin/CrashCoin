@@ -2,6 +2,8 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,6 +32,17 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     private final byte[] previousBlock;
     private final int difficulty;
     
+    /** array of masks such that MASKS[i] contains the first i bits with 1s and
+     * the 8-i last bits with 0s */
+    public static final byte[] MASKS;
+    
+    static {
+        MASKS = new byte[8];
+        for(int i = 1; i < 8; ++i) {
+            MASKS[i] = (byte) ((1 << (Byte.SIZE - i)) | MASKS[i-1]);
+        }
+    }
+    
     public Block(final byte[] previousBlock, final int difficulty) {
         this(previousBlock, difficulty, 0);
     }
@@ -47,14 +60,14 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      */
     public Block(final JSONObject json) {
         this(JsonUtils.decodeBytes(json.getString("previousBlock")), json.getInt("difficulty"), json.getInt("nonce"));
-        final JSONArray blockArray = json.getJSONArray("blockArray");
+        final JSONArray transactionsArray = json.getJSONArray("listTransactions");
         
-        for(int i = 0; i < blockArray.length(); ++i) {
-            final Object type = blockArray.get(0);
+        for(int i = 0; i < transactionsArray.length(); ++i) {
+            final Object type = transactionsArray.get(0);
             if(type instanceof JSONObject) {
                 this.add(new Transaction((JSONObject) type));
             } else {
-                throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
+                throw new IllegalArgumentException("Unknow object in listTransactions ! " + type);
             }
         }
     }
@@ -81,31 +94,48 @@ public class Block extends ArrayList<Transaction> implements JSONable {
             for(final Transaction trans : this) {
                 jArray.put(trans.toJSON());
             }
-            json.put("blockArray", jArray);
+            json.put("listTransactions", jArray);
         } catch (JSONException jse) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
         return json;
     }
     
-    public boolean isHashValid() {
-        boolean valid = false;
-        byte[] blockHash;
-        try {
-            blockHash = Cryptography.hashBytes(headerToBytes());
-            int index = 0;
-            while(blockHash[index] == 0 && index < getDifficulty()) {
-                ++index;
-            }
-            
-            if(index == getDifficulty()) {
-                valid = true;
-            }
-            
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return valid;
+    /**
+     * Checks if a hash satisfies the difficulty
+     *
+     * @return true if the hash starts with the right amount of null bits and
+     * false otherwise
+     * @see isValid
+     */
+    public boolean isHashValid() throws NoSuchAlgorithmException {
+        return isHashValid(Cryptography.hashBytes(headerToBytes()), this.difficulty);
+    }
+    
+    /**
+     * Checks if a hash satisfies the difficulty
+     * 
+     * @param hash The hash of a transaction to test
+     * @param difficulty The number of null bits that are required
+     * @return true if the hash starts with the right amount of null bits and
+     * false otherwise
+     * @see Parameters.MINING_DIFFICULTY
+     */
+    public boolean isHashValid(final byte[] hash, Integer difficulty) {
+        final int nbOfNullBytes = difficulty / Byte.SIZE;
+        final int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
+        
+        if(hash == null || difficulty > Byte.SIZE * hash.length)
+            return false;
+        
+        // check the first complete bytes
+        for(int byteIdx = 0; byteIdx < nbOfNullBytes; ++byteIdx)
+            if(hash[byteIdx] != 0)
+                return false;
+        // and then check the last remaining bits
+        if(nbOfRemaningNullBits > 0 && (hash[nbOfNullBytes] & MASKS[nbOfRemaningNullBits]) != 0)
+            return false;
+        return true;
     }
     
     /**
@@ -118,8 +148,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         final ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
         // insert magic number (4 bytes)
         buffer.putInt(Parameters.MAGIC_NUMBER);
-        // insert block size (4 bytes)
-        buffer.putInt(getTotalSize());
         // insert reference to previous block (32 bytes)
         buffer.put(previousBlock);
         // insert hash of all transaction
@@ -147,14 +175,18 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * 
      * @return a byte[] representing the transactions list
      */
-    public byte[] transactionsToBytes() {
-        final ByteBuffer buffer = ByteBuffer.allocate(Transaction.getSize() * this.size()
-                +  Parameters.NONCE_N_BYTES);
-        for(final Transaction transaction : this)
-            buffer.put(transaction.toBytes());
-        for(int i = 0; i < Parameters.NONCE_N_BYTES; ++i)
-            buffer.put((byte)((this.nonce & (0xFF << Byte.SIZE * i)) >> (Byte.SIZE * i)));
-        return buffer.array();
+    private byte[] transactionsToBytes() {
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        for(final Transaction transaction : this) {
+            try {
+                //buffer.
+                buffer.write(transaction.toBytes());
+            } catch (IOException ex) {
+                // TODO: what to do?
+                Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return buffer.toByteArray();
     }
     
     /**
@@ -172,16 +204,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return buffer.array();
     }
     
-    private int getTotalSize() {
-        int result = -1;
-        try {
-            result = toBytes().length;
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-    
     /**
      * Changes the nonce of the block. Should only be called when mining!
      * 
@@ -191,10 +213,19 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         this.nonce = nonce;
     }
     
-    private int getDifficulty() {
+    public int getDifficulty() {
         return difficulty;
     }
-
+    
+    /**
+     * Get the hash of previous block
+     * 
+     * @return The bytes that represent the hash of the previous block
+     */
+    public byte[] getPreviousBlock() {
+        return previousBlock;
+    }
+    
     /** Used for test purposes **/
     @Override
     public boolean equals(final Object obj) {

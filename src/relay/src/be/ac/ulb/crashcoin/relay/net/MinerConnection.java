@@ -1,11 +1,8 @@
 package be.ac.ulb.crashcoin.relay.net;
 
 import be.ac.ulb.crashcoin.common.Block;
-import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
-import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
-import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
@@ -30,13 +27,12 @@ class MinerConnection extends AbstractConnection {
     protected void receiveData(final JSONable jsonData) {
         System.out.println("[DEBUG] get value from miner/client: " + jsonData);
         
-        // TODO add method in ManageJSON.getObjectFromJsonObject ton convert JSONObject to Block
         if(jsonData instanceof Block) {
             final Block block = (Block) jsonData;
             
-            // Local blockChain management
-            BlockChain chain = Main.getBlockChain();
-            chain.add(block);
+            // TODO: voir question #todo Slack - Local blockChain management
+//            final BlockChain chain = Main.getBlockChain();
+//            chain.add(block);
             
             // Relay the data to the master node
             try {
@@ -44,17 +40,7 @@ class MinerConnection extends AbstractConnection {
             } catch (IOException ex) {
                 Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else if(jsonData instanceof Transaction) {
-            // TODO new transaction management
-            Transaction transaction = (Transaction) jsonData;
-            // Broadcast to the miners directly connected to the relay.
-            sendToAll(transaction);
-            // Relay the transaction to the master.
-            try {
-                MasterConnection.getMasterConnection().sendData(transaction);
-            } catch (IOException ex) {
-                Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            
         }
         
     }

@@ -39,4 +39,8 @@ public class Main {
         return _blockChain;
     }
     
+    public static void setBlockChain(final BlockChain blockChain) {
+        _blockChain = blockChain;
+    }
+    
 }
