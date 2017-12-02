@@ -3,6 +3,8 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -13,6 +15,7 @@ public class Transaction implements JSONable {
     private final Address srcAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
+    private byte[] signature;
     private ArrayList<Input> inputs;
     private ArrayList<Output> outputs;
 
@@ -22,12 +25,13 @@ public class Transaction implements JSONable {
      * @param srcAddress CrashCoin address of the source
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
-     */
+     */    
     public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
         super();
         this.srcAddress = srcAddress;
         this.totalAmount = totalAmount;
         this.lockTime = lockTime;
+        this.signature = null;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
     }
@@ -44,7 +48,7 @@ public class Transaction implements JSONable {
     }
 
     /**
-     * Get a JSON representation of the Address instance *
+     * Get a JSON representation of the Address instance * TODO add signature
      */
     @Override
     public JSONObject toJSON() {
@@ -55,6 +59,10 @@ public class Transaction implements JSONable {
         return json;
     }
 
+    public void sign(PrivateKey privateKey) {
+        this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
+    }
+    
     // Create a new transaction to a final destinator
     public boolean createTransaction(final Transaction transaction,
             final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
