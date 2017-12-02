@@ -10,7 +10,6 @@ import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
@@ -75,14 +74,7 @@ public class WalletConnection extends AbstractConnection {
                     + Message.GET_TRANSACTIONS_FROM_WALLET + "' but no option provided");
             return;
         }
-        final PublicKey key = (PublicKey)option.get("key");
-        if(key == null) {
-            Logger.getLogger(getClass().getName(), "Request: '"
-                    + Message.GET_TRANSACTIONS_FROM_WALLET + "' but no PublicKey is provided");
-            return;
-        }
-        
-        final Address walletAddress = new Address(key);
+        final Address walletAddress = new Address(option);
         final BlockChain currentBlockChain = Main.getBlockChain();
         for(final Block block : currentBlockChain) {
             for(final Transaction transaction : block) {
