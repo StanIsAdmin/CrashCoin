@@ -103,6 +103,30 @@ public class Transaction implements JSONable {
     }
     
     /**
+     * Return the address of the payee.
+     * 
+     * @return 
+     */
+    public Address getDestAddress() {
+        Address ret = null;
+        for(final Output output : outputs) {
+            if(output.getAddress().equals(srcAddress)) {
+                ret = output.getAddress();
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     * Return the address of the payer.
+     * 
+     * @return 
+     */
+    public Address getSrcAddress() {
+        return this.srcAddress;
+    }
+    
+    /**
      * Output of a transaction, from the doc https://en.bitcoin.it/wiki/Transaction
      */
     public class Output {
@@ -112,6 +136,10 @@ public class Transaction implements JSONable {
         public Output(final Address address, final Integer nCrashCoins) {
             this.nCrashCoins = nCrashCoins;
             this.address = address;
+        }
+        
+        public Address getAddress() {
+            return this.address;
         }
     }
     
@@ -129,7 +157,7 @@ public class Transaction implements JSONable {
         }
         final Transaction other = (Transaction) obj;
         return this.srcAddress.equals(other.srcAddress) 
-                && this.totalAmount.equals(other.totalAmount) 
-                && this.lockTime.equals(other.lockTime);
+            && this.totalAmount.equals(other.totalAmount) 
+            && this.lockTime.equals(other.lockTime);
     }
 }
