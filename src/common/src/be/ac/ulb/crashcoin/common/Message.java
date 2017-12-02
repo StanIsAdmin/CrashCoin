@@ -24,13 +24,14 @@ public class Message implements JSONable {
     }
     
     public Message(final JSONObject jobject) {
-        this((String)jobject.get("request"), jobject.getJSONObject("option"));
+        this(jobject.getString("request"), jobject.has("option") ? jobject.getJSONObject("option") : null);
     }
     
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
         json.put("request", request);
+        json.put("option", option);
         return json;
     }
     

@@ -13,11 +13,10 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * 
+ *
  */
 public class WalletConnection extends AbstractConnection {
     
@@ -33,7 +32,7 @@ public class WalletConnection extends AbstractConnection {
     @Override
     protected void receiveData(final JSONable jsonData) {
         
-         if(jsonData instanceof Transaction) {
+        if(jsonData instanceof Transaction) {
             // TODO new transaction management
             final Transaction transaction = (Transaction) jsonData;
             // Broadcast to the miners directly connected to the relay.
@@ -45,24 +44,29 @@ public class WalletConnection extends AbstractConnection {
             } catch (IOException ex) {
                 Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
         } else if(jsonData instanceof Message) {
-            final String request = ((Message)jsonData).getRequest();
-            final JSONObject option = ((Message)jsonData).getOption();
+            final Message message = (Message) jsonData;
+            
+            final String request = message.getRequest();
+            final JSONObject option = message.getOption();
+            
             switch(request) {
                 case Message.GET_TRANSACTIONS_FROM_WALLET:
                     sendTransactions(option);
                     break;
-                   
+                    
                 default:
                     Logger.getLogger(getClass().getName(), "Unknown request: " + request);
                     break;
             }
+            
         }
     }
     
     /**
      * Send all the transactions related to a given user
-     * 
+     *
      * @param option A JSON object containing the public key of the asking person
      */
     private void sendTransactions(final JSONObject option) {
@@ -77,19 +81,17 @@ public class WalletConnection extends AbstractConnection {
                     + Message.GET_TRANSACTIONS_FROM_WALLET + "' but no PublicKey is provided");
             return;
         }
-        JSONArray transactionsToSend = new JSONArray();
-        Address walletAddress = new Address(key);
-        BlockChain currentBlockChain = Main.getBlockChain();
+        
+        final Address walletAddress = new Address(key);
+        final BlockChain currentBlockChain = Main.getBlockChain();
         for(final Block block : currentBlockChain) {
             for(final Transaction transaction : block) {
+                // Not send transaction created by the miner
                 if(transaction.getDestAddress().equals(walletAddress)
                         || transaction.getSrcAddress().equals(walletAddress)) {
-                    transactionsToSend.put(transaction.toJSON());
+                    sendData(transaction);
                 }
             }
         }
-        JSONObject jobject = new JSONObject();
-        jobject.put("transactions", transactionsToSend);
-        sendData(jobject);
     }
 }
