@@ -42,7 +42,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     @Override
     public boolean add(final Block block) {
         try {
-            if(checkValidBlock(block, Parameters.MINING_DIFFICULTY)) {
+            if(isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
                 super.add(block);
                 return true;
             } else {
@@ -61,7 +61,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     
     // Must may be move to Block
     // Used by [master node]
-    protected boolean checkValidBlock(final Block block, final int difficulty) throws NoSuchAlgorithmException {
+    protected boolean isValidNextBlock(final Block block, final int difficulty) throws NoSuchAlgorithmException {
         boolean result = block.isHashValid() && 
                 difficulty == block.getDifficulty() &&
                 // Previous hash block is valid
