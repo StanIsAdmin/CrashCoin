@@ -35,11 +35,7 @@ public abstract class AbstractConnection extends Thread {
     }
     
     public void sendData(final JSONable jsonData) {
-        sendData(jsonData.toJSON());
-    }
-    
-    public void sendData(final JSONObject jobject) {
-        _output.write(jobject + "\n");
+        _output.write(jsonData.toJSON() + "\n");
         _output.flush();
     }
     
