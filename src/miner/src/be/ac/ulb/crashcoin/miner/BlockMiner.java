@@ -1,11 +1,14 @@
 package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.miner.net.RelayConnection;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public final class BlockMiner {
 
     private Block block = null;
+    private Integer currentNonce = 0;
 
     /**
      * Constructor
@@ -30,10 +33,24 @@ public final class BlockMiner {
      * @return the block with the correct nonce
      *
      * @throws java.security.NoSuchAlgorithmException if unable to mine
+     * @throws java.io.IOException if unable to reach relay
+     * @throws be.ac.ulb.crashcoin.miner.AbortMiningException if new block has
+     *          arrived during mining
      */
-    public Block mine() throws NoSuchAlgorithmException {
-        Integer currentNonce = 0;
+    public Block mineBlock() throws NoSuchAlgorithmException, IOException, AbortMiningException {
+        currentNonce = 0;
+        return mine();
+    }
+    
+    public Block continueMining() throws NoSuchAlgorithmException, IOException, AbortMiningException {
+        return mine();
+    }
+    
+    private Block mine() throws NoSuchAlgorithmException, IOException, AbortMiningException {
         do {
+            if(RelayConnection.getRelayConnection().hasBlocks()) {
+                throw new AbortMiningException();
+            }
             this.block.setNonce(currentNonce++);
         } while (this.block.isHashValid());
         return this.block;
