@@ -5,7 +5,6 @@ import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -216,9 +215,9 @@ public class Transaction implements JSONable {
             res = false;
         }
         final Transaction other = (Transaction) obj;
-        res = this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
+        res &= this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
         if(this.srcAddress != null && other.srcAddress != null) {
-            res = this.srcAddress.equals(other.srcAddress);
+            res &= this.srcAddress.equals(other.srcAddress);
         }
         return res;
     }
