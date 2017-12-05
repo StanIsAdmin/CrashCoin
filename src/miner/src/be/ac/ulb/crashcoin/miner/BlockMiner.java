@@ -1,11 +1,7 @@
 package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Block;
-import be.ac.ulb.crashcoin.common.Parameters;
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class BlockMiner {
 
