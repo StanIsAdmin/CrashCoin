@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.sql.Timestamp;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to
@@ -117,7 +118,7 @@ public class Miner {
         for (int i = 0; i < nbTransactionsToAdd - 1; ++i) {
             currentlyMinedBlock.add(this.transactions.get(i));
         }
-        // TODO Add transaction to pay the miner
+        currentlyMinedBlock.add(this.selfRewarding());
 
         // remove the transactions that have been set into the block
         this.transactions.subList(0, Parameters.NB_TRANSACTIONS_PER_BLOCK - 1).clear();
@@ -174,5 +175,12 @@ public class Miner {
         if(hasRemovedBlocks)
             this.currentlyMinedBlock.setNonce(0);
         return hasRemovedBlocks;
+    }
+
+    private Transaction selfRewarding() {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Transaction transaction = new Transaction(Main.getAddress(), Parameters.MINING_REWARD, timestamp);
+        transaction.sign(Main.privateKey());
+        return transaction;
     }
 }

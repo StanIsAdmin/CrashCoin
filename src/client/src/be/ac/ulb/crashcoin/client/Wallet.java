@@ -15,6 +15,7 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -105,63 +106,8 @@ public class Wallet {
         return null; // TODO
     }
 
-    public Signature dsaFromPrivateKey(final PrivateKey privateKey) {
-        Signature dsa = null;
-        try {
-            dsa = Signature.getInstance("SHA1withDSA", "SUN");
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("[Error] Could not find DSA signature algorithm");
-        } catch (NoSuchProviderException e) {
-            System.out.println("[Error] Could not find provider for DSA");
-        }
-
-        try {
-            // Using private key to sign with DSA
-            dsa.initSign(privateKey);
-        } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
-        }
-        return dsa;
-    }
-
-    public Signature dsaFromPublicKey(final PublicKey publicKey) {
-        Signature dsa = null;
-        try {
-            dsa = Signature.getInstance("SHA1withDSA", "SUN");
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
-            e2.printStackTrace();
-        }
-        try {
-            // Using public key to verify signatures
-            dsa.initVerify(publicKey);
-        } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
-        }
-        return dsa;
-    }
-
-    /**
-     * Returns a transaction signature using DSA algorithm.
-     *
-     * @param privateKey private key
-     * @param bytes data to sign
-     * @return transaction signature
-     */
-    public byte[] signTransaction(final PrivateKey privateKey, final byte[] bytes) {
-        final Signature dsa = dsaFromPrivateKey(privateKey);
-        byte[] signature = null;
-        try {
-            // Running DSA
-            dsa.update(bytes, 0, bytes.length);
-            signature = dsa.sign();
-        } catch (SignatureException e) {
-            e.printStackTrace();
-        }
-        return signature;
-    }
-
     public boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
-        final Signature dsa = dsaFromPublicKey(publicKey);
+        final Signature dsa = Cryptography.dsaFromPublicKey(publicKey);
 
         boolean verified = false;
         try {
@@ -382,7 +328,7 @@ public class Wallet {
         new Random().nextBytes(dummyTransaction);
 
         // Sign the dummy transaction with the private key that we want to verify
-        final byte[] dummySignature = this.signTransaction(privateKey, dummyTransaction);
+        final byte[] dummySignature = Cryptography.signTransaction(privateKey, dummyTransaction);
 
         // Verify the signature using the public key and the specific Wallet method
         verified = this.verifySignature(publicKey, dummyTransaction, dummySignature);
