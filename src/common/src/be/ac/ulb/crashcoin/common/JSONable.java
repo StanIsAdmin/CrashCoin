@@ -17,7 +17,7 @@ public interface JSONable {
      */
     public default JSONObject toJSON() {
         final JSONObject json = new JSONObject();
-        json.put("type", this.getClass().getName());
+        json.put("type", this.getClass().getSimpleName());
         return json;
     }
 

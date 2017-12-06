@@ -30,13 +30,7 @@ public class TestWallet {
      * @return A wallet
      */
     private Wallet createWallet() {
-        Wallet wallet = null;
-        try {
-            wallet = new Wallet();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        }
-        return wallet;
+        return new Wallet();
     }
 
     /**

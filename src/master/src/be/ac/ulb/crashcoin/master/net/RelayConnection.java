@@ -25,7 +25,7 @@ public class RelayConnection extends AbstractConnection {
         allRelay.add(this);
         start();
 
-        sendData(bcManager.getBlockChain());
+        sendData(BlockChainManager.getBlockChain());
     }
 
     @Override
