@@ -1,6 +1,8 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.client.net.RelayConnection;
 import be.ac.ulb.crashcoin.common.Address;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.io.IOException;
 import java.io.File;
@@ -28,18 +30,20 @@ import java.util.Arrays;
  * Handle IO from user and network communication between nodes and wallet.
  */
 public class ClientApplication {
-
+    
+    private static ClientApplication instance = null;
+    
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
-    private boolean registered;
 
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
-
+        instance = this;
+        wallet = null;
+        
         console = System.console();
-        registered = false;
         int choice;
         do {
             printMenu();
@@ -53,7 +57,7 @@ public class ClientApplication {
             }
 
             if (choice > 0) {
-                if (!registered) { // If not register/login
+                if (wallet == null) { // If not register/login
                     actionMenuNotRegistered(choice);
                 } else { // If login/register
                     actionMenuRegistred(choice);
@@ -71,13 +75,12 @@ public class ClientApplication {
         switch (choice) {
             case 1:
                 signIn();
-                registered = true;
                 break;
 
             case 2:
                 signUp();
                 break;
-
+                
             case 3: // close with condition in while
                 break;
 
@@ -98,11 +101,11 @@ public class ClientApplication {
                 showWallet();
                 break;
 
-            case 4:
-                registered = false;
+            case 3: // close with condition in while
                 break;
 
-            case 3: // close with condition in while
+            case 4: // Disconnect
+                wallet = null;
                 break;
 
             default:
@@ -114,7 +117,7 @@ public class ClientApplication {
     private void printMenu() {
         System.out.println("Menu");
         System.out.println("----\n");
-        if (!registered) {
+        if (wallet == null) {
             System.out.println("1. Sign in");
             System.out.println("2. Sign up");
             System.out.println("3. Exit");
@@ -131,7 +134,6 @@ public class ClientApplication {
     public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
-
         System.out.println("\n");
         System.out.println("Sign up");
         System.out.println("-------\n");
@@ -168,8 +170,8 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            this.wallet = new Wallet();
-            wallet.writeWalletFile(userPassword, accountName);
+            final Wallet tmpWallet = new Wallet();
+            tmpWallet.writeWalletFile(userPassword, accountName, tmpWallet.generateKeys());
         }
 
     }
@@ -203,26 +205,15 @@ public class ClientApplication {
                 userPassword = reader.next().toCharArray();
             }
             this.wallet = Wallet.readWalletFile(f, userPassword);
+            if(wallet != null) {
+                RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
+                    wallet.getAddress().toJSON()));
+            }
         } else {
             System.out.println("The wallet identifier that you entered cannot be found");
 
         }
 
-    }
-
-    // TODO method for debug and must me be move
-    public static String byteArrayToHex(final byte[] a) {
-        final StringBuilder sb = new StringBuilder(a.length * 2);
-        for (final byte b : a) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
-    // TODO method for debug and must me be move
-    public static byte[] hexToByteArray(final String strOfHex) {
-        // TODO
-        return new byte[]{};
     }
 
     /**
@@ -235,7 +226,7 @@ public class ClientApplication {
      * chosen hash algorithm (Parameters.HASH_ALGORITHM)
      */
     public Transaction createTransaction() throws NoSuchAlgorithmException {
-        final Address srcAddress = new Address(wallet.getPublicKey());
+        final Address srcAddress = wallet.getAddress();
         Transaction result = null;
         Transaction transaction;
         Transaction input;
@@ -266,10 +257,18 @@ public class ClientApplication {
     }
 
     public void showWallet() {
-        ArrayList<Transaction> transactionList = wallet.getTransactions();
+        final ArrayList<Transaction> transactionList = wallet.getTransactions();
         transactionList.forEach((transaction) -> {
             System.out.println(transaction.toString());
         });
     }
-
+    
+    public Wallet getWallet() {
+        return wallet;
+    }
+    
+    public static ClientApplication getInstance() {
+        return instance;
+    }
+    
 }
