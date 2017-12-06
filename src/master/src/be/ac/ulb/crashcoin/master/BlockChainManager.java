@@ -23,7 +23,7 @@ public class BlockChainManager {
      */
     private static final String BLOCKCHAIN_SAVE_PATH = "./master/blockchain.json";
 
-    /* BlockChain instance */
+    /** BlockChain instance */
     private static BlockChain blockChain;
 
     private static BlockChainManager instance;
@@ -39,11 +39,11 @@ public class BlockChainManager {
         return instance;
     }
 
-    public static BlockChain getBlockChain() {
+    public BlockChain getBlockChain() {
         return blockChain;
     }
 
-    private static BlockChain createBlockChain() {
+    private BlockChain createBlockChain() {
         FileReader fr;
         try {
             fr = new FileReader(BLOCKCHAIN_SAVE_PATH);
@@ -52,7 +52,7 @@ public class BlockChainManager {
             return new BlockChain();
         }
 
-        JSONParser parser = new JSONParser();
+        final JSONParser parser = new JSONParser();
         JSONObject jsonBlockChain;
         try {
             jsonBlockChain = (JSONObject) parser.parse(fr);
@@ -64,7 +64,7 @@ public class BlockChainManager {
         return new BlockChain(jsonBlockChain);
     }
 
-    public static void saveBlockChain() {
+    public void saveBlockChain() {
         FileWriter fw;
         try {
             fw = new FileWriter(BLOCKCHAIN_SAVE_PATH);
@@ -73,7 +73,7 @@ public class BlockChainManager {
             return;
         }
 
-        JSONObject jsonBlockChain = blockChain.toJSON();
+        final JSONObject jsonBlockChain = blockChain.toJSON();
         try {
             fw.write(jsonBlockChain.toString());
             fw.flush();
