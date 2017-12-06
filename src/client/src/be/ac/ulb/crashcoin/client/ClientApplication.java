@@ -117,7 +117,7 @@ public class ClientApplication {
     private void printMenu() {
         System.out.println("Menu");
         System.out.println("----\n");
-        if (wallet != null) {
+        if (wallet == null) {
             System.out.println("1. Sign in");
             System.out.println("2. Sign up");
             System.out.println("3. Exit");
@@ -205,8 +205,10 @@ public class ClientApplication {
                 userPassword = reader.next().toCharArray();
             }
             this.wallet = Wallet.readWalletFile(f, userPassword);
-            RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
+            if(wallet != null) {
+                RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
                     wallet.getAddress().toJSON()));
+            }
         } else {
             System.out.println("The wallet identifier that you entered cannot be found");
 
