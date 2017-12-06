@@ -110,40 +110,51 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     }
     
     /**
-     * Gets the first bad transaction that it finds, otherwise returns null.
-     * A transaction is considered bad if it spends the same input as another
-     * transaction from the blockchain, and has a posterior timestamp (time priority).
-     * Also it is considered bad if it has a timestamp prior to one of its input.
-     * This prevents clients from double spending their inputs.
-     * 
-     * TODO: Rémy you can use this
+     * Gets the first bad transaction that it finds in a block, otherwise returns null.
+     * A transaction is considered bad if isValidTransaction(transaction) returns false.
      * 
      * @param block  Block that needs to be added to the blockchain
      * @return  First bad transaction found if there is one, null otherwise
      */
     protected Transaction getFirstBadTransaction(final Block block) {
-        // Looks for each transaction inputs in other blocks and checks that
-        // timestamps are not anachronistic
-        Set<Transaction.Input> spentInputs = new HashSet<>();
         for (Transaction transaction: block) {
-            for (Transaction.Input input: transaction.getInputs()) {
-                boolean isPresent = false;
-                for (Block previousBlock: this) {
-                    Transaction searchResult = previousBlock.findTransaction(input.toBytes());
-                    if ((searchResult != null) && (searchResult.before(transaction))) {
-                        isPresent = true;
-                    }
-                }
-                if (!isPresent) return transaction;  
-                // Avoid double-spending
-                if (spentInputs.contains(input)) {
-                    return transaction;
-                } else {
-                    spentInputs.add(input);
-                }
+            if (! isValidTransaction(transaction)) {
+                return transaction;
             }
         }
         return null;
+    }
+    
+    /** 
+     * Returns true if transaction is valid, false otherwise.
+     * For a transaction to be valid, it has to fulfill all of these requirements :
+     * - have exactly one or two outputs (TODO)
+     * - all output values must be strictly positive (TODO)
+     * - the sum of the inputs values must be equal to the sum of output values (TODO)
+     * - be digitally signed by the sender (TODO)
+     * - have only previously-unused inputs that belong to the sender
+     * 
+     * @param transaction
+     * @return 
+     */
+    private boolean isValidTransaction(Transaction transaction) {
+        // TODO implement other verifications
+        // The reason I (Stan) am not implementing anything regarding values
+        // is because I think there's a flaw in the way we create transactions
+        // Transactions should not contain a monetary value, it should be 
+        // derived from its inputs (which are either rewards or previous outputs, 
+        // both of which contain explicit values)
+        // TL;DR : can clients cheat by lying about the transaction value ?
+        
+        // Verify each input is available and belongs to the sender
+        for (Transaction.Input input: transaction.getInputs()) {
+            Address inputAddress = this.availableInputs.get(input.toBytes());
+            if (inputAddress == null) return false;
+            if (inputAddress != transaction.getSrcAddress()) return false;
+        }
+        
+        // All verifications having passed, the transaction is valid
+        return true;
     }
 
     // Must may be move to Block
