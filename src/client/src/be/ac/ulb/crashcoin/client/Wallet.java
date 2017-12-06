@@ -46,7 +46,7 @@ public class Wallet {
 
     private PublicKey publicKey;
     private KeyPairGenerator dsaKeyGen;
-    private ArrayList<Transaction> transactionsList;
+    private final ArrayList<Transaction> transactionsList;
     private static Wallet instance = null;
 
     /**
@@ -57,6 +57,7 @@ public class Wallet {
      */
     private Wallet() {
         this.publicKey = null;
+        transactionsList = new ArrayList<>();
         try {
             dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
@@ -328,6 +329,11 @@ public class Wallet {
 
         System.out.println("The creation of your wallet completed successfully");
         System.out.println("Please sign in and start crashing coins");
+    }
+    
+    // Only for DEBUG
+    public static void resetInstance() {
+        Wallet.instance = null;
     }
     
     public static Wallet getInstance() {

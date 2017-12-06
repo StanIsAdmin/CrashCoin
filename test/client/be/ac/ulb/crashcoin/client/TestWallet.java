@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.util.Random;
+import org.junit.After;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -29,8 +30,7 @@ public class TestWallet {
      * @return A wallet
      */
     private Wallet createWallet() {
-        Wallet wallet = null;
-        wallet = Wallet.getInstance();
+        Wallet wallet = Wallet.getInstance();
         return wallet;
     }
 
@@ -67,6 +67,7 @@ public class TestWallet {
         // and stored on the hard drive.
         final Wallet wallet = createWallet();
         final KeyPair keyPair = createKeyPair(wallet);
+        Wallet.resetInstance();
 
         // Let's suppose that an attacker entered a bad password and thus, got a bad DSA private key from
         // the decryption algorithm.
@@ -77,5 +78,10 @@ public class TestWallet {
         final byte[] transaction = randomBytes(156);
         final byte[] badSignature = wallet.signTransaction(badPrivateKey, transaction);
         assertEquals(wallet.verifySignature(keyPair.getPublic(), transaction, badSignature), false);
+    }
+    
+    @After
+    public void tearDown() {
+        Wallet.resetInstance();
     }
 }
