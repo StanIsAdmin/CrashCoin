@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Handle IO from user Handle network communication between nodes and wallet
+ * Handle IO from user and network communication between nodes and wallet.
  */
 public class ClientApplication {
 
@@ -126,7 +126,7 @@ public class ClientApplication {
             System.out.println("3. Exit");
             System.out.println("4. Disconnect");
         }
-        System.out.println(""); // Add space
+        System.out.println(""); // Add empty line
         System.out.print("Please enter your choice : ");
     }
 
@@ -219,6 +219,8 @@ public class ClientApplication {
      * transaction was aborded.
      *
      * @return The created transaction
+     * @throws NoSuchAlgorithmException if the machine is unable to perform the
+     * chosen hash algorithm (Parameters.HASH_ALGORITHM)
      */
     public Transaction createTransaction() throws NoSuchAlgorithmException {
         final Address srcAddress = wallet.getAddress();
@@ -253,9 +255,9 @@ public class ClientApplication {
 
     public void showWallet() {
         ArrayList<Transaction> transactionList = wallet.getTransactions();
-        for (Transaction transaction : transactionList) {
+        transactionList.forEach((transaction) -> {
             System.out.println(transaction.toString());
-        }
+        });
     }
 
 }

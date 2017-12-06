@@ -1,8 +1,10 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -11,8 +13,10 @@ import org.json.JSONObject;
 public class Transaction implements JSONable {
 
     private final Address srcAddress;
+    private final Address destAddress;
     private final Integer totalAmount;
     private final Timestamp lockTime;
+    private byte[] signature;
     private ArrayList<Input> inputs;
     private ArrayList<Output> outputs;
 
@@ -20,14 +24,25 @@ public class Transaction implements JSONable {
      * Constructor for transactions Transaction
      *
      * @param srcAddress CrashCoin address of the source
+     * @param destAddress CrashCoin address of the destination
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
-     */
-    public Transaction(final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
+     */    
+    public Transaction(final Address destAddress, final Integer totalAmount, final Timestamp lockTime) {
+        this(destAddress, null, totalAmount, lockTime);
+    }
+    
+    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
+        this(destAddress, srcAddress, totalAmount, lockTime, null);
+    }
+    
+    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime, final byte[] signature) {
         super();
+        this.destAddress = destAddress;
         this.srcAddress = srcAddress;
         this.totalAmount = totalAmount;
         this.lockTime = lockTime;
+        this.signature = signature;
         this.inputs = new ArrayList<>();
         this.outputs = new ArrayList<>();
     }
@@ -38,23 +53,33 @@ public class Transaction implements JSONable {
      * @param json
      */
     public Transaction(final JSONObject json) {
-        this(new Address((JSONObject) json.get("srcAddress")),
+        this(new Address((JSONObject) json.get("destAddress")),
+                (json.has("srcAddress"))? new Address((JSONObject) json.get("srcAddress")) : null,
                 json.getInt("totalAmount"),
-                new Timestamp(json.getLong("lockTime")));
+                new Timestamp(json.getLong("lockTime")),
+                JsonUtils.decodeBytes(json.getString("signature")));
     }
 
     /**
-     * Get a JSON representation of the Address instance *
+     * Get a JSON representation of the Address instance * TODO add signature
      */
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("srcAddress", srcAddress.toJSON());
+        json.put("destAddress", destAddress.toJSON());
+        json.put("signature", JsonUtils.encodeBytes(signature));
         json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
+        if(srcAddress != null) {
+            json.put("srcAddress", srcAddress.toJSON());
+        }
         return json;
     }
 
+    public void sign(PrivateKey privateKey) {
+        this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
+    }
+    
     // Create a new transaction to a final destinator
     public boolean createTransaction(final Transaction transaction,
             final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
@@ -91,11 +116,20 @@ public class Transaction implements JSONable {
      */
     public byte[] toBytes() {
         // TODO: convert inputs and outputs to bytes
-        final byte[] srcAddressBytes = srcAddress.toBytes();
-        final ByteBuffer buffer = ByteBuffer
-                .allocate(srcAddressBytes.length + Parameters.INTEGER_N_BYTES);
+        final byte[] destAddressBytes = destAddress.toBytes();
+        Integer totalSize = null;
+        ByteBuffer buffer = null;
+        if(srcAddress != null) {
+            final byte[] srcAddressBytes = srcAddress.toBytes();
+            totalSize = destAddressBytes.length + srcAddressBytes.length + Parameters.INTEGER_N_BYTES;
+            buffer = ByteBuffer.allocate(totalSize);
+            buffer.put(srcAddressBytes);
+        } else {
+            totalSize = destAddressBytes.length + Parameters.INTEGER_N_BYTES;
+            buffer = ByteBuffer.allocate(totalSize);
+        }
+        buffer.put(destAddressBytes);
         buffer.putInt(totalAmount);
-        buffer.put(srcAddressBytes);
         return buffer.array();
     }
 
@@ -170,18 +204,21 @@ public class Transaction implements JSONable {
      */
     @Override
     public boolean equals(final Object obj) {
+        Boolean res = true;
         if (this == obj) {
-            return true;
+            res = true;
         }
         if (obj == null) {
-            return false;
+            res = false;
         }
         if (getClass() != obj.getClass()) {
-            return false;
+            res = false;
         }
         final Transaction other = (Transaction) obj;
-        return this.srcAddress.equals(other.srcAddress)
-                && this.totalAmount.equals(other.totalAmount)
-                && this.lockTime.equals(other.lockTime);
+        res &= this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
+        if(this.srcAddress != null && other.srcAddress != null) {
+            res &= this.srcAddress.equals(other.srcAddress);
+        }
+        return res;
     }
 }

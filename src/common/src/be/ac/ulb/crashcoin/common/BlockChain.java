@@ -54,8 +54,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         return false;
     }
 
+    public Block getLastBlock() {
+        return this.get(this.size() - 1);
+    }
+    
     private byte[] getLastBlockToBytes() throws NoSuchAlgorithmException {
-        return Cryptography.hashBytes(get(this.size() - 1).headerToBytes());
+        return Cryptography.hashBytes(getLastBlock().headerToBytes());
     }
 
     // Must may be move to Block

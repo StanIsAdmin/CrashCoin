@@ -1,10 +1,15 @@
 package be.ac.ulb.crashcoin.common.utils;
 
 import be.ac.ulb.crashcoin.common.Parameters;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -73,5 +78,60 @@ public class Cryptography {
             e.printStackTrace();
         }
         return pk;
+    }
+    
+    public static Signature dsaFromPrivateKey(final PrivateKey privateKey) {
+        Signature dsa = null;
+        try {
+            dsa = Signature.getInstance("SHA1withDSA", "SUN");
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("[Error] Could not find DSA signature algorithm");
+        } catch (NoSuchProviderException e) {
+            System.out.println("[Error] Could not find provider for DSA");
+        }
+
+        try {
+            // Using private key to sign with DSA
+            dsa.initSign(privateKey);
+        } catch (InvalidKeyException e1) {
+            e1.printStackTrace();
+        }
+        return dsa;
+    }
+
+    public static Signature dsaFromPublicKey(final PublicKey publicKey) {
+        Signature dsa = null;
+        try {
+            dsa = Signature.getInstance("SHA1withDSA", "SUN");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
+            e2.printStackTrace();
+        }
+        try {
+            // Using public key to verify signatures
+            dsa.initVerify(publicKey);
+        } catch (InvalidKeyException e1) {
+            e1.printStackTrace();
+        }
+        return dsa;
+    }
+
+    /**
+     * Returns a transaction signature using DSA algorithm.
+     *
+     * @param privateKey private key
+     * @param bytes data to sign
+     * @return transaction signature
+     */
+    public static byte[] signTransaction(final PrivateKey privateKey, final byte[] bytes) {
+        final Signature dsa = dsaFromPrivateKey(privateKey);
+        byte[] signature = null;
+        try {
+            // Running DSA
+            dsa.update(bytes, 0, bytes.length);
+            signature = dsa.sign();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+        return signature;
     }
 }

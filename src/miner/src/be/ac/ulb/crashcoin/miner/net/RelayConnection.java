@@ -5,10 +5,15 @@ import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Connection to relay node<br>
@@ -18,15 +23,19 @@ public class RelayConnection extends AbstractReconnectConnection {
 
     private static RelayConnection instance = null;
 
+    Semaphore mutex = new Semaphore(1);
     // Transactions to mined (make a block)
     private final ArrayList<Transaction> transactionsBuffer;
     private boolean hasNewTransactions = false;
     // Mined blocks containing transaction to not mine anymore
     private final ArrayList<Block> blocksBuffer;
+    /** Copy of the last block of the blockchain. */
+    private Block lastBlock;
     private boolean hasNewBlocks = false;
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
-        super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_MINER_LISTENER));
+        super("RelayConnection", new Socket(Parameters.RELAY_IP,
+                Parameters.RELAY_PORT_MINER_LISTENER));
         this.transactionsBuffer = new ArrayList<>();
         this.blocksBuffer = new ArrayList<>();
         start();
@@ -37,11 +46,24 @@ public class RelayConnection extends AbstractReconnectConnection {
         System.out.println("[DEBUG] get value from relay: " + data);
 
         if (data instanceof Transaction) {
-            hasNewTransactions = true;
-            transactionsBuffer.add((Transaction) data);
+            try {
+                mutex.acquire();
+                hasNewTransactions = true;
+                transactionsBuffer.add((Transaction) data);
+                mutex.release();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (data instanceof Block) {
-            hasNewBlocks = true;
-            blocksBuffer.add((Block) data);
+            try {
+                mutex.acquire();
+                hasNewBlocks = true;
+                blocksBuffer.add((Block) data);
+                lastBlock = blocksBuffer.get(blocksBuffer.size()-1);
+                mutex.release();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
@@ -76,7 +98,15 @@ public class RelayConnection extends AbstractReconnectConnection {
      * otherwise
      */
     public boolean hasTransactions() {
-        return this.transactionsBuffer.isEmpty();
+        Boolean res = null;
+        try {
+            mutex.acquire();
+            res = this.transactionsBuffer.isEmpty();
+            mutex.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return res;
     }
 
     /**
@@ -84,8 +114,17 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the list of pending transactions
      */
     public ArrayList<Transaction> getTransactions() {
-        this.hasNewTransactions = false;
-        return this.transactionsBuffer;
+        ArrayList<Transaction> tmp = new ArrayList<>();
+        try {
+            mutex.acquire();
+            this.hasNewTransactions = false;
+            tmp = this.transactionsBuffer;
+            this.blocksBuffer.clear();
+            mutex.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return tmp;
     }
 
     /**
@@ -93,7 +132,15 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return true if the connection has pending blocks and false otherwise
      */
     public boolean hasBlocks() {
-        return this.blocksBuffer.isEmpty();
+        Boolean res = null;
+        try {
+            mutex.acquire();
+            res = this.blocksBuffer.isEmpty();
+            mutex.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return res;
     }
 
     /**
@@ -101,10 +148,16 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the list of pending blocks
      */
     public ArrayList<Block> getBlocks() {
-        // TODO add semaphore
-        this.hasNewBlocks = false;
-        ArrayList<Block> tmp = this.blocksBuffer;
-        this.blocksBuffer.clear();
+        ArrayList<Block> tmp = new ArrayList<>();
+        try {
+            mutex.acquire();
+            this.hasNewBlocks = false;
+            tmp = this.blocksBuffer;
+            this.blocksBuffer.clear();
+            mutex.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return tmp;
     }
 
@@ -114,12 +167,26 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @throws InternalError if the the relay has sent unfetched transactions
      */
     public void clearBuffer() throws InternalError {
-        // TODO add semaphore
-        if (this.hasNewTransactions) {
-            throw new InternalError("Unable to clear the transactions buffer: "
-                    + "new transactions have been received since last fetch!");
+        try {
+            mutex.acquire();
+            if (this.hasNewTransactions) {
+                throw new InternalError("Unable to clear the transactions buffer: "
+                        + "new transactions have been received since last fetch!");
+            }
+            this.transactionsBuffer.clear();
+            mutex.release();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.transactionsBuffer.clear();
     }
 
+    /**
+     * Gives the hash of the last byte in the blockchain.
+     * 
+     * @return the hash of the last block
+     * @throws NoSuchAlgorithmException if unable to hash last block
+     */
+    public byte[] getLastBlockOfBlockChainHash() throws NoSuchAlgorithmException {
+        return Cryptography.hashBytes(lastBlock.headerToBytes());
+    }
 }

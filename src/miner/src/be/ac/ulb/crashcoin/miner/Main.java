@@ -2,13 +2,20 @@ package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,8 +27,26 @@ import static org.junit.Assert.fail;
 public class Main {
 
     // TODO store this at the right place
-    private static int difficulty;
+    private static int difficulty = Parameters.MINING_DIFFICULTY;
+    
     private static byte[] lastHashBlockInChain;
+    
+    // TODO place in the configuration
+    private static String userPrivateKey = "";
+    
+    public static PrivateKey privateKey() {
+        final byte[] keyBytes = JsonUtils.decodeBytes(userPrivateKey);
+        final X509EncodedKeySpec ks = new X509EncodedKeySpec(keyBytes);
+        final KeyFactory kf;
+        PrivateKey pv = null;
+        try {
+            kf = KeyFactory.getInstance("DSA");
+            pv = kf.generatePrivate(ks);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            Logger.getLogger(Address.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return pv;
+    }
 
     // Temporay --- for test purposes
     public static Address getAddress() {
@@ -81,10 +106,6 @@ public class Main {
         } catch (InterruptedException | NoSuchAlgorithmException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public static byte[] getLastBlockInChain() {
-        return lastHashBlockInChain;
     }
 
     public static int getDifficulty() {

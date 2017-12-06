@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.relay.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
+import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
@@ -14,11 +15,13 @@ import java.util.logging.Logger;
  */
 class MinerConnection extends AbstractConnection {
 
-    private static HashSet<MinerConnection> allMiner = new HashSet<>();
+    private static final HashSet<MinerConnection> allMiners = new HashSet<>();
 
     public MinerConnection(final Socket sock) throws IOException {
         super("MinerConnection", sock);
-        allMiner.add(this);
+        allMiners.add(this);
+        // send last block of the blockchain to freshly connected miner
+        sendData(Main.getBlockChain().getLastBlock());
 
         start();
     }
@@ -44,11 +47,11 @@ class MinerConnection extends AbstractConnection {
     @Override
     protected void close() {
         super.close();
-        allMiner.remove(this);
+        allMiners.remove(this);
     }
 
     public static void sendToAll(final JSONable data) {
-        for (final MinerConnection relay : allMiner) {
+        for (final MinerConnection relay : allMiners) {
             relay.sendData(data);
         }
     }
