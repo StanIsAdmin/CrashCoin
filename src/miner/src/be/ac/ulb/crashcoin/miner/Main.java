@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Block;
+import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
@@ -26,7 +27,8 @@ import static org.junit.Assert.fail;
 public class Main {
 
     // TODO store this at the right place
-    private static int difficulty;
+    private static int difficulty = Parameters.MINING_DIFFICULTY;
+    
     private static byte[] lastHashBlockInChain;
     
     // TODO place in the configuration
@@ -104,10 +106,6 @@ public class Main {
         } catch (InterruptedException | NoSuchAlgorithmException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public static byte[] getLastBlockInChain() {
-        return lastHashBlockInChain;
     }
 
     public static int getDifficulty() {

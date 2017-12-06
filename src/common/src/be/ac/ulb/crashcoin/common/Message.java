@@ -7,7 +7,8 @@ import org.json.JSONObject;
  */
 public class Message implements JSONable {
 
-    public static final String GET_TRANSACTIONS_FROM_WALLET = "get transactions from wallet";
+    public static final String GET_TRANSACTIONS_FROM_WALLET = "GET_TRANSACTIONS_FROM_WALLET";
+    public static final String GET_LAST_BLOCK = "GET_LAST_BLOCK";
 
     /**
      * String representing the request
