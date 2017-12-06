@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -28,29 +30,19 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     private Integer nonce = 0;
     private final byte[] previousBlock;
     private final int difficulty;
-
-    /**
-     * array of masks such that MASKS[i] contains the first i bits with 1s and
-     * the 8-i last bits with 0s
-     */
-    public static final byte[] MASKS;
-
-    static {
-        MASKS = new byte[8];
-        for (int i = 1; i < 8; ++i) {
-            MASKS[i] = (byte) ((1 << (Byte.SIZE - i)) | MASKS[i - 1]);
-        }
-    }
+    private byte[] merkleRoot;
+    private MerkleTree merkleTree; // Not included in header
 
     public Block(final byte[] previousBlock, final int difficulty) {
-        this(previousBlock, difficulty, 0);
+        this(previousBlock, difficulty, 0, null);
     }
 
-    public Block(final byte[] previousBlock, final int difficulty, final int nonce) {
+    public Block(final byte[] previousBlock, final int difficulty, final int nonce, final byte[] merkleRoot) {
         super();
         this.previousBlock = previousBlock;
         this.difficulty = difficulty;
         this.nonce = nonce;
+        this.merkleRoot = merkleRoot;
     }
 
     /**
@@ -59,11 +51,15 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param json
      */
     public Block(final JSONObject json) {
-        this(JsonUtils.decodeBytes(json.getString("previousBlock")), json.getInt("difficulty"), json.getInt("nonce"));
+        this(
+            JsonUtils.decodeBytes(json.getString("previousBlock")), 
+            json.getInt("difficulty"), 
+            json.getInt("nonce"),
+            JsonUtils.decodeBytes(json.getString("merkleRoot")));
         final JSONArray transactionsArray = json.getJSONArray("listTransactions");
 
         for (int i = 0; i < transactionsArray.length(); ++i) {
-            final Object type = transactionsArray.get(0);
+            final Object type = transactionsArray.get(i);
             if (type instanceof JSONObject) {
                 this.add(new Transaction((JSONObject) type));
             } else {
@@ -78,6 +74,9 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         if (this.size() < Parameters.NB_TRANSACTIONS_PER_BLOCK) {
             res = super.add(transaction);
         }
+        // Update Merkle root
+        this.merkleTree = new MerkleTree(this);
+        this.merkleRoot = merkleTree.getRoot();
         return res;
     }
 
@@ -90,6 +89,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         json.put("previousBlock", JsonUtils.encodeBytes(previousBlock));
         json.put("difficulty", difficulty);
         json.put("nonce", nonce);
+        json.put("merkleRoot", JsonUtils.encodeBytes(merkleRoot));
 
         try {
             final JSONArray jArray = new JSONArray();
@@ -101,6 +101,23 @@ public class Block extends ArrayList<Transaction> implements JSONable {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, jse);
         }
         return json;
+    }
+    
+    /**
+     * Checks that a transaction is indeed present inside of the block,
+     * given its hash. Then, if a transaction hash is matched, it returns the
+     * corresponding transaction. Otherwise it returns null.
+     * 
+     * @param hashed  Transaction hash value
+     * @return  Whether it is present in the blok or not
+     */
+    public Transaction findTransaction(byte[] hashed) {
+        for (Transaction transaction: this) {
+            if (Arrays.equals(transaction.toBytes(), hashed)) {
+                return transaction;
+            }
+        }
+        return null;
     }
 
     /**
@@ -124,24 +141,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @see Parameters.MINING_DIFFICULTY
      */
     public boolean isHashValid(final byte[] hash, Integer difficulty) {
-        final int nbOfNullBytes = difficulty / Byte.SIZE;
-        final int nbOfRemaningNullBits = difficulty - nbOfNullBytes;
-
         if (hash == null || difficulty > Byte.SIZE * hash.length) {
             return false;
         }
-
-        // check the first complete bytes
-        for (int byteIdx = 0; byteIdx < nbOfNullBytes; ++byteIdx) {
-            if (hash[byteIdx] != 0) {
-                return false;
-            }
-        }
-        // and then check the last remaining bits
-        if (nbOfRemaningNullBits > 0 && (hash[nbOfNullBytes] & MASKS[nbOfRemaningNullBits]) != 0) {
-            return false;
-        }
-        return true;
+        BitSet bitset = BitSet.valueOf(hash);
+        Integer indexOfLastZero = bitset.nextSetBit(0) - 1;
+        return (indexOfLastZero >= difficulty);
     }
 
     /**
@@ -156,11 +161,11 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         buffer.putInt(Parameters.MAGIC_NUMBER);
         // insert reference to previous block (32 bytes)
         buffer.put(previousBlock);
-        // insert hash of all transaction
-        buffer.put(getTransactionHash());
+        // insert Merkle root
+        buffer.put(merkleRoot); // buffer.put(getTransactionHash());
         // insert difficulty (4 bytes)
         buffer.putInt(difficulty);
-        // TODO Transaction counter ?
+        // No need to store the number of transactions in byte representation
         // insert nonce (4 bytes)
         buffer.putInt(nonce);
         return buffer.array();
@@ -188,7 +193,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
                 //buffer.
                 buffer.write(transaction.toBytes());
             } catch (IOException ex) {
-                // TODO: what to do?
                 Logger.getLogger(Block.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -247,7 +251,10 @@ public class Block extends ArrayList<Transaction> implements JSONable {
             return false;
         }
         final Block other = (Block) obj;
-        return true; //TODO compare attributes
+        if (this.difficulty != other.difficulty) {
+            return false;
+        }
+        return containsAll(other) && other.containsAll(this);
     }
 
 }
