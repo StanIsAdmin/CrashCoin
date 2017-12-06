@@ -36,15 +36,14 @@ public class ClientApplication {
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
-    private boolean registered;
 
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
         instance = this;
+        wallet = null;
         
         console = System.console();
-        registered = false;
         int choice;
         do {
             printMenu();
@@ -58,7 +57,7 @@ public class ClientApplication {
             }
 
             if (choice > 0) {
-                if (!registered) { // If not register/login
+                if (wallet == null) { // If not register/login
                     actionMenuNotRegistered(choice);
                 } else { // If login/register
                     actionMenuRegistred(choice);
@@ -76,7 +75,6 @@ public class ClientApplication {
         switch (choice) {
             case 1:
                 signIn();
-                registered = true;
                 break;
 
             case 2:
@@ -107,7 +105,7 @@ public class ClientApplication {
                 break;
 
             case 4: // Disconnect
-                registered = false;
+                wallet = null;
                 break;
 
             default:
@@ -119,7 +117,7 @@ public class ClientApplication {
     private void printMenu() {
         System.out.println("Menu");
         System.out.println("----\n");
-        if (!registered) {
+        if (wallet != null) {
             System.out.println("1. Sign in");
             System.out.println("2. Sign up");
             System.out.println("3. Exit");
