@@ -15,7 +15,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import be.ac.ulb.crashcoin.common.Transaction;
-import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import java.io.Console;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -63,7 +62,7 @@ public class ClientApplication {
                 }
             }
 
-        } while (choice != 4);
+        } while (choice != 3);
         reader.close();
     }
 
@@ -80,20 +79,8 @@ public class ClientApplication {
             case 2:
                 signUp();
                 break;
-
-            case 3:
-                System.out.print("Public key:");
-                final String publicKey = reader.next();
-                final byte[] publicKeyByte = JsonUtils.decodeBytes(publicKey);
                 
-                System.out.print("Private key:");
-                final String privateKey = reader.next();
-                final byte[] privateKeyByte = JsonUtils.decodeBytes(privateKey);
-                signUp(publicKeyByte, privateKeyByte);
-                
-                break;
-                
-            case 4: // close with condition in while
+            case 3: // close with condition in while
                 break;
 
             default:
@@ -113,11 +100,11 @@ public class ClientApplication {
                 showWallet();
                 break;
 
-            case 3:
-                registered = false;
+            case 3: // close with condition in while
                 break;
 
-            case 4: // close with condition in while
+            case 4: // Disconnect
+                registered = false;
                 break;
 
             default:
@@ -132,13 +119,12 @@ public class ClientApplication {
         if (!registered) {
             System.out.println("1. Sign in");
             System.out.println("2. Sign up");
-            System.out.println("3. Sign up with existing keys");
-            System.out.println("4. Exit");
+            System.out.println("3. Exit");
         } else {
             System.out.println("1. New transaction");
             System.out.println("2. Show wallet");
-            System.out.println("3. Disconnect");
-            System.out.println("4. Exit");
+            System.out.println("3. Exit");
+            System.out.println("4. Disconnect");
         }
         System.out.println(""); // Add space
         System.out.print("Please enter your choice : ");
@@ -147,14 +133,6 @@ public class ClientApplication {
     public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
-        signUp(null, null);
-    }
-    
-    public void signUp(final byte[] publicKey, final byte[] privateKey) throws NoSuchProviderException, NoSuchAlgorithmException, 
-            InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, 
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, 
-            IOException {
-
         System.out.println("\n");
         System.out.println("Sign up");
         System.out.println("-------\n");
@@ -192,11 +170,7 @@ public class ClientApplication {
 
             // Create a new empty wallet and generate a key pair
             final Wallet tmpWallet = Wallet.getInstance();
-            if(publicKey == null || privateKey == null) {
-                tmpWallet.writeWalletFile(userPassword, accountName);
-            } else {
-                tmpWallet.writeWalletFile(userPassword, accountName, publicKey, privateKey);
-            }
+            tmpWallet.writeWalletFile(userPassword, accountName);
         }
 
     }
