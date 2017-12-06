@@ -57,7 +57,7 @@ public class TestWallet {
         final byte[] transaction = randomBytes(50);
         final byte[] signature = Cryptography.signTransaction(keyPair.getPrivate(), transaction);
 
-        assertEquals(wallet.verifySignature(keyPair.getPublic(), transaction, signature), true);
+        assertEquals(Cryptography.verifySignature(keyPair.getPublic(), transaction, signature), true);
     }
 
     @Test
@@ -75,6 +75,6 @@ public class TestWallet {
         // test transaction (it can be anything, let's write random bytes) and verify the signature.
         final byte[] transaction = randomBytes(156);
         final byte[] badSignature = Cryptography.signTransaction(badPrivateKey, transaction);
-        assertEquals(wallet.verifySignature(keyPair.getPublic(), transaction, badSignature), false);
+        assertEquals(Cryptography.verifySignature(keyPair.getPublic(), transaction, badSignature), false);
     }
 }
