@@ -191,7 +191,7 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            final Wallet tmpWallet = new Wallet();
+            final Wallet tmpWallet = Wallet.getInstance();
             if(publicKey == null || privateKey == null) {
                 tmpWallet.writeWalletFile(userPassword, accountName);
             } else {
@@ -238,21 +238,6 @@ public class ClientApplication {
         }
 
     }
-//
-//    // TODO method for debug and must me be move
-//    public static String byteArrayToHex(final byte[] a) {
-//        final StringBuilder sb = new StringBuilder(a.length * 2);
-//        for (final byte b : a) {
-//            sb.append(String.format("%02x", b));
-//        }
-//        return sb.toString();
-//    }
-//
-//    // TODO method for debug and must me be move
-//    public static byte[] hexToByteArray(final String strOfHex) {
-//        // TODO
-//        return new byte[]{};
-//    }
 
     /**
      * Ask the user to create the transaction.<br>

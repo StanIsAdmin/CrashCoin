@@ -46,6 +46,8 @@ public class Wallet {
 
     private PublicKey publicKey;
     private KeyPairGenerator dsaKeyGen;
+    private ArrayList<Transaction> transactionsList;
+    private static Wallet instance = null;
 
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
@@ -53,12 +55,14 @@ public class Wallet {
      *
      * @throws NoSuchProviderException
      */
-    public Wallet() throws NoSuchProviderException {
+    private Wallet() {
         this.publicKey = null;
         try {
             dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
             System.out.println("[Error] Could not find DSA key-pair generator");
+        } catch (NoSuchProviderException ex) {
+            System.out.println(ex);
         }
     }
 
@@ -72,7 +76,7 @@ public class Wallet {
      * @throws NoSuchProviderException
      * @see signTransaction
      */
-    public Wallet(KeyPair keyPair) throws NoSuchProviderException {
+    private Wallet(KeyPair keyPair) {
         this();
         this.publicKey = null;
         this.publicKey = keyPair.getPublic();
@@ -98,12 +102,13 @@ public class Wallet {
         this.publicKey = keyPair.getPublic();
         return keyPair;
     }
+    
+    public void addTransaction(Transaction transaction) {
+        transactionsList.add(transaction);
+    }
 
     public ArrayList<Transaction> getTransactions() {
-        // TODO: ask for the blockchain if it is not in memory
-        // TODO: look for all the transactions containing my
-        // address as src or dest, and return them
-        return null; // TODO
+        return transactionsList;
     }
 
     public Signature dsaFromPrivateKey(final PrivateKey privateKey) {
@@ -323,6 +328,20 @@ public class Wallet {
 
         System.out.println("The creation of your wallet completed successfully");
         System.out.println("Please sign in and start crashing coins");
+    }
+    
+    public static Wallet getInstance() {
+        if (Wallet.instance == null) {
+            Wallet.instance = new Wallet();
+        }
+        return Wallet.instance;
+    }
+    
+    public static Wallet getInstance(KeyPair keypair){
+        if (Wallet.instance == null) {
+            Wallet.instance = new Wallet(keypair);
+        }
+        return Wallet.instance;
     }
 
     /**

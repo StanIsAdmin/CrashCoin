@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client.net;
 
+import be.ac.ulb.crashcoin.client.Wallet;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
@@ -37,12 +38,10 @@ public class RelayConnection extends AbstractReconnectConnection {
         if(data instanceof Transaction) {
             final Transaction transaction = (Transaction) data;
             System.out.println("Receve transaction: " + transaction);
-            
+            Wallet.getInstance().addTransaction(transaction);
         } else {
             System.err.println("Receive unknowed object: " + data.toString());
         }
-        
-        // TODO use data
     }
 
     public static RelayConnection getInstance() throws IOException {
