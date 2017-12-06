@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import org.json.JSONObject;
 
@@ -87,6 +88,11 @@ public class Transaction implements JSONable {
         this.addOutput(dstAddress, nCrashCoins);
         return this.isValid();
     }
+    
+    // Checks that the transaction is older that the other transaction
+    public boolean before(final Transaction other) {
+        return lockTime.before(other.lockTime);
+    }
 
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
@@ -115,21 +121,35 @@ public class Transaction implements JSONable {
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
-        // TODO: convert inputs and outputs to bytes
-        final byte[] destAddressBytes = destAddress.toBytes();
-        Integer totalSize = null;
-        ByteBuffer buffer = null;
-        if(srcAddress != null) {
-            final byte[] srcAddressBytes = srcAddress.toBytes();
-            totalSize = destAddressBytes.length + srcAddressBytes.length + Parameters.INTEGER_N_BYTES;
-            buffer = ByteBuffer.allocate(totalSize);
-            buffer.put(srcAddressBytes);
-        } else {
-            totalSize = destAddressBytes.length + Parameters.INTEGER_N_BYTES;
-            buffer = ByteBuffer.allocate(totalSize);
+        // Compute number of bytes required to represent inputs and outputs
+        Integer totalSize = 0;
+        for (Input input: inputs) {
+            totalSize += input.toBytes().length;
         }
-        buffer.put(destAddressBytes);
+        for (Output output: outputs) {
+            totalSize += output.toBytes().length;
+        }
+        totalSize += Parameters.INTEGER_N_BYTES;
+        // Add number of crashcoins of current transaction and user's address
+        byte[] srcAddressBytes;
+        if (srcAddress != null) {
+            srcAddressBytes = srcAddress.toBytes();
+            totalSize += srcAddressBytes.length;
+        }
+        final ByteBuffer buffer = ByteBuffer
+                .allocate(totalSize);
         buffer.putInt(totalAmount);
+        if (srcAddress != null) {
+            srcAddressBytes = srcAddress.toBytes();
+            buffer.put(srcAddressBytes);
+        }
+        // Add inputs and outputs as bytes
+        for (Input input: inputs) {
+            buffer.put(input.toBytes());
+        }
+        for (Output output: outputs) {
+            buffer.put(output.toBytes());
+        }
         return buffer.array();
     }
 
@@ -153,6 +173,30 @@ public class Transaction implements JSONable {
 
         public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
             this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
+        }
+                
+        /**
+         * Byte representation of a transaction input, which is simply the hash
+         * of the input transaction.
+         * 
+         * @return byte[]  Byte representation of the input
+         */
+        public byte[] toBytes() {
+            return previousTx;
+        }
+        
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            Input other = (Input) obj;
+            return Arrays.equals(this.previousTx, other.previousTx);
+        }
+        
+        @Override
+        public int hashCode() {
+            return this.previousTx.hashCode();
         }
     }
 
@@ -197,6 +241,28 @@ public class Transaction implements JSONable {
         public Address getAddress() {
             return this.address;
         }
+        
+        /**
+         * Byte representation of a transaction output, which relies on
+         * the amount of CrashCoins and the receiver's address.
+         * 
+         * @return byte[] Byte representation
+         */
+        public byte[] toBytes() {
+            final ByteBuffer buffer = ByteBuffer
+                .allocate(address.toBytes().length + Parameters.INTEGER_N_BYTES);
+            buffer.putInt(nCrashCoins);
+            buffer.put(address.toBytes());
+            return buffer.array();
+        }
+    }
+    
+    public ArrayList<Input> getInputs() {
+        return inputs;
+    }
+    
+    public ArrayList<Output> getOutputs() {
+        return outputs;
     }
 
     /**
