@@ -43,7 +43,7 @@ public class RelayConnection extends AbstractConnection {
                 // Broadcast the block to all the relay nodes
                 sendToAll(data);
 
-            } // TODO ? Inform Relay (and Miner that block have be rejected) ?
+            } // TODO ? Inform Relay (and Miner that the block has been rejected) ?
 
         }
     }
