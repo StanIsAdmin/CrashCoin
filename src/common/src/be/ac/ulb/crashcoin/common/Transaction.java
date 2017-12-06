@@ -97,6 +97,10 @@ public class Transaction implements JSONable {
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
     }
+    
+    public ArrayList<Input> getInputTransactions() {
+        return this.inputs;
+    }
 
     public void addOutput(final Address address, final Integer nCrashCoins) {
         this.outputs.add(new Output(address, nCrashCoins));

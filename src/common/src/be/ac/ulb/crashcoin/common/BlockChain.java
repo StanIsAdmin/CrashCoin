@@ -1,12 +1,17 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.Transaction.Input;
+import be.ac.ulb.crashcoin.common.Transaction.Output;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +23,9 @@ import org.json.JSONObject;
  * Stock block
  */
 public class BlockChain extends ArrayList<Block> implements JSONable {
+    
+    /* Maps inputs available for transactions to the Address they belong to */
+    private final Map<byte[], Address> availableInputs;
 
     // Used by [Relay Node]
     public BlockChain(final JSONObject json) {
@@ -37,6 +45,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     // Used by [Master node]
     public BlockChain() {
+        this.availableInputs = new HashMap<>();
         final Block genesis = createGenesisBlock();
         super.add(genesis); // call to super does not perform validity check
     }
@@ -46,6 +55,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         try {
             if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
                 super.add(block);
+                updateAvailableInputs(block);
                 return true;
             } else {
                 Logger.getLogger(BlockChain.class.getName()).log(Level.WARNING, "Invalid block discarded");
@@ -54,6 +64,41 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             Logger.getLogger(BlockChain.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
+    }
+    
+    /**
+     * Updates the internal representation of transactions available as inputs.
+     * 
+     * Transactions (outputs) received by an Address can only be used once
+     * as inputs for new transactions from the same address.
+     * This function assumes the received block is valid, and for each of its 
+     * transactions :
+     * - removes all used inputs from the pool of available inputs
+     * - marks the first output an available input for the receiver
+     * - marks the second output (change) as available for the sender, if any
+     * @param addedBlock a valid block that has just been added to the blockchain
+     */
+    private synchronized void updateAvailableInputs(Block addedBlock) {
+        for (final Transaction addedTransaction : addedBlock) {
+            
+            for (final Input usedInput : addedTransaction.getInputs()) {
+                availableInputs.remove(usedInput.toBytes());
+            }
+            
+            List<Output> transactionOutputs = addedTransaction.getOutputs();
+            
+            Output firstOutput = transactionOutputs.get(0);
+            availableInputs.put(firstOutput.toBytes(), addedTransaction.getDestAddress());
+            
+            Output secondOutput = null;
+            try {
+                secondOutput = transactionOutputs.get(1);
+            } catch (NullPointerException ex) {}
+            
+            if (secondOutput != null) {
+                availableInputs.put(secondOutput.toBytes(), addedTransaction.getSrcAddress());
+            }
+        }
     }
     
     public Block getLastBlock() {
