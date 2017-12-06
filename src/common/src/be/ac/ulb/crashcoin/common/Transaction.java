@@ -24,7 +24,6 @@ public class Transaction implements JSONable {
     /**
      * Constructor for transactions Transaction
      *
-     * @param srcAddress CrashCoin address of the source
      * @param destAddress CrashCoin address of the destination
      * @param totalAmount Number of CrashCoins
      * @param lockTime Transaction timestamp
@@ -37,7 +36,8 @@ public class Transaction implements JSONable {
         this(destAddress, srcAddress, totalAmount, lockTime, null);
     }
     
-    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime, final byte[] signature) {
+    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, 
+            final Timestamp lockTime, final byte[] signature) {
         super();
         this.destAddress = destAddress;
         this.srcAddress = srcAddress;
@@ -77,7 +77,7 @@ public class Transaction implements JSONable {
         return json;
     }
 
-    public void sign(PrivateKey privateKey) {
+    public void sign(final PrivateKey privateKey) {
         this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
     }
     
@@ -105,7 +105,7 @@ public class Transaction implements JSONable {
     private boolean isValid() {
         // Check whether sum of inputs is lower than the sum of outputs
         Integer sum = 0;
-        for (Output output : this.outputs) {
+        for (final Output output : this.outputs) {
             sum += output.nCrashCoins;
         }
         // The difference is considered as transaction fee
@@ -123,10 +123,10 @@ public class Transaction implements JSONable {
     public byte[] toBytes() {
         // Compute number of bytes required to represent inputs and outputs
         Integer totalSize = 0;
-        for (Input input: inputs) {
+        for (final Input input: inputs) {
             totalSize += input.toBytes().length;
         }
-        for (Output output: outputs) {
+        for (final Output output: outputs) {
             totalSize += output.toBytes().length;
         }
         totalSize += Parameters.INTEGER_N_BYTES;
@@ -144,10 +144,10 @@ public class Transaction implements JSONable {
             buffer.put(srcAddressBytes);
         }
         // Add inputs and outputs as bytes
-        for (Input input: inputs) {
+        for (final Input input: inputs) {
             buffer.put(input.toBytes());
         }
-        for (Output output: outputs) {
+        for (final Output output: outputs) {
             buffer.put(output.toBytes());
         }
         return buffer.array();
@@ -190,7 +190,7 @@ public class Transaction implements JSONable {
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
-            Input other = (Input) obj;
+            final Input other = (Input) obj;
             return Arrays.equals(this.previousTx, other.previousTx);
         }
         
@@ -281,7 +281,8 @@ public class Transaction implements JSONable {
             res = false;
         }
         final Transaction other = (Transaction) obj;
-        res &= this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
+        res &= this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && 
+                this.destAddress.equals(other.destAddress);
         if(this.srcAddress != null && other.srcAddress != null) {
             res &= this.srcAddress.equals(other.srcAddress);
         }
