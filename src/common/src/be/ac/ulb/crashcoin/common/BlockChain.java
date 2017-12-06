@@ -138,13 +138,10 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return 
      */
     private boolean isValidTransaction(Transaction transaction) {
-        // TODO implement other verifications
-        // The reason I (Stan) am not implementing anything regarding values
-        // is because I think there's a flaw in the way we create transactions
-        // Transactions should not contain a monetary value, it should be 
-        // derived from its inputs (which are either rewards or previous outputs, 
-        // both of which contain explicit values)
-        // TL;DR : can clients cheat by lying about the transaction value ?
+        // Verify the transaction value
+        if (! transaction.isValid()) return false;
+        
+        //TODO verify digital signature of transaction
         
         // Verify each input is available and belongs to the sender
         for (Transaction.Input input: transaction.getInputs()) {
