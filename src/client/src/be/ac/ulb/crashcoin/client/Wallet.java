@@ -82,7 +82,6 @@ public class Wallet {
      */
     private Wallet(KeyPair keyPair) {
         this();
-        this.publicKey = null;
         this.publicKey = keyPair.getPublic();
     }
 
