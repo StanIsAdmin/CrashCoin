@@ -32,6 +32,8 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -41,6 +43,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import sun.util.logging.PlatformLogger;
 
 public class Wallet {
 
@@ -114,7 +117,7 @@ public class Wallet {
             dsa.update(transaction, 0, transaction.length);
             verified = dsa.verify(signature);
         } catch (SignatureException e) {
-            e.printStackTrace();
+            Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, e.getMessage());
         }
         return verified;
     }
