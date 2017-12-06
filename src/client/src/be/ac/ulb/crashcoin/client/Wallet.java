@@ -43,7 +43,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import sun.util.logging.PlatformLogger;
 
 public class Wallet {
 
