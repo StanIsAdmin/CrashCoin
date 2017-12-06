@@ -1,5 +1,7 @@
 #!/bin/bash
 
+command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Use 'apt-get install screen'"; exit 1; }
+
 if test -t 1; then
     # see if it supports colors...
     ncolors=$(tput colors)
