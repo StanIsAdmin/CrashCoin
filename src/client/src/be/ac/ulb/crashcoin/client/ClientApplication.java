@@ -30,7 +30,9 @@ import java.util.Arrays;
  * Handle IO from user and network communication between nodes and wallet.
  */
 public class ClientApplication {
-
+    
+    private static ClientApplication instance = null;
+    
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
@@ -39,7 +41,8 @@ public class ClientApplication {
     public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
-
+        instance = this;
+        
         console = System.console();
         registered = false;
         int choice;
@@ -169,8 +172,8 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            final Wallet tmpWallet = Wallet.getInstance();
-            tmpWallet.writeWalletFile(userPassword, accountName);
+            final Wallet tmpWallet = new Wallet();
+            tmpWallet.writeWalletFile(userPassword, accountName, tmpWallet.generateKeys());
         }
 
     }
@@ -254,10 +257,18 @@ public class ClientApplication {
     }
 
     public void showWallet() {
-        ArrayList<Transaction> transactionList = wallet.getTransactions();
+        final ArrayList<Transaction> transactionList = wallet.getTransactions();
         transactionList.forEach((transaction) -> {
             System.out.println(transaction.toString());
         });
     }
-
+    
+    public Wallet getWallet() {
+        return wallet;
+    }
+    
+    public static ClientApplication getInstance() {
+        return instance;
+    }
+    
 }

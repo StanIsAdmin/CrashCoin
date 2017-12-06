@@ -58,8 +58,7 @@ public class Wallet {
      *
      * @throws NoSuchProviderException
      */
-    private Wallet() {
-        this.publicKey = null;
+    public Wallet() {
         transactionsList = new ArrayList<>();
         try {
             dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
@@ -213,20 +212,17 @@ public class Wallet {
         }
     }
 
-    public void writeWalletFile(final char[] userPassword, final String accountName) throws NoSuchAlgorithmException,
+    public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
+            throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
-        final KeyPair keyPair = this.generateKeys();
-
-        final PublicKey publicKey = keyPair.getPublic();
-        final PrivateKey privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
 
         // Get the bytes representation of the keys
         final byte[] publicKeyBytes = publicKey.getEncoded();
-        final byte[] privateKeyBytes = privateKey.getEncoded();
         
-        writeWalletFile(userPassword, accountName, publicKeyBytes, privateKeyBytes);
+        writeWalletFile(userPassword, accountName, publicKeyBytes, keyPair.getPrivate().getEncoded());
     }
     
     
