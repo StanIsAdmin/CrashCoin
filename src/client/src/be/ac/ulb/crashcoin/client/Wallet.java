@@ -10,8 +10,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.util.ArrayList;
 
 import be.ac.ulb.crashcoin.common.Transaction;
@@ -32,8 +30,6 @@ import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -110,19 +106,6 @@ public class Wallet {
 
     public ArrayList<Transaction> getTransactions() {
         return transactionsList;
-    }
-
-    public boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
-        final Signature dsa = Cryptography.dsaFromPublicKey(publicKey);
-
-        boolean verified = false;
-        try {
-            dsa.update(transaction, 0, transaction.length);
-            verified = dsa.verify(signature);
-        } catch (SignatureException e) {
-            Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, e.getMessage());
-        }
-        return verified;
     }
 
     /**
@@ -367,7 +350,7 @@ public class Wallet {
         final byte[] dummySignature = Cryptography.signTransaction(privateKey, dummyTransaction);
 
         // Verify the signature using the public key and the specific Wallet method
-        verified = this.verifySignature(publicKey, dummyTransaction, dummySignature);
+        verified = Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
 
         return (verified);
     }

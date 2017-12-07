@@ -12,6 +12,8 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 /**
@@ -133,5 +135,18 @@ public class Cryptography {
             e.printStackTrace();
         }
         return signature;
+    }
+
+    public static boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
+        final Signature dsa = Cryptography.dsaFromPublicKey(publicKey);
+
+        boolean verified = false;
+        try {
+            dsa.update(transaction, 0, transaction.length);
+            verified = dsa.verify(signature);
+        } catch (SignatureException e) {
+            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+        return verified;
     }
 }

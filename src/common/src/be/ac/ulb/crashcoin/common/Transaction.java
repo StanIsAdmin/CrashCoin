@@ -97,15 +97,28 @@ public class Transaction implements JSONable {
     public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
         this.inputs.add(new Input(transaction));
     }
+    
+    public ArrayList<Input> getInputTransactions() {
+        return this.inputs;
+    }
 
     public void addOutput(final Address address, final Integer nCrashCoins) {
         this.outputs.add(new Output(address, nCrashCoins));
     }
 
-    private boolean isValid() {
+    /** Returns true if the standalone transaction is valid, false otherwise.
+     * A transaction by itself is valid if it meets all of these conditions :
+     * - the sum of inputs equals the sum of outputs
+     * - each output value is strictly positive
+     * - TODO use input values instead of totalAmount ?
+     * 
+     * @return true if the transaction is valid as described, false otherwise
+     */
+    public boolean isValid() {
         // Check whether sum of inputs is lower than the sum of outputs
         Integer sum = 0;
         for (Output output : this.outputs) {
+            if (output.nCrashCoins <= 0) return false;
             sum += output.nCrashCoins;
         }
         // The difference is considered as transaction fee
