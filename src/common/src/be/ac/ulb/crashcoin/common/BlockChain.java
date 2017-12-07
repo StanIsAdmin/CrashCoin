@@ -130,11 +130,13 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     }
 
     protected static Block createGenesisBlock() {
-        Block genesisBlock = new Block(new byte[0], 0);
-        PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
-        Address masterWallet = new Address(masterPublicKey);
-        Timestamp genesisTime = new Timestamp(0L);
-        Transaction reward = new Transaction(masterWallet, Parameters.MINING_REWARD, genesisTime);
+        final Block genesisBlock = new Block(new byte[0], 0);
+        final PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
+        final Address masterWallet = new Address(masterPublicKey);
+        final Timestamp genesisTime = new Timestamp(0L);
+        final Transaction reward = new Transaction(masterWallet, null, Parameters.MINING_REWARD, genesisTime, 
+                Parameters.GENESIS_SIGNATURE);
+        reward.addOutput(masterWallet, Parameters.MINING_REWARD);
         genesisBlock.add(reward);
         return genesisBlock;
     }
