@@ -12,7 +12,7 @@ import java.util.Objects;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
-
+    
     private final Address srcAddress;
     private final Address destAddress;
     private final Integer totalAmount;
@@ -170,9 +170,11 @@ public class Transaction implements JSONable {
     public class Input {
 
         final byte[] previousTx; // Hash value of a previous transaction
+        final int amount;
 
         public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
             this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
+            this.amount = previousTransaction.totalAmount;
         }
                 
         /**
