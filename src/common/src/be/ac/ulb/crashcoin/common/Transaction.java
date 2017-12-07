@@ -8,72 +8,105 @@ import java.security.PrivateKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
 
-    private final Address srcAddress;
-    private final Address destAddress;
-    private final Integer totalAmount;
     private final Timestamp lockTime;
-    private byte[] signature;
+    
     private ArrayList<Input> inputs;
-    private ArrayList<Output> outputs;
+    private Output transactionOutput;
+    private Output changeOutput;
+    
+    private byte[] signature;
 
     /**
-     * Constructor for transactions Transaction
+     * Creates a reward transaction (transaction with no source address).
+     * The resulting transaction is without signature.
      *
-     * @param srcAddress CrashCoin address of the source
-     * @param destAddress CrashCoin address of the destination
-     * @param totalAmount Number of CrashCoins
+     * @param destAddress Address of the destination
+     * @param amount Number of CrashCoins
      * @param lockTime Transaction timestamp
+     * @param inputs List of referenced outputs, used as inputs
+     * @throws java.security.NoSuchAlgorithmException
      */    
-    public Transaction(final Address destAddress, final Integer totalAmount, final Timestamp lockTime) {
-        this(destAddress, null, totalAmount, lockTime);
+    public Transaction(final Address destAddress, final Integer amount, final Timestamp lockTime, final List<Output> inputs) throws NoSuchAlgorithmException {
+        this(null, destAddress, amount, lockTime, inputs);
     }
     
-    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
-        this(destAddress, srcAddress, totalAmount, lockTime, null);
-    }
-    
-    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime, final byte[] signature) {
-        super();
-        this.destAddress = destAddress;
-        this.srcAddress = srcAddress;
-        this.totalAmount = totalAmount;
+    /**
+     * Creates a transaction without a signature.
+     * 
+     * @param srcAddress Source address of the transaction
+     * @param destAddress Destination address of the transaction
+     * @param amount Number of CrashCoins received by the destination address
+     * @param lockTime Time of the transaction creation
+     * @param referencedOutputs List of referenced outputs, used as inputs
+     * @throws java.security.NoSuchAlgorithmException
+     */
+    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount, final Timestamp lockTime, final List<Output> referencedOutputs) throws NoSuchAlgorithmException {
+        // Add lock time
         this.lockTime = lockTime;
-        this.signature = signature;
+
+        // Create inputs
         this.inputs = new ArrayList<>();
-        this.outputs = new ArrayList<>();
+        Integer inputAmount = 0;
+        for (final Output output : referencedOutputs) {
+            inputs.add(new Input(output));
+            inputAmount += output.getAmount();
+        }
+        
+        // Create outputs
+        this.transactionOutput = new Output(destAddress, amount);
+        this.changeOutput = new Output(srcAddress, inputAmount - amount);
+        
+        // Instantiate signature
+        this.signature = null;
     }
 
     /**
-     * Create Transaction instance from a JSON representation
-     *
+     * Create Transaction instance from a JSON representation.
+     * This transaction already contains a signature.
+     * 
      * @param json
      */
     public Transaction(final JSONObject json) {
-        this(new Address((JSONObject) json.get("destAddress")),
-                (json.has("srcAddress"))? new Address((JSONObject) json.get("srcAddress")) : null,
-                json.getInt("totalAmount"),
-                new Timestamp(json.getLong("lockTime")),
-                JsonUtils.decodeBytes(json.getString("signature")));
+        // Add lock time
+        this.lockTime = new Timestamp(json.getLong("lockTime"));
+        
+        // Add inputs
+        this.inputs = new ArrayList<>();
+        for (Object input : json.getJSONArray("inputs")) {
+            this.inputs.add(new Input((JSONObject) input));
+        }
+        
+        // Add outputs
+        this.transactionOutput = new Output((JSONObject) json.get("transactionOutput"));
+        this.changeOutput = new Output((JSONObject) json.get("changeOutput"));
+        
+        // Add signature
+        this.signature = JsonUtils.decodeBytes(json.getString("signature"));
     }
 
     /**
-     * Get a JSON representation of the Address instance * TODO add signature
+     * Returns a JSON representation of the Address instance.
      */
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("destAddress", destAddress.toJSON());
-        json.put("signature", JsonUtils.encodeBytes(signature));
-        json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
-        if(srcAddress != null) {
-            json.put("srcAddress", srcAddress.toJSON());
+        
+        JSONArray jsonInputs = new JSONArray();
+        for (final Input input : inputs) {
+            jsonInputs.put(input.toJSON());
         }
+        json.put("inputs", jsonInputs);
+        json.put("transactionOutput", this.transactionOutput.toJSON());
+        json.put("changeOutput", this.changeOutput.toJSON());
+        json.put("signature", JsonUtils.encodeBytes(signature));
         return json;
     }
 
@@ -81,29 +114,13 @@ public class Transaction implements JSONable {
         this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
     }
     
-    // Create a new transaction to a final destinator
-    public boolean createTransaction(final Transaction transaction,
-            final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
-        this.addInputTransaction(transaction);
-        this.addOutput(dstAddress, nCrashCoins);
-        return this.isValid();
-    }
-    
     // Checks that the transaction is older that the other transaction
     public boolean before(final Transaction other) {
         return lockTime.before(other.lockTime);
     }
-
-    public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
-        this.inputs.add(new Input(transaction));
-    }
     
     public ArrayList<Input> getInputTransactions() {
         return this.inputs;
-    }
-
-    public void addOutput(final Address address, final Integer nCrashCoins) {
-        this.outputs.add(new Output(address, nCrashCoins));
     }
 
     /** Returns true if the standalone transaction is valid, false otherwise.
@@ -118,8 +135,8 @@ public class Transaction implements JSONable {
         // Check whether sum of inputs is lower than the sum of outputs
         Integer sum = 0;
         for (Output output : this.outputs) {
-            if (output.nCrashCoins <= 0) return false;
-            sum += output.nCrashCoins;
+            if (output.amount <= 0) return false;
+            sum += output.amount;
         }
         // The difference is considered as transaction fee
         return Objects.equals(sum, totalAmount);
@@ -182,10 +199,13 @@ public class Transaction implements JSONable {
      */
     public class Input {
 
-        final byte[] previousTx; // Hash value of a previous transaction
+        final byte[] previousOutputHash; // Hash value of a previous transaction
+        
+        final Integer previousOutputAmount; // Amount of the previous output
 
-        public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
-            this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
+        public Input(final Output output) throws NoSuchAlgorithmException {
+            this.previousOutputHash = Cryptography.hashBytes(output.toBytes());
+            this.previousOutputAmount = output.getAmount();
         }
                 
         /**
@@ -195,7 +215,7 @@ public class Transaction implements JSONable {
          * @return byte[]  Byte representation of the input
          */
         public byte[] toBytes() {
-            return previousTx;
+            return previousOutputHash;
         }
         
         @Override
@@ -204,12 +224,12 @@ public class Transaction implements JSONable {
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
             Input other = (Input) obj;
-            return Arrays.equals(this.previousTx, other.previousTx);
+            return Arrays.equals(this.previousOutputHash, other.previousOutputHash);
         }
         
         @Override
         public int hashCode() {
-            return this.previousTx.hashCode();
+            return this.previousOutputHash.hashCode();
         }
     }
 
@@ -243,12 +263,16 @@ public class Transaction implements JSONable {
      */
     public class Output {
 
-        final Integer nCrashCoins;
+        final Integer amount;
         final Address address;
 
         public Output(final Address address, final Integer nCrashCoins) {
-            this.nCrashCoins = nCrashCoins;
+            this.amount = nCrashCoins;
             this.address = address;
+        }
+        
+        public Integer getAmount() {
+            return this.amount;
         }
 
         public Address getAddress() {
@@ -264,7 +288,7 @@ public class Transaction implements JSONable {
         public byte[] toBytes() {
             final ByteBuffer buffer = ByteBuffer
                 .allocate(address.toBytes().length + Parameters.INTEGER_N_BYTES);
-            buffer.putInt(nCrashCoins);
+            buffer.putInt(amount);
             buffer.put(address.toBytes());
             return buffer.array();
         }
@@ -274,8 +298,12 @@ public class Transaction implements JSONable {
         return inputs;
     }
     
-    public ArrayList<Output> getOutputs() {
-        return outputs;
+    public Output getTransactionOutput() {
+        return this.transactionOutput;
+    }
+    
+    public Output getChangeOutput() {
+        return this.changeOutput;
     }
 
     /**
