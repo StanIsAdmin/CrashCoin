@@ -1,7 +1,7 @@
 package be.ac.ulb.crashcoin.common;
 
-import be.ac.ulb.crashcoin.common.Transaction.Input;
-import be.ac.ulb.crashcoin.common.Transaction.Output;
+import be.ac.ulb.crashcoin.common.TransactionInput;
+import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.PublicKey;
 import java.sql.Timestamp;
@@ -21,7 +21,7 @@ import org.json.JSONObject;
 public class BlockChain extends ArrayList<Block> implements JSONable {
     
     /* Maps inputs available for transactions to the Address they belong to */
-    private final Map<byte[], Output> availableInputs;
+    private final Map<byte[], TransactionOutput> availableInputs;
 
     // Used by [Relay Node]
     public BlockChain(final JSONObject json)  {
@@ -73,13 +73,13 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     private synchronized void updateAvailableInputs(Block addedBlock)  {
         for (final Transaction addedTransaction : addedBlock) {
             
-            for (final Input usedInput : addedTransaction.getInputs()) {
+            for (final TransactionInput usedInput : addedTransaction.getInputs()) {
                 availableInputs.remove(usedInput.toBytes());
             }
             
-            final Output transactionOutput = addedTransaction.getTransactionOutput();
+            final TransactionOutput transactionOutput = addedTransaction.getTransactionOutput();
             this.availableInputs.put(Cryptography.hashBytes(transactionOutput.toBytes()), transactionOutput);
-            final Output changeOutput = addedTransaction.getChangeOutput();
+            final TransactionOutput changeOutput = addedTransaction.getChangeOutput();
             // only added to the hashmap if change is strictly positive:
             // outputs with 0 change would never be used again, therefore it is
             // not necessary to keep them in memory
@@ -132,8 +132,8 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
         if(!transaction.isReward()) {
             // Verify each input is available and belongs to the sender
-            for (final Transaction.Input input: transaction.getInputs()) {
-                final Output referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
+            for (final TransactionInput input: transaction.getInputs()) {
+                final TransactionOutput referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
                 if (referencedOutput == null)
                     return false;
                 // verify that the destination address of the referenced output corrponds to
