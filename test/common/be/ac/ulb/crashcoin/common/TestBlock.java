@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

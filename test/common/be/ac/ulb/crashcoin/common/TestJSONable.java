@@ -16,75 +16,30 @@ import org.junit.Test;
  */
 public class TestJSONable {
 
-    public PrivateKey genPrivateKey() {
-        KeyPairGenerator kpg = null;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA");
-        } catch (NoSuchAlgorithmException e) {
-            fail("Could not create key pair generator");
-        }
-        final KeyPair kp = kpg.generateKeyPair();
-        return kp.getPrivate();
-    }
-    
-    public Address createAddress() {
-        KeyPairGenerator kpg = null;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA");
-        } catch (NoSuchAlgorithmException e) {
-            fail("Could not create key pair generator");
-        }
-        final KeyPair kp = kpg.generateKeyPair();
-        final PublicKey pk = kp.getPublic();
-        return new Address(pk);
-    }
-
-    public Block createBlock() {
-        final Block block = new Block(new byte[]{(byte) 0x00}, 0);
-        Transaction transaction;
-        do {
-            transaction = createTransaction();
-        } while (block.add(transaction));
-        return block;
-    }
-
-    public BlockChain createBlockchain() {
-        final BlockChain newBlockChain = new BlockChain();
-        newBlockChain.add(createBlock()); //TODO this does not work (block is not valid)
-        return newBlockChain;
-    }
-
-    public Transaction createTransaction() {
-        final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        final Transaction transaction = new Transaction(createAddress(), 20, timestamp);
-        transaction.sign(genPrivateKey());
-        return transaction;
-    }
-
     @Test
     public void testAddressJSONConversion() {
-        final Address address = createAddress();
+        final Address address = TestUtils.createAddress();
         final Address copy = new Address(address.toJSON());
         assertEquals(address, copy);
     }
 
     @Test
     public void testBlockJSONConversion() {
-        final Block block = createBlock();
+        final Block block = TestUtils.createBlock();
         final Block copy = new Block(block.toJSON());
         assertEquals(block, copy);
     }
 
     @Test
     public void testTransactionJSONConversion() {
-        final Transaction transaction = createTransaction();
+        final Transaction transaction = TestUtils.createTransaction();
         final Transaction copy = new Transaction(transaction.toJSON());
         assertEquals(transaction, copy);
     }
 
     @Test
     public void testBlockChainJSONConcversion() {
-        final BlockChain blockChain = createBlockchain();
+        final BlockChain blockChain = TestUtils.createBlockchain();
         final BlockChain copy = new BlockChain(blockChain.toJSON());
         assertEquals(blockChain, copy);
     }
