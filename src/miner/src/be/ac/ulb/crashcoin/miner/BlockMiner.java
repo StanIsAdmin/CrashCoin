@@ -32,21 +32,20 @@ public final class BlockMiner {
      *
      * @return the block with the correct nonce
      *
-     * @throws java.security.NoSuchAlgorithmException if unable to mine
      * @throws java.io.IOException if unable to reach relay
      * @throws be.ac.ulb.crashcoin.miner.AbortMiningException if new block has
      *          arrived during mining
      */
-    public Block mineBlock() throws NoSuchAlgorithmException, IOException, AbortMiningException {
+    public Block mineBlock() throws IOException, AbortMiningException {
         currentNonce = 0;
         return mine();
     }
     
-    public Block continueMining() throws NoSuchAlgorithmException, IOException, AbortMiningException {
+    public Block continueMining() throws IOException, AbortMiningException {
         return mine();
     }
     
-    private Block mine() throws NoSuchAlgorithmException, IOException, AbortMiningException {
+    private Block mine() throws IOException, AbortMiningException {
         do {
             if(RelayConnection.getRelayConnection().hasBlocks()) {
                 throw new AbortMiningException();

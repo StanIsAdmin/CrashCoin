@@ -5,7 +5,6 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.sql.Timestamp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -48,17 +47,18 @@ public class TestJSONable {
         return block;
     }
 
-    public BlockChain createBlockchain() {
+    public BlockChain createBlockchain()  {
         final BlockChain newBlockChain = new BlockChain();
         newBlockChain.add(createBlock()); //TODO this does not work (block is not valid)
         return newBlockChain;
     }
 
     public Transaction createTransaction() {
-        final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        final Transaction transaction = new Transaction(createAddress(), 20, timestamp);
+        final Transaction transaction;
+        transaction = new Transaction(createAddress());
         transaction.sign(genPrivateKey());
         return transaction;
+            
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TestJSONable {
     }
 
     @Test
-    public void testBlockChainJSONConcversion() {
+    public void testBlockChainJSONConcversion()  {
         final BlockChain blockChain = createBlockchain();
         final BlockChain copy = new BlockChain(blockChain.toJSON());
         assertEquals(blockChain, copy);

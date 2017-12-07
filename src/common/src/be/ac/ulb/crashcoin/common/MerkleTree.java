@@ -3,7 +3,6 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -82,16 +81,11 @@ public class MerkleTree implements JSONable {
         ByteBuffer buffer = ByteBuffer.allocate(leftHash.length + rightHash.length);
         buffer.put(leftHash);
         buffer.put(rightHash);
-        try {
-            byte[] newHash = Cryptography.hashBytes(buffer.array());
-            Node parent = new Node(newHash);
-            leftNode.setParent(parent);
-            rightNode.setParent(parent);
-            return parent;
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(MerkleTree.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        byte[] newHash = Cryptography.hashBytes(buffer.array());
+        Node parent = new Node(newHash);
+        leftNode.setParent(parent);
+        rightNode.setParent(parent);
+        return parent;
     }
     
     /**
@@ -106,14 +100,10 @@ public class MerkleTree implements JSONable {
         this.leaves = new HashMap<>();
         List<Node> leaves = new ArrayList<>();
         for (Transaction transaction: transactions) {
-            try {
-                byte[] hash = Cryptography.hashBytes(transaction.toBytes());
-                Node node = new Node(hash);
-                leaves.add(node);
-                this.leaves.put(transaction, node);
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(MerkleTree.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            byte[] hash = Cryptography.hashBytes(transaction.toBytes());
+            Node node = new Node(hash);
+            leaves.add(node);
+            this.leaves.put(transaction, node);
         }
         return computeMerkleRootFromBytes(leaves);
     }

@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
@@ -47,7 +48,8 @@ public abstract class AbstractConnection extends Thread {
                 if (readLine == null) {
                     break;
                 }
-                final JSONable resultObject = getObjectFromJsonObject(new JSONObject(readLine));
+                final JSONable resultObject;
+                resultObject = getObjectFromJsonObject(new JSONObject(readLine));
 
                 if (resultObject == null) {
                     Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Recieved unknow JSONObject: {0}", readLine);
@@ -78,7 +80,7 @@ public abstract class AbstractConnection extends Thread {
         }
     }
 
-    private JSONable getObjectFromJsonObject(final JSONObject jsonData) {
+    private JSONable getObjectFromJsonObject(final JSONObject jsonData)  {
         JSONable result = null;
         switch (jsonData.getString("type")) {
 

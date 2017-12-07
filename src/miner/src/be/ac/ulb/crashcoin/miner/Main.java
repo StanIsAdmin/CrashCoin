@@ -60,22 +60,6 @@ public class Main {
         return new Address(pk);
     }
 
-    public static Transaction getTrasaction() {
-        Timestamp timestamp;
-        timestamp = new Timestamp(System.currentTimeMillis());
-        return new Transaction(getAddress(), 20, timestamp);
-    }
-
-    private static Block getBlock() { // Only for test
-        Block block = new Block(new byte[]{}, 0);
-        boolean res = true;
-        while (res) {
-            Transaction transaction = getTrasaction();
-            res = block.add(transaction);
-        }
-        return block;
-    }
-
     public static void main(final String[] args) {
 
         RelayConnection connection;
@@ -87,11 +71,6 @@ public class Main {
             return;
         }
 
-        // Test : reward transacton sending
-        final Block block = getBlock();
-        connection.sendData(block);
-        // -------------------------
-
         // create a miner... And start mining... Whut else?
         Miner miner;
         try {
@@ -102,7 +81,7 @@ public class Main {
         }
         try {
             miner.startMining();
-        } catch (InterruptedException | NoSuchAlgorithmException ex) {
+        } catch (InterruptedException  ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

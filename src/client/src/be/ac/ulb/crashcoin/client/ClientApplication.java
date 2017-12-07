@@ -91,7 +91,7 @@ public class ClientApplication {
         }
     }
 
-    private void actionMenuRegistred(final int choice) throws NoSuchAlgorithmException {
+    private void actionMenuRegistred(final int choice)  {
         switch (choice) {
             case 1:
                 createTransaction();
@@ -225,7 +225,7 @@ public class ClientApplication {
      * @throws NoSuchAlgorithmException if the machine is unable to perform the
      * chosen hash algorithm (Parameters.HASH_ALGORITHM)
      */
-    public Transaction createTransaction() throws NoSuchAlgorithmException {
+    public Transaction createTransaction()  {
         final Address srcAddress = wallet.getAddress();
         Transaction result = null;
         Transaction transaction;

@@ -186,7 +186,7 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the hash of the last block
      * @throws NoSuchAlgorithmException if unable to hash last block
      */
-    public byte[] getLastBlockOfBlockChainHash() throws NoSuchAlgorithmException {
+    public byte[] getLastBlockOfBlockChainHash()  {
         return Cryptography.hashBytes(lastBlock.headerToBytes());
     }
 }
