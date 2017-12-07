@@ -16,7 +16,7 @@ public class Main {
     private static BlockChain _blockChain;
 
     public static void main(final String[] main) {
-        // TODO
+
         _blockChain = new BlockChain();
 
         // Enable listener

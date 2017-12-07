@@ -19,7 +19,6 @@ public class Main {
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, ClassNotFoundException {
 
-        // TODO GUI or Terminal application ?
         final ClientApplication ca = new ClientApplication();
 
     }
