@@ -1,6 +1,6 @@
 #!/bin/bash
 
-command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Use 'apt-get install screen'"; exit 1; }
+command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Install screen by typing 'apt-get install screen' in order to use Crashcoin."; exit 1; }
 
 if test -t 1; then
     # see if it supports colors...
@@ -25,7 +25,7 @@ fi
 
 start() {
     if [ $(status $1) = true ]; then
-        echo "${red}${1^} already start${normal}";
+        echo "${red}${1^} already started${normal}";
     else
         echo "${green}Starting${normal} ${bold}${1^}${normal}";
         screen -S $1 -d -m java -jar dist/$1.jar
@@ -38,12 +38,12 @@ stop() {
         screen -X -S $1 stuff "^C"
         sleep 3
         if [ $(status $1) = true ]; then
-            echo "${red}Error when stopping${normal} ${bold}${1^}${normal}"
+            echo "${red}Error while trying to${normal} ${bold}${1^}${normal}"
         else
-            echo "${bold}${1^}${normal} is stop"
+            echo "${bold}${1^}${normal} has been stoped"
         fi
     else
-        echo "${bold}${1^}${normal} ${red}is not start${normal}";
+        echo "${bold}${1^}${normal} ${red}has not been launched yet${normal}";
     fi
 }
 
@@ -63,7 +63,7 @@ printStatus() {
     if screen -list | grep -q "$1"; then
         echo "${green}[V] ${normal}Service ${bold}${1^}${normal} is ${green}running${normal}"
     else
-        echo "${red}[X] ${normal}Service ${bold}${1^}${normal} ${red}down${normal}"
+        echo "${red}[X] ${normal}Service ${bold}${1^}${normal} is ${red}down${normal}"
     fi
 }
 
@@ -129,7 +129,7 @@ case "$1" in
         restartType $2
         ;;
     view)
-        echo "To close view 'CTRL+a' and then 'd'"
+        echo "To close view : press 'CTRL+a' and then 'd'"
         viewType $2
         ;;
     status)
@@ -143,5 +143,5 @@ case "$1" in
        exit 1
        ;;
 esac
- 
+
 exit 0
