@@ -3,7 +3,6 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.Transaction.Input;
 import be.ac.ulb.crashcoin.common.Transaction.Output;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
