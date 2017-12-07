@@ -130,16 +130,18 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             return false;
         
         //TODO verify digital signature of transaction
-        
-        // Verify each input is available and belongs to the sender
-        for (Transaction.Input input: transaction.getInputs()) {
-            final Output referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
-            if (referencedOutput == null)
-                return false;
-            // verify that the destination address of the referenced output corrponds to
-            // the address of the payer (i.e. destination addess of the change output)
-            if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
-                return false;
+
+        if(!transaction.isReward()) {
+            // Verify each input is available and belongs to the sender
+            for (final Transaction.Input input: transaction.getInputs()) {
+                final Output referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
+                if (referencedOutput == null)
+                    return false;
+                // verify that the destination address of the referenced output corrponds to
+                // the address of the payer (i.e. destination addess of the change output)
+                if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
+                    return false;
+            }
         }
         
         // All verifications having passed, the transaction is valid

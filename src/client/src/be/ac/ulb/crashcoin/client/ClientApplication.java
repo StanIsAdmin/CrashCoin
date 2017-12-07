@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.sql.Timestamp;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -213,7 +212,6 @@ public class ClientApplication {
             System.out.println("The wallet identifier that you entered cannot be found");
 
         }
-
     }
 
     /**
@@ -222,14 +220,11 @@ public class ClientApplication {
      * transaction was aborded.
      *
      * @return The created transaction
-     * @throws NoSuchAlgorithmException if the machine is unable to perform the
-     * chosen hash algorithm (Parameters.HASH_ALGORITHM)
      */
     public Transaction createTransaction()  {
         final Address srcAddress = wallet.getAddress();
-        Transaction result = null;
         Transaction transaction;
-        Transaction input;
+        Transaction result = null;
         int amount = 0;
 
         do {
@@ -240,20 +235,20 @@ public class ClientApplication {
 
             System.out.print("Destination : ");
             String strDest = reader.next();
+            
+            // TODO get the inputs to make a transaction, and find a way to stop the while loop
+            
+            transaction = new Transaction(srcAddress);
+            /*input = new Transaction(srcAddress, amount);
 
-            final Timestamp lockTime = new Timestamp(System.currentTimeMillis());
-            // TODO : get Input transaction
-            // Input is only for test.
-            input = new Transaction(srcAddress, amount, lockTime);
-
-            transaction = new Transaction(srcAddress, amount, lockTime);
-        } while (!(transaction.createTransaction(input, srcAddress, amount)) && amount != -1);
+            transaction = new Transaction(srcAddress, amount, lockTime);*/
+        } while (amount != -1);
 
         if (amount != -1) {
-            result = transaction;
+            return transaction;
         }
 
-        return result;
+        return null;
     }
 
     public void showWallet() {

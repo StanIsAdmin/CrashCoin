@@ -175,7 +175,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Get hash of all transaction
      *
      * @return 32 bytes !
-     * @throws java.security.NoSuchAlgorithmException
      */
     public byte[] getTransactionHash()  {
         return Cryptography.hashBytes(this.transactionsToBytes());

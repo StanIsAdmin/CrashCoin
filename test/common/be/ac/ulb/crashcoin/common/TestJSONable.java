@@ -54,8 +54,7 @@ public class TestJSONable {
     }
 
     public Transaction createTransaction() {
-        final Transaction transaction;
-        transaction = new Transaction(createAddress());
+        final Transaction transaction = new Transaction(createAddress());
         transaction.sign(genPrivateKey());
         return transaction;
             
