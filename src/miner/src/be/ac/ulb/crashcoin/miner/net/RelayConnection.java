@@ -9,7 +9,6 @@ import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -184,7 +183,6 @@ public class RelayConnection extends AbstractReconnectConnection {
      * Gives the hash of the last byte in the blockchain.
      * 
      * @return the hash of the last block
-     * @throws NoSuchAlgorithmException if unable to hash last block
      */
     public byte[] getLastBlockOfBlockChainHash()  {
         return Cryptography.hashBytes(lastBlock.headerToBytes());

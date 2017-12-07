@@ -4,7 +4,6 @@ import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,7 +152,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Set the header into a single byte array.
      *
      * @return a byte[] representing the header
-     * @throws NoSuchAlgorithmException if unable to hash
      */
     public byte[] headerToBytes()  {
         final ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
@@ -202,7 +200,6 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Set the whole block in a single byte array.
      *
      * @return a byte[] representing the block
-     * @throws NoSuchAlgorithmException if unable to perform hashing
      */
     public byte[] toBytes()  {
         final byte[] headerBytes = headerToBytes();

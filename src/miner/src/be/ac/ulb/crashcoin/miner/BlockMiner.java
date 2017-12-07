@@ -3,7 +3,6 @@ package be.ac.ulb.crashcoin.miner;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 public final class BlockMiner {
 

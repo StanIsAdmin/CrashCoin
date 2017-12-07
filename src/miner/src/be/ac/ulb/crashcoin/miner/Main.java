@@ -1,9 +1,7 @@
 package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Address;
-import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.Parameters;
-import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
@@ -15,7 +13,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.sql.Timestamp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.fail;
