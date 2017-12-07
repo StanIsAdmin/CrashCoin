@@ -10,7 +10,14 @@ import org.json.JSONObject;
  */
 public class TransactionOutput implements JSONable {
 
+    /** The number of CrashCoins sent in the transaction. */
     private final Integer amount;
+    /** 
+     * The address of the payee.
+     * 
+     * This address is either the payee taht receives Crashcoins or the payer if
+     * it payed too much (got change back).
+     */
     private final Address address;
 
     public TransactionOutput(final Address address, final Integer nCrashCoins) {
@@ -31,10 +38,20 @@ public class TransactionOutput implements JSONable {
         return json;
     }
 
+    /**
+     * Get the number of Crashcoins that are sent in this very output.
+     * 
+     * @return the amount of Crashcoins
+     */
     public Integer getAmount() {
         return this.amount;
     }
 
+    /**
+     * Get the address this very output is sent to.
+     * 
+     * @return the address of the payee
+     */
     public Address getDestinationAddress() {
         return this.address;
     }

@@ -11,8 +11,10 @@ import org.json.JSONObject;
  */
 public class TransactionInput implements JSONable {
 
-    private final byte[] previousOutputHash; // Hash value of a previous transaction
-    private final Integer previousOutputAmount; // Amount of the previous output
+    /** Hash value of a previous output */
+    private final byte[] previousOutputHash; 
+    /** Number of CrashCoins available in the previous output */
+    private final Integer previousOutputAmount;
 
     public TransactionInput(final TransactionOutput output) {
         this.previousOutputHash = Cryptography.hashBytes(output.toBytes());
@@ -32,6 +34,11 @@ public class TransactionInput implements JSONable {
         return json;
     }
 
+    /**
+     * Get the amount of Crashcoin coming from this very input.
+     * 
+     * @return the number of CrashCoins coming from the input
+     */
     public Integer getAmount() {
         return this.previousOutputAmount;
     }

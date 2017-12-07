@@ -133,24 +133,35 @@ public class Transaction implements JSONable {
         return json;
     }
 
+    /**
+     * Add signature of the payer to the transaction.
+     * 
+     * Transactions signature is performed by DSA.
+     * 
+     * @see Cryptography.signTransaction
+     * 
+     * @param privateKey the private key of the payer (signer)
+     */
     public void sign(final PrivateKey privateKey) {
         this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
     }
     
-    // Checks that the transaction is older that the other transaction
+    /**
+     * Checks that the transaction is older that the other transaction
+     * 
+     * @param other the transaction which timestamp is tested 
+     * 
+     * @return true if this very transaction is older that the other one.
+     */
     public boolean before(final Transaction other) {
         return lockTime.before(other.lockTime);
     }
     
-    public ArrayList<TransactionInput> getInputTransactions() {
-        return this.inputs;
-    }
-
     /** Returns true if the standalone transaction is valid, false otherwise.
-     * A transaction by itself is valid if it meets all of these conditions :
-     * - the sum of inputs equals the sum of outputs
-     * - each output value is strictly positive
-     * - TODO use input values instead of totalAmount ?
+     * 
+     * A transaction by itself is valid if it meets all of these conditions :<br>
+     * - the sum of inputs equals the sum of outputs<br>
+     * - each output value is strictly positive<br>
      * 
      * @return true if the transaction is valid as described, false otherwise
      */
@@ -213,14 +224,52 @@ public class Transaction implements JSONable {
         return this.changeOutput.getDestinationAddress();
     }
 
+    /**
+     * Get the list of transactions outputs references that are used as inputs
+     * in this very transaction.
+     * 
+     * A TransactionInput is basically a hash of a transaction output, and the amount
+     * of that output.
+     * 
+     * @see TransactionInput
+     * @see TransactionOutput
+     * 
+     * @return an ArrayList of TransactionInputs
+     */
     public ArrayList<TransactionInput> getInputs() {
         return inputs;
     }
     
+    /**
+     * Get the transaction output.
+     * 
+     * As opposed to the changeOutput, the transaction output is the output of
+     * the transaction that is destinated to the payee (receiver of the payement).
+     * 
+     * @see getChangeOutput
+     * @see transactionOutput
+     * @see changeOutput
+     * 
+     * @return the output to the payee.
+     */
     public TransactionOutput getTransactionOutput() {
         return this.transactionOutput;
     }
     
+    /**
+     * Get the change output.
+     * 
+     * As opposed to the transactionOutput, the change output is the output
+     * representing the change, i.e. when a wallet makes a transaction, it pays
+     * a certain amount of Crashcoins. If it pays too much, the remaining
+     * Crashcoins are redirected to its address as a change output.
+     * 
+     * @see getChangeOutput
+     * @see transactionOutput
+     * @see changeOutput
+     * 
+     * @return the change output
+     */
     public TransactionOutput getChangeOutput() {
         return this.changeOutput;
     }
