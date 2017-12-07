@@ -46,7 +46,6 @@ public class Transaction implements JSONable {
      * @param lockTime time of the creation of the transaction (if null: lockTime
      *      is considered to be current timestamp)
      * @param destAddress Address of the destination
-     * @throws java.security.NoSuchAlgorithmException
      */    
     public Transaction(final Address destAddress, final Timestamp lockTime)  {
         // Add lock time
@@ -64,7 +63,8 @@ public class Transaction implements JSONable {
      * @param amount Number of CrashCoins received by the destination address
      * @param referencedOutputs List of referenced outputs, used as inputs
      */
-    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount, final List<Output> referencedOutputs)  {
+    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount, 
+            final List<Output> referencedOutputs)  {
         // Add lock time
         this.lockTime = new Timestamp(System.currentTimeMillis());
 
@@ -93,12 +93,10 @@ public class Transaction implements JSONable {
     public Transaction(final JSONObject json) {
         // Add lock time
         this.lockTime = new Timestamp(json.getLong("lockTime"));
-        boolean isReward = json.getBoolean("isReward");
-        
-        if(!isReward) {
+        if(!json.getBoolean("isReward")) {
             // Add inputs
             this.inputs = new ArrayList<>();
-            for (Object input : json.getJSONArray("inputs")) {
+            for (final Object input : json.getJSONArray("inputs")) {
                 this.inputs.add(new Input((JSONObject) input));
             }
             
@@ -123,7 +121,7 @@ public class Transaction implements JSONable {
         json.put("isReward", isReward());
         
         if(!isReward()) {
-            JSONArray jsonInputs = new JSONArray();
+            final JSONArray jsonInputs = new JSONArray();
             for (final Input input : inputs) {
                 jsonInputs.put(input.toJSON());
             }
@@ -135,7 +133,7 @@ public class Transaction implements JSONable {
         return json;
     }
 
-    public void sign(PrivateKey privateKey) {
+    public void sign(final PrivateKey privateKey) {
         this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
     }
     
@@ -228,7 +226,7 @@ public class Transaction implements JSONable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -279,7 +277,7 @@ public class Transaction implements JSONable {
         
         @Override
         public JSONObject toJSON() {
-            JSONObject json = JSONable.super.toJSON();
+            final JSONObject json = JSONable.super.toJSON();
             json.put("previousOutputHash", this.previousOutputHash);
             json.put("previousOutputAmount", this.previousOutputAmount);
             return json;
@@ -304,7 +302,7 @@ public class Transaction implements JSONable {
             if (this == obj) return true;
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
-            Input other = (Input) obj;
+            final Input other = (Input) obj;
             return Arrays.equals(this.previousOutputHash, other.previousOutputHash)
                     && this.previousOutputAmount.equals(other.previousOutputAmount);
         }
@@ -324,14 +322,14 @@ public class Transaction implements JSONable {
             this.address = address;
         }
         
-        public Output(JSONObject json) {
+        public Output(final JSONObject json) {
             this.address = new Address(json.getJSONObject("address"));
             this.amount = json.getInt("amount");
         }
         
         @Override
         public JSONObject toJSON() {
-            JSONObject json = JSONable.super.toJSON();
+            final JSONObject json = JSONable.super.toJSON();
             json.put("address", this.address.toJSON());
             json.put("amount", this.amount);
             return json;
@@ -360,7 +358,7 @@ public class Transaction implements JSONable {
         }
         
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (this == obj) {
                 return true;
             }
