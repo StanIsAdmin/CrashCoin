@@ -122,7 +122,9 @@ public class Transaction implements JSONable {
             sum += output.nCrashCoins;
         }
         // The difference is considered as transaction fee
-        return Objects.equals(sum, totalAmount);
+        boolean res = Objects.equals(sum, totalAmount)
+                && Cryptography.verifySignature(this.srcAddress.getPublicKey(), this.toBytes(), this.signature);
+        return res;
     }
 
     /**
