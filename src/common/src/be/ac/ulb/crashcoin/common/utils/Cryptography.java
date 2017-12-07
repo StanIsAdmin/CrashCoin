@@ -70,11 +70,11 @@ public class Cryptography {
      * @param key the string representation of the public key
      * @return a PublicKey instance
      */
-    public static PublicKey createPublicKeyFromBytes(byte[] key) {
+    public static PublicKey createPublicKeyFromBytes(final byte[] key) {
         PublicKey pk = null;
         try {
-            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
-            KeyFactory kf = KeyFactory.getInstance("DSA");
+            final X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
+            final KeyFactory kf = KeyFactory.getInstance("DSA");
             pk = kf.generatePublic(X509publicKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
