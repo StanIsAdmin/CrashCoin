@@ -14,11 +14,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Stock block
+ * Manage the BlockChain. Initialises it and valids mined blocks.
+ *
+ * (Note that: In CrashCoin, there is a central trusted node)
  */
 public class BlockChain extends ArrayList<Block> implements JSONable {
     
-    /* Maps inputs available for transactions to the Address they belong to */
+    /** Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
 
     // Used by [Relay Node]
