@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.common.utils;
 
+import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -50,6 +51,8 @@ public class Cryptography {
     private static SecureRandom secureRandom = null;
     
     private static KeyPairGenerator dsaKeyGen = null;
+    
+    private static KeyFactory dsaKeyFactory = null;
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -278,5 +281,30 @@ public class Cryptography {
             }
         }
         return dsaKeyGen;
+    }
+    
+    public static KeyFactory getDsaKeyFactory() {
+        if(dsaKeyFactory == null) {
+            try {
+                dsaKeyFactory = KeyFactory.getInstance("DSA");
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create DSA key factory. Abort!", ex);
+                System.exit(1);
+            }
+        }
+        return dsaKeyFactory;
+    }
+    
+    public static PrivateKey getPrivateKeyFomBytes(final byte[] privateKeyBytes) {
+        final X509EncodedKeySpec ks = new X509EncodedKeySpec(privateKeyBytes);
+        dsaKeyFactory = Cryptography.getDsaKeyFactory();
+        PrivateKey pv = null;
+        try {
+            pv = dsaKeyFactory.generatePrivate(ks);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Address.class.getName()).log(Level.SEVERE, "Unable to generate private key from bytes. Abort!", ex);
+            System.exit(1);
+        }
+        return pv;
     }
 }

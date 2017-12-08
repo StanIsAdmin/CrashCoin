@@ -1,34 +1,23 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import org.json.JSONObject;
-import static org.junit.Assert.fail;
 
 public class TestUtils {
     
     public static PrivateKey genPrivateKey() {
-        KeyPairGenerator kpg = null;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA");
-        } catch (NoSuchAlgorithmException e) {
-            fail("Could not create key pair generator");
-        }
+        KeyPairGenerator kpg = Cryptography.getDsaKeyGen();
         final KeyPair kp = kpg.generateKeyPair();
         return kp.getPrivate();
     }
     
     public static Address createAddress() {
-        KeyPairGenerator kpg = null;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA");
-        } catch (NoSuchAlgorithmException e) {
-            fail("Could not create key pair generator");
-        }
+        KeyPairGenerator kpg = Cryptography.getDsaKeyGen();
         final KeyPair kp = kpg.generateKeyPair();
         final PublicKey pk = kp.getPublic();
         return new Address(pk);

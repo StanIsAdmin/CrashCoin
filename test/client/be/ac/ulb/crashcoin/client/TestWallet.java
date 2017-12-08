@@ -2,8 +2,6 @@ package be.ac.ulb.crashcoin.client;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.util.Random;
 import org.junit.Test;
@@ -57,7 +55,7 @@ public class TestWallet {
     }
 
     @Test
-    public void testBadPrivateKey() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public void testBadPrivateKey() {
         // Let wallet and keyPairs be the wallet and the pair of keys associated to user's account
         // and stored on the hard drive.
         final Wallet wallet = createWallet();
