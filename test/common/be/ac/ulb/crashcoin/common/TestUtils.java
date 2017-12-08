@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import org.json.JSONObject;
 
