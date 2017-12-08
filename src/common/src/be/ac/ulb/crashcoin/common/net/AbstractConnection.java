@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
- *
+ * Thread to manage an input/output connection (a Socket).
  */
 public abstract class AbstractConnection extends Thread {
 
@@ -25,6 +25,14 @@ public abstract class AbstractConnection extends Thread {
     protected BufferedReader _input;
     protected PrintWriter _output;
 
+    /**
+     * Create a new AbstractConnection.
+     *
+     * @param name the thread name (For identification purposes. More than one thread may have the same name.)
+     * @param acceptedSock a connected non closed socket (more precisely: a connected with writible outputstream and readable input stream)
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
     protected AbstractConnection(final String name, final Socket acceptedSock)
             throws UnsupportedEncodingException, IOException {
         super(name);
@@ -39,6 +47,12 @@ public abstract class AbstractConnection extends Thread {
         _output.flush();
     }
 
+    /**
+     * Wait for input line, then call the abstract receiveData with a newly
+     * created object described by the read line.
+     *
+     * @See getObjectFromJsonObject (private)
+     */
     @Override
     public void run() {
         try {
@@ -78,6 +92,14 @@ public abstract class AbstractConnection extends Thread {
         }
     }
 
+    /**
+     * Create a concrete object from the JSONObject received.
+     *
+     * The class to instanciate is deduced from the value of the "type" field of
+     * JSONObject.
+     * @param jsonData
+     * @return the object newly created
+     */
     private JSONable getObjectFromJsonObject(final JSONObject jsonData) {
         JSONable result = null;
         switch (jsonData.getString("type")) {
@@ -110,6 +132,11 @@ public abstract class AbstractConnection extends Thread {
         return result;
     }
 
+    /**
+     * Called when an object was successfully created from data received.
+     *
+     * @param data The object newly created.
+     */
     protected abstract void receiveData(final JSONable data);
 
 }
