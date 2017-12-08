@@ -253,4 +253,16 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         return containsAll(other) && other.containsAll(this);
     }
 
+    @Override
+    public String toString() {
+        String output = "--------------------";
+        output += "Block :\t";
+        for (Transaction transaction : this) {
+            output += transaction.toString();
+            output += "\n";
+        }
+        output += "--------------------";
+        return output;
+    }
+    
 }
