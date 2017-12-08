@@ -37,12 +37,15 @@ public class Cryptography {
      *
      * @param data the byte array to hash
      * @return A 32 byte long byte[] with the SHA-256 of the transaction
-     * @throws NoSuchAlgorithmException if the machine is unable to perform
-     * SHA-256
      */
-    public static byte[] hashBytes(byte[] data) throws NoSuchAlgorithmException {
+    public static byte[] hashBytes(byte[] data) {
         if (hasher == null) {
-            hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);
+            try {
+                hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);
+            } catch(NoSuchAlgorithmException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to use SHA-256 hash... Abort!", ex);
+                System.exit(1);
+            }
         }
         hasher.update(data);
         return hasher.digest();

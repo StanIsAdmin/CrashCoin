@@ -51,7 +51,7 @@ public class TestUtils {
 
     public static Transaction createTransaction() {
         final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        final Transaction transaction = new Transaction(createAddress(), 20, timestamp);
+        final Transaction transaction = new Transaction(createAddress(), timestamp);
         transaction.sign(genPrivateKey());
         return transaction;
     }
