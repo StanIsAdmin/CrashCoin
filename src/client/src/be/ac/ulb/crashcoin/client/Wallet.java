@@ -89,7 +89,7 @@ public class Wallet {
         return transactionsList;
     }
     
-    public List<TransactionOutput> getUsefullTransaction(int amount) {
+    public List<TransactionOutput> getUsefulTransactions(int amount) {
         List<TransactionOutput> transactions = null;
         Address srcAddress = new Address(this.publicKey);
         int total = 0;

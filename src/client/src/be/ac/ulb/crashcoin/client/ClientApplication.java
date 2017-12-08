@@ -15,6 +15,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import java.io.Console;
 import java.security.GeneralSecurityException;
 
@@ -28,7 +29,6 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -236,9 +236,9 @@ public class ClientApplication {
             System.out.println("Or enter -1 to escape the curent transaction.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
-            List<TransactionOutput> referencedOutput = wallet.getUsefullTransaction(amount);
+            List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
             if (referencedOutput == null) {
-                System.out.print("You don't have all this money.");
+                System.out.print("You don't have enough money.");
             } else if (amount != -1){
                 System.out.print("Destination : ");
                 PublicKey dstPublicKey = this.stringToKey(reader.next());
@@ -255,7 +255,7 @@ public class ClientApplication {
     }
     
     private PublicKey stringToKey(String text) throws GeneralSecurityException {
-        byte[] key = Base64.getDecoder().decode(text);
+        byte[] key = JsonUtils.decodeBytes(text);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(key);
         KeyFactory fact = KeyFactory.getInstance("DSA");
         return fact.generatePublic(spec);
