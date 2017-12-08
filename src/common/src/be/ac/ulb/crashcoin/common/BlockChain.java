@@ -127,7 +127,6 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * Returns true if transaction is valid, false otherwise.
      * For a transaction to be valid, it has to fulfill all of these requirements :
      * - transaction.isValid() == true
-     * - be digitally signed by the sender (TODO)
      * - have only previously-unused inputs that belong to the sender
      * 
      * @see Transaction.isValid
@@ -135,11 +134,9 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return 
      */
     private boolean isValidTransaction(Transaction transaction)  {
-        // Verify the transaction value
+        // Verify the transaction value and signature (if necessary)
         if (! transaction.isValid())
             return false;
-        
-        //TODO verify digital signature of transaction
 
         if(!transaction.isReward()) {
             // Verify each input is available and belongs to the sender
