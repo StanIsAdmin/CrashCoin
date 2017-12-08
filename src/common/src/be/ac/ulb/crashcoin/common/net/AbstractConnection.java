@@ -42,7 +42,7 @@ public abstract class AbstractConnection extends Thread {
         _output = new PrintWriter(_sock.getOutputStream(), true);
     }
 
-    public void sendData(final JSONable jsonData) {
+    public final void sendData(final JSONable jsonData) {
         _output.write(jsonData.toJSON() + "\n");
         _output.flush();
     }

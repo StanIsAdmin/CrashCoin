@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class RelayConnection extends AbstractConnection {
 
-    private static HashSet<RelayConnection> allRelay = new HashSet<>();
+    private static final HashSet<RelayConnection> allRelay = new HashSet<>();
 
     // Initializes the BlockChain manager (the sooner the better)
     private static final BlockChainManager bcManager = BlockChainManager.getInstance();
