@@ -75,6 +75,6 @@ public class Address implements JSONable {
     }
     
     public String toString() {
-        return key.toString();
+        return key.getEncoded().toString();
     }
 }
