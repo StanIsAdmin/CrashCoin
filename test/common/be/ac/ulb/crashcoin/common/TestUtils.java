@@ -10,7 +10,9 @@ public class TestUtils {
     private static KeyPair kp;
     
     public static void genKeyPair() {
-        kp = Cryptography.getDsaKeyGen().generateKeyPair();
+        if(kp == null) {
+            kp = Cryptography.getDsaKeyGen().generateKeyPair();
+        }
     }
     
     public static Address createAddress() {
