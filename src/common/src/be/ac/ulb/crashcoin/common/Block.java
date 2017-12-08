@@ -110,8 +110,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param hashed  Transaction hash value
      * @return  Whether it is present in the blok or not
      */
-    public Transaction findTransaction(byte[] hashed) {
-        for (Transaction transaction: this) {
+    public Transaction findTransaction(final byte[] hashed) {
+        for (final Transaction transaction: this) {
             if (Arrays.equals(transaction.toBytes(), hashed)) {
                 return transaction;
             }
@@ -139,12 +139,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * false otherwise
      * @see Parameters.MINING_DIFFICULTY
      */
-    public boolean isHashValid(final byte[] hash, Integer difficulty) {
+    public boolean isHashValid(final byte[] hash, final Integer difficulty) {
         if (hash == null || difficulty > Byte.SIZE * hash.length) {
             return false;
         }
-        BitSet bitset = BitSet.valueOf(hash);
-        Integer indexOfLastZero = bitset.nextSetBit(0) - 1;
+        final BitSet bitset = BitSet.valueOf(hash);
+        final Integer indexOfLastZero = bitset.nextSetBit(0) - 1;
         return (indexOfLastZero >= difficulty);
     }
 

@@ -148,6 +148,15 @@ public class Transaction implements JSONable {
     }
     
     /**
+     * Define the signature. <b>Only for genesis block</b>
+     * 
+     * @param signature byte of the signature
+     */
+    public void setSignature(final byte[] signature) {
+        this.signature = signature;
+    }
+    
+    /**
      * Checks that the transaction is older that the other transaction
      * 
      * @param other the transaction which timestamp is tested 
@@ -167,7 +176,7 @@ public class Transaction implements JSONable {
      * @return true if the transaction is valid as described, false otherwise
      */
     public boolean isValid() {
-        PublicKey addresseePublicKey = this.transactionOutput.getDestinationAddress().getPublicKey();
+        final PublicKey addresseePublicKey = this.transactionOutput.getDestinationAddress().getPublicKey();
         
         if(isReward())
             return this.inputs == null && this.changeOutput == null
