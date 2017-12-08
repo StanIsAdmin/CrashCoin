@@ -1,13 +1,8 @@
 package be.ac.ulb.crashcoin.common;
 
-import java.security.KeyFactory;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONObject;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 
@@ -29,14 +24,8 @@ public class Address implements JSONable {
      */
     public Address(final JSONObject json) {
         final byte[] keyBytes = JsonUtils.decodeBytes(json.getString("key"));
-        final X509EncodedKeySpec ks = new X509EncodedKeySpec(keyBytes);
-        final KeyFactory kf = Cryptography.getDsaKeyFactory();
-        try {
-            this.key = kf.generatePublic(ks);
-            this.value = Cryptography.deriveKey(this.key);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Address.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        this.key = Cryptography.createPublicKeyFromBytes(keyBytes);
+        this.value = Cryptography.deriveKey(this.key);
     }
 
     /**

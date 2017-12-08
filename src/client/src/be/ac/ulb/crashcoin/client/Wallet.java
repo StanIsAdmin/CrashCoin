@@ -174,7 +174,7 @@ public class Wallet {
     }
 
     public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
-            throws InvalidKeySpecException, InvalidKeyException,
+            throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
         publicKey = keyPair.getPublic();

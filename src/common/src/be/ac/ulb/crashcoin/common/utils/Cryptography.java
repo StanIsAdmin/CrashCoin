@@ -307,4 +307,16 @@ public class Cryptography {
         }
         return pv;
     }
+    
+    public static PublicKey getPublicKeyFromBytes(final byte[] publicKeyBytes) {
+        dsaKeyFactory = Cryptography.getDsaKeyFactory();
+        final X509EncodedKeySpec ks = new X509EncodedKeySpec(publicKeyBytes);
+        try {
+            return dsaKeyFactory.generatePublic(ks);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to generate public key from bytes. Abort!", ex);
+            System.exit(1);
+        }
+        return null;
+    }
 }
