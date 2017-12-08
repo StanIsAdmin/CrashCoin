@@ -3,20 +3,14 @@ package be.ac.ulb.crashcoin.common;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import org.json.JSONObject;
 
 public class TestUtils {
     
-    private static KeyPair kp;
-    
-    public static void genKeyPair() {
-        if(kp == null) {
-            kp = Cryptography.getDsaKeyGen().generateKeyPair();
-        }
-    }
+    private static KeyPair kp = Cryptography.getDsaKeyGen().generateKeyPair();
     
     public static Address createAddress() {
-        genKeyPair();
         return new Address(kp.getPublic());
     }
 
@@ -34,11 +28,17 @@ public class TestUtils {
         newBlockChain.add(createBlock()); //TODO this does not work (block is not valid)
         return newBlockChain;
     }
+    
+    public static Transaction createTransaction() {
+        //TODO put actual inputs, and a non-zero amount
+        final BlockChain bc = createBlockchain();
+        final Transaction transaction = new Transaction(createAddress(), createAddress(), 0, new ArrayList<TransactionOutput>());
+        transaction.sign(kp.getPrivate());
+        return transaction;
+    }
 
     public static Transaction createRewardTransaction() {
-        genKeyPair();
-        final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        final Transaction transaction = new Transaction(createAddress(), timestamp);
+        final Transaction transaction = new Transaction(createAddress());
         transaction.sign(kp.getPrivate());
         return transaction;
     }

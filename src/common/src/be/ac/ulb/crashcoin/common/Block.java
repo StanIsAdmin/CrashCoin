@@ -16,13 +16,16 @@ import org.json.JSONObject;
 
 /**
  * Block that compose BlockChain.
+ * A block contains a header and a body. The header is a compact representation
+ * of all informations in the block and is meant to he hashed. The body
+ * contains detailed information about all or part of the transactions,
+ * within a merkle tree.
  *
- * Shape of the block: + 4 byte long of magic number to mark the beginning of a
- * block + 4 byte long giving the block size in bytes + 32 byte (256 bit) long
- * hash of the previous block + 32 byte long merkle root + 4 byte long timestamp
- * TODO not add (only if needed) + 4 byte long difficulty (expected nb of 0s at
- * the beginning of the hash) + 4 byte long Nonce + variable size(?):
- * Transaction list
+ * Contents of the header: 
+ * - nonce value (4 bytes)
+ * - hash of the previous block (32 bytes = 256 bits)
+ * - merkle tree root (32 bytes)
+ * - mining difficulty (expected 0s at the beginning of the hash, 4 bytes)
  */
 public class Block extends ArrayList<Transaction> implements JSONable {
 

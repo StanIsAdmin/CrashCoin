@@ -14,7 +14,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * Represents the CrashCoin BlockChain as a list of Block instances.
  * Manage the BlockChain. Initialises it and valids mined blocks.
+ * 
+ * The add method has been overridden to verify the block to add and
+ * each of its transactions. 
  *
  * (Note that: In CrashCoin, there is a central trusted node)
  */
@@ -22,13 +26,27 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     
     /** Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
+    
 
     /**
-     * Create a BlockChain from a JSONObject.
+     * Creates a BlockChain which contains only the genesis block.
+     * 
+     * The genesis block is created through the createGenesisBlock() method.
+     * @see createGenesisBlock()
+     */
+    public BlockChain()  {
+        this.availableInputs = new HashMap<>();
+        final Block genesis = createGenesisBlock();
+        super.add(genesis); // call to super does not perform validity check
+    }
+
+    /**
+     * Creates a BlockChain instance from its JSON representation.
      *
      * Used by the Master to send the BlockChain the relays.
      *
-     * @param json
+     * @param json the JSON representation of the BlockChain, compatible with
+     * the result of BlockChain.toJSON()
      * @see toJson()
      */
     public BlockChain(final JSONObject json)  {
@@ -46,15 +64,6 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     }
 
     /**
-     * Create a BlockChain which contains only the genesis block.
-     */
-    public BlockChain()  {
-        this.availableInputs = new HashMap<>();
-        final Block genesis = createGenesisBlock();
-        super.add(genesis); // call to super does not perform validity check
-    }
-
-    /**
      * Verifies the block, add it to the end of the blockChain if it is valid
      * and update the set of transactions available as inputs.
      *
@@ -62,7 +71,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return wether the block was added to the blockchain.
      */
     @Override
-    public boolean add(final Block block) {
+    public final boolean add(final Block block) {
         boolean valid = isValidNextBlock(block, Parameters.MINING_DIFFICULTY);
         if (valid) {
             super.add(block);
@@ -131,7 +140,6 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * Returns true if transaction is valid, false otherwise.
      * For a transaction to be valid, it has to fulfill all of these requirements :
      * - transaction.isValid() == true
-     * - be digitally signed by the sender (TODO)
      * - have only previously-unused inputs that belong to the sender
      * 
      * @see Transaction.isValid
@@ -139,11 +147,9 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return 
      */
     private boolean isValidTransaction(Transaction transaction)  {
-        // Verify the transaction value
+        // Verify the transaction value and signature (if necessary)
         if (! transaction.isValid())
             return false;
-        
-        //TODO verify digital signature of transaction
 
         if(!transaction.isReward()) {
             // Verify each input is available and belongs to the sender
