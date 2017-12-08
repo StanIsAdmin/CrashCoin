@@ -18,8 +18,6 @@ import java.io.Console;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ public class ClientApplication {
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
 
-    public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
+    public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
         instance = this;
@@ -68,9 +66,8 @@ public class ClientApplication {
     }
 
     private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException,
-            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
-            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException,
-            InvalidParameterSpecException {
+            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
+            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidParameterSpecException {
         switch (choice) {
             case 1:
                 signIn();
@@ -130,7 +127,7 @@ public class ClientApplication {
         System.out.print("Please enter your choice : ");
     }
 
-    public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
+    public void signUp() throws InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
         System.out.println("\n");
@@ -175,9 +172,9 @@ public class ClientApplication {
 
     }
 
-    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException, NoSuchAlgorithmException,
+    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException,
-            IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
+            IllegalBlockSizeException, BadPaddingException {
 
         System.out.println("\n");
         System.out.println("Sign in");
