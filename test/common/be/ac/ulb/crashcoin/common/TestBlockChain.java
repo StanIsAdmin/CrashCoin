@@ -6,7 +6,7 @@ import org.junit.Test;
 public class TestBlockChain {
 
     @Test
-    public void testBlockChainGenesisCreation() {
+    public void testBlockChainGenesisCreation()  {
         BlockChain bc = new BlockChain();
         assertTrue(bc.size() == 1);
     }

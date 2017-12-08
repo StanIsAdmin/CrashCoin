@@ -1,18 +1,12 @@
 package be.ac.ulb.crashcoin.common;
 
-import be.ac.ulb.crashcoin.common.Transaction.Input;
-import be.ac.ulb.crashcoin.common.Transaction.Output;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -25,10 +19,10 @@ import org.json.JSONObject;
 public class BlockChain extends ArrayList<Block> implements JSONable {
     
     /* Maps inputs available for transactions to the Address they belong to */
-    private final Map<byte[], Address> availableInputs;
+    private final Map<byte[], TransactionOutput> availableInputs;
 
     // Used by [Relay Node]
-    public BlockChain(final JSONObject json) {
+    public BlockChain(final JSONObject json)  {
         this(); // Creates BC containing genesis bloc
         final JSONArray blockArray = json.getJSONArray("blockArray");
 
@@ -44,7 +38,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     }
 
     // Used by [Master node]
-    public BlockChain() {
+    public BlockChain()  {
         this.availableInputs = new HashMap<>();
         final Block genesis = createGenesisBlock();
         super.add(genesis); // call to super does not perform validity check
@@ -52,16 +46,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     @Override
     public boolean add(final Block block) {
-        try {
-            if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
-                super.add(block);
-                updateAvailableInputs(block);
-                return true;
-            } else {
-                Logger.getLogger(BlockChain.class.getName()).log(Level.WARNING, "Invalid block discarded");
-            }
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(BlockChain.class.getName()).log(Level.SEVERE, null, ex);
+        if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
+            super.add(block);
+            updateAvailableInputs(block);
+            return true;
+        } else {
+            Logger.getLogger(BlockChain.class.getName()).log(Level.WARNING, "Invalid block discarded");
         }
         return false;
     }
@@ -78,26 +68,21 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * - marks the second output (change) as available for the sender, if any
      * @param addedBlock a valid block that has just been added to the blockchain
      */
-    private synchronized void updateAvailableInputs(Block addedBlock) {
+    private synchronized void updateAvailableInputs(Block addedBlock)  {
         for (final Transaction addedTransaction : addedBlock) {
             
-            for (final Input usedInput : addedTransaction.getInputs()) {
+            for (final TransactionInput usedInput : addedTransaction.getInputs()) {
                 availableInputs.remove(usedInput.toBytes());
             }
             
-            List<Output> transactionOutputs = addedTransaction.getOutputs();
-            
-            Output firstOutput = transactionOutputs.get(0);
-            availableInputs.put(firstOutput.toBytes(), addedTransaction.getDestAddress());
-            
-            Output secondOutput = null;
-            try {
-                secondOutput = transactionOutputs.get(1);
-            } catch (NullPointerException ex) {}
-            
-            if (secondOutput != null) {
-                availableInputs.put(secondOutput.toBytes(), addedTransaction.getSrcAddress());
-            }
+            final TransactionOutput transactionOutput = addedTransaction.getTransactionOutput();
+            this.availableInputs.put(Cryptography.hashBytes(transactionOutput.toBytes()), transactionOutput);
+            final TransactionOutput changeOutput = addedTransaction.getChangeOutput();
+            // only added to the hashmap if change is strictly positive:
+            // outputs with 0 change would never be used again, therefore it is
+            // not necessary to keep them in memory
+            if(!addedTransaction.isReward() && changeOutput.getAmount() > 0)
+                this.availableInputs.put(Cryptography.hashBytes(changeOutput.toBytes()), changeOutput);
         }
     }
     
@@ -105,7 +90,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         return this.get(this.size() - 1);
     }
 
-    private byte[] getLastBlockToBytes() throws NoSuchAlgorithmException {
+    private byte[] getLastBlockToBytes()  {
         return Cryptography.hashBytes(get(this.size() - 1).headerToBytes());
     }
     
@@ -116,7 +101,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @param block  Block that needs to be added to the blockchain
      * @return  First bad transaction found if there is one, null otherwise
      */
-    protected Transaction getFirstBadTransaction(final Block block) {
+    protected Transaction getFirstBadTransaction(final Block block)  {
         for (Transaction transaction: block) {
             if (! isValidTransaction(transaction)) {
                 return transaction;
@@ -128,26 +113,32 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     /** 
      * Returns true if transaction is valid, false otherwise.
      * For a transaction to be valid, it has to fulfill all of these requirements :
-     * - have exactly one or two outputs (TODO)
-     * - all output values must be strictly positive (TODO)
-     * - the sum of the inputs values must be equal to the sum of output values (TODO)
+     * - transaction.isValid() == true
      * - be digitally signed by the sender (TODO)
      * - have only previously-unused inputs that belong to the sender
      * 
+     * @see Transaction.isValid
      * @param transaction
      * @return 
      */
-    private boolean isValidTransaction(Transaction transaction) {
+    private boolean isValidTransaction(Transaction transaction)  {
         // Verify the transaction value
-        if (! transaction.isValid()) return false;
+        if (! transaction.isValid())
+            return false;
         
         //TODO verify digital signature of transaction
-        
-        // Verify each input is available and belongs to the sender
-        for (Transaction.Input input: transaction.getInputs()) {
-            Address inputAddress = this.availableInputs.get(input.toBytes());
-            if (inputAddress == null) return false;
-            if (inputAddress != transaction.getSrcAddress()) return false;
+
+        if(!transaction.isReward()) {
+            // Verify each input is available and belongs to the sender
+            for (final TransactionInput input: transaction.getInputs()) {
+                final TransactionOutput referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
+                if (referencedOutput == null)
+                    return false;
+                // verify that the destination address of the referenced output corrponds to
+                // the address of the payer (i.e. destination addess of the change output)
+                if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
+                    return false;
+            }
         }
         
         // All verifications having passed, the transaction is valid
@@ -156,7 +147,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     // Must may be move to Block
     // Used by [master node]
-    protected boolean isValidNextBlock(final Block block, final int difficulty) throws NoSuchAlgorithmException {
+    protected boolean isValidNextBlock(final Block block, final int difficulty)  {
         boolean result = block.isHashValid()
                 && difficulty == block.getDifficulty()
                 && // Previous hash block is valid
@@ -182,12 +173,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         return json;
     }
 
-    protected static Block createGenesisBlock() {
+    protected static Block createGenesisBlock()  {
         Block genesisBlock = new Block(new byte[0], 0);
         PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
         Address masterWallet = new Address(masterPublicKey);
         Timestamp genesisTime = new Timestamp(0L);
-        Transaction reward = new Transaction(masterWallet, Parameters.MINING_REWARD, genesisTime);
+        Transaction reward = new Transaction(masterWallet, genesisTime);
         genesisBlock.add(reward);
         return genesisBlock;
     }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.sql.Timestamp;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -19,8 +18,6 @@ import java.io.Console;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
@@ -37,7 +34,7 @@ public class ClientApplication {
     private final Scanner reader = new Scanner(System.in);
     private Wallet wallet;
 
-    public ClientApplication() throws IOException, NoSuchProviderException, NoSuchAlgorithmException,
+    public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
         instance = this;
@@ -69,9 +66,8 @@ public class ClientApplication {
     }
 
     private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException,
-            NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
-            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, NoSuchProviderException,
-            InvalidParameterSpecException {
+            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
+            InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidParameterSpecException {
         switch (choice) {
             case 1:
                 signIn();
@@ -91,7 +87,7 @@ public class ClientApplication {
         }
     }
 
-    private void actionMenuRegistred(final int choice) throws NoSuchAlgorithmException {
+    private void actionMenuRegistred(final int choice)  {
         switch (choice) {
             case 1:
                 createTransaction();
@@ -131,7 +127,7 @@ public class ClientApplication {
         System.out.print("Please enter your choice : ");
     }
 
-    public void signUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
+    public void signUp() throws InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
         System.out.println("\n");
@@ -176,9 +172,9 @@ public class ClientApplication {
 
     }
 
-    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException, NoSuchAlgorithmException,
+    public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException,
-            IllegalBlockSizeException, BadPaddingException, NoSuchProviderException {
+            IllegalBlockSizeException, BadPaddingException {
 
         System.out.println("\n");
         System.out.println("Sign in");
@@ -213,7 +209,6 @@ public class ClientApplication {
             System.out.println("The wallet identifier that you entered cannot be found");
 
         }
-
     }
 
     /**
@@ -222,14 +217,11 @@ public class ClientApplication {
      * transaction was aborded.
      *
      * @return The created transaction
-     * @throws NoSuchAlgorithmException if the machine is unable to perform the
-     * chosen hash algorithm (Parameters.HASH_ALGORITHM)
      */
-    public Transaction createTransaction() throws NoSuchAlgorithmException {
+    public Transaction createTransaction()  {
         final Address srcAddress = wallet.getAddress();
-        Transaction result = null;
         Transaction transaction;
-        Transaction input;
+        Transaction result = null;
         int amount = 0;
 
         do {
@@ -240,20 +232,20 @@ public class ClientApplication {
 
             System.out.print("Destination : ");
             String strDest = reader.next();
+            
+            // TODO get the inputs to make a transaction, and find a way to stop the while loop
+            
+            transaction = new Transaction(srcAddress);
+            /*input = new Transaction(srcAddress, amount);
 
-            final Timestamp lockTime = new Timestamp(System.currentTimeMillis());
-            // TODO : get Input transaction
-            // Input is only for test.
-            input = new Transaction(srcAddress, amount, lockTime);
-
-            transaction = new Transaction(srcAddress, amount, lockTime);
-        } while (!(transaction.createTransaction(input, srcAddress, amount)) && amount != -1);
+            transaction = new Transaction(srcAddress, amount, lockTime);*/
+        } while (amount != -1);
 
         if (amount != -1) {
-            result = transaction;
+            return transaction;
         }
 
-        return result;
+        return null;
     }
 
     public void showWallet() {

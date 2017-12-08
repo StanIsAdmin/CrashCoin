@@ -6,10 +6,8 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.sql.Timestamp;
 
 /**
  * Singleton class that communicates with Relay to receive the transactions to
@@ -70,9 +68,8 @@ public class Miner {
      * Start to wait for transactions and mine them when received.
      *
      * @throws InterruptedException if the thread has an error when sleeping
-     * @throws java.security.NoSuchAlgorithmException if unable to mine
      */
-    public void startMining() throws InterruptedException, NoSuchAlgorithmException {
+    public void startMining() throws InterruptedException {
         // TODO: find better than a while True?
         while (true) {
             if (!this.connection.hasTransactions()) {
@@ -102,7 +99,7 @@ public class Miner {
      * Creates a block with the transactions received from the relay ans sets it
      * in this.currentlyMinedBlock.
      */
-    private void createBlock() throws IOException, NoSuchAlgorithmException {
+    private void createBlock() throws IOException {
         // only create a new block if there is not a partial block already existing
         if(currentlyMinedBlock == null) {
             // TODO get difficulty properly
@@ -127,10 +124,9 @@ public class Miner {
     /**
      * Creates a block from transactions in buffer and mines it.
      * 
-     * @throws NoSuchAlgorithmException if unable to create the block because
      * of unability to hash last block
      */
-    private void makeBlockAndMineIt() throws NoSuchAlgorithmException {
+    private void makeBlockAndMineIt()  {
         this.transactions.addAll(this.connection.getTransactions());
         if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
             try {
@@ -177,9 +173,8 @@ public class Miner {
         return hasRemovedBlocks;
     }
 
-    private Transaction selfRewarding() {
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        Transaction transaction = new Transaction(Main.getAddress(), Parameters.MINING_REWARD, timestamp);
+    private Transaction selfRewarding()  {
+        Transaction transaction = new Transaction(Main.getAddress());
         transaction.sign(Main.privateKey());
         return transaction;
     }
