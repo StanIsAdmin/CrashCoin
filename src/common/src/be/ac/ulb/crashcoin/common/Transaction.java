@@ -148,6 +148,15 @@ public class Transaction implements JSONable {
     }
     
     /**
+     * Define the signature. <b>Only for genesis block</b>
+     * 
+     * @param signature byte of the signature
+     */
+    public void setSignature(final byte[] signature) {
+        this.signature = signature;
+    }
+    
+    /**
      * Checks that the transaction is older that the other transaction
      * 
      * @param other the transaction which timestamp is tested 
@@ -158,30 +167,35 @@ public class Transaction implements JSONable {
         return lockTime.before(other.lockTime);
     }
     
-    /** Returns true if the standalone transaction is valid, false otherwise.
+    /** 
+     * Returns true if the standalone transaction is valid, false otherwise.
      * 
      * A transaction by itself is valid if it meets all of these conditions :<br>
-     * - the sum of inputs equals the sum of outputs<br>
-     * - each output value is strictly positive<br>
+     * - if it is a mining reward, its amount equals Parameters.MINING_REWARD
+     * - otherwise, the sum of inputs equals the sum of outputs and<br>
+     * - each output value is strictly positive, and<br>
+     * - the transaction data is digitally signed by the sender<br>
      * 
      * @return true if the transaction is valid as described, false otherwise
      */
-    public boolean isValid() {
-        PublicKey addresseePublicKey = this.transactionOutput.getDestinationAddress().getPublicKey();
-        
+    public boolean isValid() {        
+        // Rewards are limited to a given amount
         if(isReward())
             return this.inputs == null && this.changeOutput == null
-                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD)
-                    && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
+                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD);
+        
+        // Verify the digital signature with the sender's Public Key
+        PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
+        if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature))
+            return false;
+        
         // Check whether sum of inputs is equal to the sum of outputs
         Integer sum = 0;
         for(final TransactionInput input : this.inputs) {
             sum += input.getAmount();
         }
-        
         return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
-                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount())
-                && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
+                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
     }
 
     /**
@@ -308,5 +322,15 @@ public class Transaction implements JSONable {
             return false;
         }
         return true;
-    }   
+    }
+    
+    @Override
+    public String toString() {
+        String output = "Transaction :\n";
+        output += "Amount : "+this.transactionOutput.getAmount()+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount())+"\n";
+        output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
+        output += "At     : "+this.lockTime.toString();
+        return output;
+    }
 }

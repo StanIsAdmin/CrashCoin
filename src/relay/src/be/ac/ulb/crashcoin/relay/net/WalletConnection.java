@@ -35,14 +35,19 @@ public class WalletConnection extends AbstractConnection {
         if (jsonData instanceof Transaction) {
             // TODO new transaction management
             final Transaction transaction = (Transaction) jsonData;
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get transaction from wallet and send to miner "
+                    + "({0}): {1}", new Object[]{_ip, transaction.toString()});
+            
             // Broadcast to the miners directly connected to the relay.
             MinerConnection.sendToAll(jsonData);
-
+            
+            
             // Relay the transaction to the master.
             try {
                 MasterConnection.getMasterConnection().sendData(transaction);
             } catch (IOException ex) {
-                Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Could not send transaction to master: {0}", 
+                        ex.getMessage());
             }
 
         } else if (jsonData instanceof Message) {
@@ -57,10 +62,14 @@ public class WalletConnection extends AbstractConnection {
                     break;
 
                 default:
-                    Logger.getLogger(getClass().getName(), "Unknown request: " + request);
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Unknown request (message) from wallet "
+                            + "({0}): {1}", new Object[]{_ip, request});
                     break;
             }
 
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from wallet ({0}): {1}", 
+                    new Object[]{_ip, jsonData});
         }
     }
 
@@ -72,7 +81,7 @@ public class WalletConnection extends AbstractConnection {
      */
     private void sendTransactions(final JSONObject option) {
         if (option == null) {
-            Logger.getLogger(getClass().getName(), "Request: '"
+            Logger.getLogger(getClass().getName()).info("Request: '"
                     + Message.GET_TRANSACTIONS_FROM_WALLET + "' but no option provided");
             return;
         }
@@ -91,7 +100,8 @@ public class WalletConnection extends AbstractConnection {
                     }
                 }
             } else {
-                System.err.println("Empty block (index: " + index + ")");
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Empty block when send transaction "
+                        + "(index: {0})", index);
             }
             ++index;
         }

@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.client;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.spec.InvalidKeySpecException;
@@ -14,7 +15,7 @@ public class Main {
 
     public static void main(final String[] args) throws IOException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
-            InvalidAlgorithmParameterException, ClassNotFoundException {
+            InvalidAlgorithmParameterException, ClassNotFoundException, GeneralSecurityException {
 
         final ClientApplication ca = new ClientApplication();
 

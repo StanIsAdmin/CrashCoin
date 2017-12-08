@@ -17,9 +17,6 @@ import java.util.logging.Logger;
  * Entry point of the miner program.
  */
 public class Main {
-
-    // TODO store this at the right place
-    private static final int difficulty = Parameters.MINING_DIFFICULTY;
     
     // TODO place in the configuration
     private static String userPrivateKeyStr = "";
@@ -72,9 +69,4 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
     }
-
-    public static int getDifficulty() {
-        return difficulty;
-    }
-
 }

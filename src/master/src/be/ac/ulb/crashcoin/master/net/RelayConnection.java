@@ -9,13 +9,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Connection to a Relay
  */
 public class RelayConnection extends AbstractConnection {
 
-    private static HashSet<RelayConnection> allRelay = new HashSet<>();
+    private static final HashSet<RelayConnection> allRelay = new HashSet<>();
 
     // Initializes the BlockChain manager (the sooner the better)
     private static final BlockChainManager bcManager = BlockChainManager.getInstance();
@@ -25,26 +27,38 @@ public class RelayConnection extends AbstractConnection {
         allRelay.add(this);
         start();
 
-        sendData(bcManager.getBlockChain());
+        final BlockChain blockChain = bcManager.getBlockChain();
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Send BlockChain of size {0} to relay ({1})", 
+                new Object[]{blockChain.size(), _ip});
+        sendData(blockChain);
     }
 
     @Override
     protected void receiveData(final JSONable data) {
-        System.out.println("[DEBUG] get value from relay: " + data);
+        
         if (data instanceof Block) {
             final Block block = (Block) data;
 
             // Local blockChain management
             final BlockChain chain = bcManager.getBlockChain();
+            
             // If block could be add
             if (chain.add(block)) {
-                //TODO make blockChain "observable" or go through manager to add blocks ?
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Save Block to BlockChain:\n{0}", 
+                    new Object[]{block.toString()});
                 bcManager.saveBlockChain();
+                
                 // Broadcast the block to all the relay nodes
                 sendToAll(data);
-
-            } // TODO ? Inform Relay (and Miner that the block has been rejected) ?
-
+                
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Block invalid:\n{0}", 
+                    new Object[]{block.toString()});
+            } 
+            // TODO ? Inform Relay (and Miner that the block has been rejected) ?
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from relay ({0}): {1}", 
+                new Object[]{_ip, data});
         }
     }
 

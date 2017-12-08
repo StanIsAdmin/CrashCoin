@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,14 +25,20 @@ public abstract class AbstractConnection extends Thread {
     protected Socket _sock;
     protected BufferedReader _input;
     protected PrintWriter _output;
+    protected final InetAddress _ip;
+    protected final Integer _port;
 
     protected AbstractConnection(final String name, final Socket acceptedSock)
             throws UnsupportedEncodingException, IOException {
         super(name);
 
         _sock = acceptedSock;
+        _ip = _sock.getInetAddress();
+        _port = _sock.getPort();
         _input = new BufferedReader(new InputStreamReader(_sock.getInputStream(), "UTF-8"));
         _output = new PrintWriter(_sock.getOutputStream(), true);
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "New connection (from {0}:{1})", 
+                new Object[]{_ip, _port});
     }
 
     public void sendData(final JSONable jsonData) {
@@ -57,7 +64,7 @@ public abstract class AbstractConnection extends Thread {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage());
         }
 
         close();

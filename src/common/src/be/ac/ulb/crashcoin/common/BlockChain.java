@@ -14,14 +14,35 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Stock block
+ * Represents the CrashCoin BlockChain as a list of Block instances.
+ * 
+ * The add method has been overridden to verify the block to add and
+ * each of its transactions. 
  */
 public class BlockChain extends ArrayList<Block> implements JSONable {
     
     /* Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
+    
 
-    // Used by [Relay Node]
+    /**
+     * Creates a basic BlockChain instance, containing a single genesis block.
+     * 
+     * The genesis block is created through the createGenesisBlock() method.
+     * @see the createGenesisBlock() is created
+     */
+    public BlockChain()  {
+        this.availableInputs = new HashMap<>();
+        final Block genesis = createGenesisBlock();
+        super.add(genesis); // call to super does not perform validity check
+    }
+
+    /**
+     * Creates a BlockChain instance from its JSON representation.
+     * 
+     * @param json the JSON representation of the BlockChain, compatible with
+     * the result of BlockChain.toJSON()
+     */
     public BlockChain(final JSONObject json)  {
         this(); // Creates BC containing genesis bloc
         final JSONArray blockArray = json.getJSONArray("blockArray");
@@ -34,14 +55,6 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
                 throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
             }
         }
-        // TODO
-    }
-
-    // Used by [Master node]
-    public BlockChain()  {
-        this.availableInputs = new HashMap<>();
-        final Block genesis = createGenesisBlock();
-        super.add(genesis); // call to super does not perform validity check
     }
 
     @Override
@@ -68,7 +81,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * - marks the second output (change) as available for the sender, if any
      * @param addedBlock a valid block that has just been added to the blockchain
      */
-    private synchronized void updateAvailableInputs(Block addedBlock)  {
+    private synchronized void updateAvailableInputs(final Block addedBlock)  {
         for (final Transaction addedTransaction : addedBlock) {
             
             for (final TransactionInput usedInput : addedTransaction.getInputs()) {
@@ -102,7 +115,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return  First bad transaction found if there is one, null otherwise
      */
     protected Transaction getFirstBadTransaction(final Block block)  {
-        for (Transaction transaction: block) {
+        for (final Transaction transaction: block) {
             if (! isValidTransaction(transaction)) {
                 return transaction;
             }
@@ -114,19 +127,16 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * Returns true if transaction is valid, false otherwise.
      * For a transaction to be valid, it has to fulfill all of these requirements :
      * - transaction.isValid() == true
-     * - be digitally signed by the sender (TODO)
      * - have only previously-unused inputs that belong to the sender
      * 
      * @see Transaction.isValid
      * @param transaction
      * @return 
      */
-    private boolean isValidTransaction(Transaction transaction)  {
-        // Verify the transaction value
+    private boolean isValidTransaction(final Transaction transaction)  {
+        // Verify the transaction value and signature (if necessary)
         if (! transaction.isValid())
             return false;
-        
-        //TODO verify digital signature of transaction
 
         if(!transaction.isReward()) {
             // Verify each input is available and belongs to the sender
@@ -172,13 +182,28 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         }
         return json;
     }
-
+    
+    @Override
+    public boolean equals(final Object equalsObject) {
+        boolean result = false;
+        if(this == equalsObject) {
+            result = true;
+        } else if(equalsObject instanceof BlockChain) {
+            final BlockChain equalsBlockChain = (BlockChain) equalsObject;
+            if(equalsBlockChain.size() == this.size()) {
+                result = containsAll(equalsBlockChain) && equalsBlockChain.containsAll(this);
+            }
+        }
+        return result;
+    }
+    
     protected static Block createGenesisBlock()  {
-        Block genesisBlock = new Block(new byte[0], 0);
-        PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
-        Address masterWallet = new Address(masterPublicKey);
-        Timestamp genesisTime = new Timestamp(0L);
-        Transaction reward = new Transaction(masterWallet, genesisTime);
+        final Block genesisBlock = new Block(new byte[0], 0);
+        final PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
+        final Address masterWallet = new Address(masterPublicKey);
+        final Timestamp genesisTime = new Timestamp(0L);
+        final Transaction reward = new Transaction(masterWallet, genesisTime);
+        reward.setSignature(Parameters.GENESIS_SIGNATURE);
         genesisBlock.add(reward);
         return genesisBlock;
     }
