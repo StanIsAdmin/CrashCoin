@@ -63,14 +63,14 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      */
     @Override
     public boolean add(final Block block) {
-        if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
+        boolean valid = isValidNextBlock(block, Parameters.MINING_DIFFICULTY);
+        if (valid) {
             super.add(block);
             updateAvailableInputs(block);
-            return true;
         } else {
             Logger.getLogger(BlockChain.class.getName()).log(Level.WARNING, "Invalid block discarded");
         }
-        return false;
+        return valid;
     }
     
     /**
@@ -89,7 +89,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         for (final Transaction addedTransaction : addedBlock) {
             
             for (final TransactionInput usedInput : addedTransaction.getInputs()) {
-                availableInputs.remove(usedInput.toBytes());
+                this.availableInputs.remove(usedInput.toBytes());
             }
             
             final TransactionOutput transactionOutput = addedTransaction.getTransactionOutput();
