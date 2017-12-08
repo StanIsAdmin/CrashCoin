@@ -23,7 +23,14 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     /** Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
 
-    // Used by [Relay Node]
+    /**
+     * Create a BlockChain from a JSONObject.
+     *
+     * Used by the Master to send the BlockChain the relays.
+     *
+     * @param json
+     * @see toJson()
+     */
     public BlockChain(final JSONObject json)  {
         this(); // Creates BC containing genesis bloc
         final JSONArray blockArray = json.getJSONArray("blockArray");
@@ -36,16 +43,24 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
                 throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
             }
         }
-        // TODO
     }
 
-    // Used by [Master node]
+    /**
+     * Create a BlockChain which contains only the genesis block.
+     */
     public BlockChain()  {
         this.availableInputs = new HashMap<>();
         final Block genesis = createGenesisBlock();
         super.add(genesis); // call to super does not perform validity check
     }
 
+    /**
+     * Verifies the block, add it to the end of the blockChain if it is valid
+     * and update the set of transactions available as inputs.
+     *
+     * @param block
+     * @return wether the block was added to the blockchain.
+     */
     @Override
     public boolean add(final Block block) {
         if (isValidNextBlock(block, Parameters.MINING_DIFFICULTY)) {
