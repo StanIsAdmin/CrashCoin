@@ -70,7 +70,6 @@ public class Miner {
      * @throws InterruptedException if the thread has an error when sleeping
      */
     public void startMining() throws InterruptedException {
-        // TODO: find better than a while True?
         while (true) {
             if (!this.connection.hasTransactions()) {
                 Thread.sleep(100);
