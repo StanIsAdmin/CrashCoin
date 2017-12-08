@@ -61,7 +61,6 @@ public class Miner {
                 }
             }
         }
-        // TODO remove those currently mined
     }
 
     /**
