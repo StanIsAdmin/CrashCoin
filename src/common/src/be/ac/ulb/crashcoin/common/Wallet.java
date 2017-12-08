@@ -1,30 +1,19 @@
-package be.ac.ulb.crashcoin.client;
+package be.ac.ulb.crashcoin.common;
 
-import be.ac.ulb.crashcoin.common.Address;
-import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.util.ArrayList;
 
-import be.ac.ulb.crashcoin.common.Transaction;
-import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
-import java.util.List;
 import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -34,17 +23,15 @@ import javax.crypto.spec.IvParameterSpec;
 
 public class Wallet {
 
-    private PublicKey publicKey;
-    private KeyPairGenerator dsaKeyGen;
-    private final ArrayList<Transaction> transactionsList;
-    private static Wallet instance = null;
+    protected PublicKey publicKey;
+    protected KeyPairGenerator dsaKeyGen;
+    protected static Wallet instance = null;
 
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
      */
-    public Wallet() {
-        transactionsList = new ArrayList<>();
+    protected Wallet() {
         dsaKeyGen = Cryptography.getDsaKeyGen();
     }
 
@@ -57,67 +44,9 @@ public class Wallet {
      * @param keyPair Pair of keys
      * @see signTransaction
      */
-    private Wallet(final KeyPair keyPair) {
+    protected Wallet(final KeyPair keyPair) {
         this();
         this.publicKey = keyPair.getPublic();
-    }
-
-    /**
-     * Generates a DSA key pair, composed of a public key and a private key. The
-     * key size is defined in parameters. This method can be called at most one
-     * time per wallet.
-     *
-     * @return Pair of DSA keys
-     */
-    public KeyPair generateKeys() {
-        if (publicKey != null) {
-            System.out.println("[Error] Only one key pair can be assigned to a wallet");
-            return null;
-        }
-        final SecureRandom random = Cryptography.getSecureRandom();
-        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
-        this.publicKey = keyPair.getPublic();
-        return keyPair;
-    }
-    
-    public void addTransaction(final Transaction transaction) {
-        transactionsList.add(transaction);
-    }
-
-    public ArrayList<Transaction> getTransactions() {
-        return transactionsList;
-    }
-    
-    public List<TransactionOutput> getUsefulTransactions(int amount) {
-        List<TransactionOutput> transactions = null;
-        Address srcAddress = new Address(this.publicKey);
-        int total = 0;
-        for (Transaction transaction: transactionsList) {
-            if (transaction.getDestAddress() == srcAddress) {
-                total += transaction.getTransactionOutput().getAmount();
-            } else {
-                total -= transaction.getTransactionOutput().getAmount();
-            }
-            transactions.add(transaction.getTransactionOutput());
-            if (total >= amount) {
-                return transactions;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get the unique public key
-     *
-     * @return The public key
-     */
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-    
-    public Address getAddress() {
-        return new Address(publicKey);
     }
 
     public static Wallet readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
@@ -192,85 +121,7 @@ public class Wallet {
 
         }
     }
-
-    public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
-            throws InvalidKeyException,
-            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
-            IOException {
-        publicKey = keyPair.getPublic();
-
-        // Get the bytes representation of the keys
-        final byte[] publicKeyBytes = publicKey.getEncoded();
-        
-        writeWalletFile(userPassword, accountName, publicKeyBytes, keyPair.getPrivate().getEncoded());
-    }
     
-    
-    public void writeWalletFile(final char[] userPassword, final String accountName, 
-            final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws InvalidKeyException,
-            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException, IOException {
-
-        // Encrypt the private key using AES-128 protocol with the user password
-        // Compute a salt to avoid dictionary attacks (to turn a password into a secret key)
-        // The salt is not kept secret but is needed for decryption
-        final SecureRandom random = new SecureRandom();
-        final byte[] salt = new byte[Parameters.SALT_SIZE];
-        random.nextBytes(salt);
-
-        final SecretKey encryptionKey = Cryptography.computeSecretKey(userPassword, salt);
-
-        // Encrypt the private key with the encryption key generated from the user password
-        // Initialize a cipher to the encryption mode with the encryptionKey
-        final Cipher cipher = Cryptography.getCipher();
-        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
-
-        // Get the IV necessary to decrypt the message later
-        // In CBC mode, each block is XORed with the output of the previous block
-        // The IV represents the arbitrary "previous block" to be used for the first block
-        final AlgorithmParameters parameters = cipher.getParameters();
-        final byte[] iv = parameters.getParameterSpec(IvParameterSpec.class).getIV();
-
-        // Encrypt the private key
-        final byte[] encryptedPrivateKey = cipher.doFinal(privateKeyBytes);
-        // Write wallet information in the wallet file
-        final WalletInformation walletInformation = new WalletInformation(salt, iv, encryptedPrivateKey, publicKeyBytes);
-
-        // Creates wallet folder if not exists
-        final File walletFolder = new File(Parameters.WALLETS_PATH);
-        if (!walletFolder.exists()) {
-            walletFolder.mkdir();
-        }
-
-        // Creates new wallet file
-        final File f = new File(Parameters.WALLETS_PATH + accountName + ".wallet");
-        final ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
-        oos.writeObject(walletInformation);
-        oos.flush();
-        oos.close();
-
-        System.out.println("The creation of your wallet completed successfully");
-        System.out.println("Please sign in and start crashing coins");
-    }
-    
-    // Only for DEBUG
-    public static void resetInstance() {
-        Wallet.instance = null;
-    }
-    
-    public static Wallet getInstance() {
-        if (Wallet.instance == null) {
-            Wallet.instance = new Wallet();
-        }
-        return Wallet.instance;
-    }
-    
-    public static Wallet getInstance(final KeyPair keypair){
-        if (Wallet.instance == null) {
-            Wallet.instance = new Wallet(keypair);
-        }
-        return Wallet.instance;
-    }
-
     /**
      * The objective of this method is to verify that the private key that we've
      * just decrypted in the login method using the user password is the valid
@@ -302,5 +153,24 @@ public class Wallet {
 
         return (verified);
     }
-
+    
+    // Only for DEBUG
+    public static void resetInstance() {
+        Wallet.instance = null;
+    }
+    
+    public static Wallet getInstance() {
+        if (Wallet.instance == null) {
+            Wallet.instance = new Wallet();
+        }
+        return Wallet.instance;
+    }
+    
+    public static Wallet getInstance(final KeyPair keypair){
+        if (Wallet.instance == null) {
+            Wallet.instance = new Wallet(keypair);
+        }
+        return Wallet.instance;
+    }
+    
 }

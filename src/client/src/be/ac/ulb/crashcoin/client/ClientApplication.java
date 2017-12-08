@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.client;
 
+import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.client.net.RelayConnection;
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Message;
@@ -39,7 +40,7 @@ public class ClientApplication {
     
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
-    private Wallet wallet;
+    private WalletClient wallet;
 
     public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
@@ -173,7 +174,7 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            final Wallet tmpWallet = new Wallet();
+            final WalletClient tmpWallet = WalletClient.getInstance();
             tmpWallet.writeWalletFile(userPassword, accountName, tmpWallet.generateKeys());
         }
 
@@ -207,7 +208,7 @@ public class ClientApplication {
                 System.out.print("Please enter your password: ");
                 userPassword = reader.next().toCharArray();
             }
-            this.wallet = Wallet.readWalletFile(f, userPassword);
+            this.wallet = (WalletClient) Wallet.readWalletFile(f, userPassword);
             if(wallet != null) {
                 RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
                     wallet.getAddress().toJSON()));
@@ -229,7 +230,6 @@ public class ClientApplication {
     public Transaction createTransaction() throws GeneralSecurityException  {
         Transaction transaction = null;
         int amount = 0;
-
         do {
             System.out.println("Please enter the amount of the transaction,");
             System.out.println("Or enter -1 to escape the curent transaction.");
@@ -249,7 +249,6 @@ public class ClientApplication {
         if (amount != -1) {
             return transaction;
         }
-
         return null;
     }
     
@@ -265,7 +264,7 @@ public class ClientApplication {
         });
     }
     
-    public Wallet getWallet() {
+    public WalletClient getWallet() {
         return wallet;
     }
     
