@@ -1,5 +1,5 @@
 # CrashCoin
-It's not safe, it's not worth anything, it's... CrashCoin™ !
+A fully functional and inefficient cryptocurrency, written in Java.
 
 ![logo](./more/logo.png "CrashCoin™")
 
