@@ -43,6 +43,7 @@ public abstract class AbstractListener extends Thread {
             }
         } catch (IOException e) {
             // Exception in relay
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getMessage());
         }
 
         close();
