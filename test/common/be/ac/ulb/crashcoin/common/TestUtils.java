@@ -2,8 +2,6 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import org.json.JSONObject;
 
@@ -12,15 +10,7 @@ public class TestUtils {
     private static KeyPair kp;
     
     public static void genKeyPair() {
-        if(kp == null) {
-            KeyPairGenerator kpg = null;
-            try {
-                kpg = KeyPairGenerator.getInstance("DSA");
-            } catch (NoSuchAlgorithmException e) {
-                fail("Could not create key pair generator");
-            }
-            kp = kpg.generateKeyPair();
-        }
+        kp = Cryptography.getDsaKeyGen().generateKeyPair();
     }
     
     public static Address createAddress() {
