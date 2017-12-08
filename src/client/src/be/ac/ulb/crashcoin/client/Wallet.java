@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +24,7 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
+import java.util.List;
 import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -85,6 +87,24 @@ public class Wallet {
 
     public ArrayList<Transaction> getTransactions() {
         return transactionsList;
+    }
+    
+    public List<TransactionOutput> getUsefullTransaction(int amount) {
+        List<TransactionOutput> transactions = null;
+        Address srcAddress = new Address(this.publicKey);
+        int total = 0;
+        for (Transaction transaction: transactionsList) {
+            if (transaction.getDestAddress() == srcAddress) {
+                total += transaction.getTransactionOutput().getAmount();
+            } else {
+                total -= transaction.getTransactionOutput().getAmount();
+            }
+            transactions.add(transaction.getTransactionOutput());
+            if (total >= amount) {
+                return transactions;
+            }
+        }
+        return null;
     }
 
     /**
