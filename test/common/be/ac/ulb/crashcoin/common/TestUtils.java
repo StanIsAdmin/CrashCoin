@@ -43,8 +43,8 @@ public class TestUtils {
         return transaction;
     }
     
-    public static Transaction alterTransaction(Transaction transaction) {
-        JSONObject json = transaction.toJSON();
+    public static Transaction alterTransaction(final Transaction transaction) {
+        final JSONObject json = transaction.toJSON();
         json.put("lockTime", System.currentTimeMillis());
         return new Transaction(json);
     }

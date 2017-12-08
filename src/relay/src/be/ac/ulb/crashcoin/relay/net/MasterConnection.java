@@ -27,23 +27,30 @@ public class MasterConnection extends AbstractReconnectConnection {
 
     @Override
     protected void receiveData(final JSONable jsonData) {
-        System.out.println("[DEBUG] get value from master: " + jsonData);
-
         // Receive BlockChain (normaly, only at the first connection
         if (jsonData instanceof BlockChain) {
-            Main.setBlockChain((BlockChain) jsonData);
+            final BlockChain blockChain = (BlockChain) jsonData;
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get BlockChain of size {0} from master", 
+                    new Object[]{blockChain.size()});
+            Main.setBlockChain(blockChain);
 
         } else if (jsonData instanceof Block) { // Receive a mined block
             // local mined block management
             final Block block = (Block) jsonData;
             Main.getBlockChain().add(block);
+            
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get block from master and save to blockchain: {0}", 
+                    new Object[]{block.toString()});
 
             // Broadcast to the miners the validate/mined block so that they can
             // either remove the mined transaction from their pool or stop
             // the block mining if the transaction is in the block.
             MinerConnection.sendToAll(jsonData);
+            
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from master ({0}): {1}", 
+                new Object[]{_ip, jsonData});
         }
-
     }
 
     @Override

@@ -40,8 +40,6 @@ public abstract class AbstractListener extends Thread {
             while (true) {
                 final Socket newSock = _sock.accept();
                 createNewConnection(newSock);
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "New connection (from {0})", 
-                        newSock.getInetAddress().toString());
             }
         } catch (IOException e) {
             // Exception in relay

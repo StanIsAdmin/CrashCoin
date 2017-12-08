@@ -27,29 +27,37 @@ public class RelayConnection extends AbstractConnection {
         allRelay.add(this);
         start();
 
-        // When a relay connects, it always wants the blockchain.
-        // "Hi relay! How are you doing? Let me pour you a blockchain, as usual."
-        sendData(bcManager.getBlockChain());
+        final BlockChain blockChain = bcManager.getBlockChain();
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Send BlockChain of size {0} to relay ({1})", 
+                new Object[]{blockChain.size(), _ip});
+        sendData(blockChain);
     }
 
     @Override
     protected void receiveData(final JSONable data) {
-        Logger.getLogger(getClass().getName()).log(Level.FINEST, "get value from relay: {0}", data);
         if (data instanceof Block) {
             final Block block = (Block) data;
 
             // Local blockChain management
             final BlockChain chain = bcManager.getBlockChain();
+            
             // If block could be add
             if (chain.add(block)) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Save Block to BlockChain:\n{0}", 
+                    new Object[]{block.toString()});
                 bcManager.saveBlockChain();
 
                 // Broadcast the block to all the relay nodes
                 sendToAll(data);
-            } // TODO ? Inform Relay (and Miner that the block has been rejected) ?
-        }
-        else {
-            Logger.getLogger(getClass().getName()).log(Level.FINE, "Unexpected {0} received from relay.", data.getClass().getName());
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Block invalid:\n{0}", 
+                    new Object[]{block.toString()});
+            }
+            // TODO ? Inform Relay (and Miner that the block has been rejected) ?
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                    "Unexpected {0} received from relay {1} ({2})", 
+                    new Object[]{data.getClass().getName(), _ip, data});
         }
     }
 

@@ -29,7 +29,7 @@ public class MerkleTree implements JSONable {
     private static final Integer RIGHT = 2; // Right node of a pair
     private static final Integer NO_CHILD = -1;
     
-    public MerkleTree(List<Transaction> transactions) {
+    public MerkleTree(final List<Transaction> transactions) {
         root = computeMerkleRoot(transactions);
         isComplete = true;
     }
@@ -43,7 +43,7 @@ public class MerkleTree implements JSONable {
         isComplete = false; // A Merkle tree received from the network must be a branch
         final JSONArray jArray = json.getJSONArray("nodes");
         final JSONArray nodeIds = json.getJSONArray("nodeIds");
-        List<Node> nodes = new ArrayList<>();
+        final List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < jArray.length(); i++) {
             final Object type = jArray.get(i);
             if (type instanceof JSONObject) {
@@ -55,7 +55,7 @@ public class MerkleTree implements JSONable {
         // Connect nodes (parents and children were assigned to null because
         // json cannot handle objects with recursive definition
         for (int i = 0; i < nodeIds.length(); i += 2) {
-            Integer nodeId = i / 2;
+            final Integer nodeId = i / 2;
             if ((Integer) nodeIds.get(i) != NO_CHILD) {
                 nodes.get((Integer) nodeIds.getInt(i)).setParent(nodes.get(nodeId));
             }
@@ -74,15 +74,15 @@ public class MerkleTree implements JSONable {
      * @param rightNode Right node
      * @return Node representing the hashed concatenation of its children
      */
-    public Node concatenateAndHash(Node leftNode, Node rightNode) {
+    public Node concatenateAndHash(final Node leftNode, final Node rightNode) {
         leftNode.setSide(LEFT);
-        byte[] leftHash = leftNode.getHash();
-        byte[] rightHash = rightNode.getHash();
-        ByteBuffer buffer = ByteBuffer.allocate(leftHash.length + rightHash.length);
+        final byte[] leftHash = leftNode.getHash();
+        final byte[] rightHash = rightNode.getHash();
+        final ByteBuffer buffer = ByteBuffer.allocate(leftHash.length + rightHash.length);
         buffer.put(leftHash);
         buffer.put(rightHash);
-        byte[] newHash = Cryptography.hashBytes(buffer.array());
-        Node parent = new Node(newHash);
+        final byte[] newHash = Cryptography.hashBytes(buffer.array());
+        final Node parent = new Node(newHash);
         leftNode.setParent(parent);
         rightNode.setParent(parent);
         return parent;
@@ -96,12 +96,12 @@ public class MerkleTree implements JSONable {
      * @param transactions  Transactions from a same block
      * @return  Mekle root
      */
-    public Node computeMerkleRoot(List<Transaction> transactions) {
+    public Node computeMerkleRoot(final List<Transaction> transactions) {
         this.leaves = new HashMap<>();
-        List<Node> leaves = new ArrayList<>();
+        final List<Node> leaves = new ArrayList<>();
         for (Transaction transaction: transactions) {
-            byte[] hash = Cryptography.hashBytes(transaction.toBytes());
-            Node node = new Node(hash);
+            final byte[] hash = Cryptography.hashBytes(transaction.toBytes());
+            final Node node = new Node(hash);
             leaves.add(node);
             this.leaves.put(transaction, node);
         }
@@ -117,21 +117,21 @@ public class MerkleTree implements JSONable {
      * @param nodes  List of nodes from previous tree level
      * @return   Merkle root
      */
-    public Node computeMerkleRootFromBytes(List<Node> nodes) {
+    public Node computeMerkleRootFromBytes(final List<Node> nodes) {
         if (nodes.size() == 1) {
             return nodes.get(0); // The only remaining node is the Merkle root
         }
         else {
-            Integer nPairs = (int) Math.floor(nodes.size() / 2.0);
-            List<Node> nextNodes = new ArrayList<>();
+            final Integer nPairs = (int) Math.floor(nodes.size() / 2.0);
+            final List<Node> nextNodes = new ArrayList<>();
             for (int i = 0; i < nPairs * 2; i += 2) {
                 // Concatenate pairs of adjacent transactions and hash them
                 nextNodes.add(concatenateAndHash(nodes.get(i), nodes.get(i + 1)));
             }
             if (nodes.size() % 2 == 1) {
                 // Hash the single hashafter concatenating with itself
-                Node singleNode = nodes.get(nodes.size() - 1);
-                Node nodeCopy = new Node(singleNode);
+                final Node singleNode = nodes.get(nodes.size() - 1);
+                final Node nodeCopy = new Node(singleNode);
                 nodeCopy.leftChild = null;
                 nodeCopy.rightChild = null;
                 nextNodes.add(concatenateAndHash(singleNode, nodeCopy));
@@ -146,11 +146,11 @@ public class MerkleTree implements JSONable {
         try {
             final JSONArray jArray = new JSONArray();
             final JSONArray nodeIds = new JSONArray();
-            Stack<Node> stack = new Stack<>();
+            final Stack<Node> stack = new Stack<>();
             stack.add(root);
             Integer nodeCounter = 0;
             while (!(stack.empty())) {
-                Node currentNode = stack.pop();
+                final Node currentNode = stack.pop();
                 jArray.put(currentNode.toJSON());
                 if (currentNode.leftChild != null) {
                     stack.push(currentNode.leftChild);
@@ -184,14 +184,13 @@ public class MerkleTree implements JSONable {
      * or the Merkle root itself.
      */
     class Node implements JSONable {
-        
         private Node parent;
         private Node leftChild;
         private Node rightChild;
         private final byte[] hash;
         private Integer side;
         
-        public Node(byte[] hash) {
+        public Node(final byte[] hash) {
             this.hash = hash;
             this.side = NO_SIDE;
         }
@@ -201,7 +200,7 @@ public class MerkleTree implements JSONable {
          * 
          * @param other 
          */
-        public Node(Node other) {
+        public Node(final Node other) {
             this.hash = other.hash;
             this.parent = other.parent;
             this.leftChild = other.leftChild;
@@ -230,7 +229,7 @@ public class MerkleTree implements JSONable {
             return json;
         }
         
-        public void setParent(Node parent) {
+        public void setParent(final Node parent) {
             this.parent = parent;
             if (this.side == LEFT) {
                 parent.setLeftChild(this);
@@ -239,15 +238,15 @@ public class MerkleTree implements JSONable {
             }
         }
         
-        public void setLeftChild(Node child) {
+        public void setLeftChild(final Node child) {
             this.leftChild = child;
         }
         
-        public void setRightChild(Node child) {
+        public void setRightChild(final Node child) {
             this.rightChild = child;
         }
         
-        public void setSide(Integer side) {
+        public void setSide(final Integer side) {
             this.side = side;
         }
         

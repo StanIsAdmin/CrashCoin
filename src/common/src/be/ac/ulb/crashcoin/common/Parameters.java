@@ -53,9 +53,9 @@ public class Parameters {
             + "c9e5e76159fd3f0f141f3e092ef684d2b8bf1032c2ccb16c03e6ea982e48c37c4d402adba7d7454e677f3dcac5d717dd88d5d4"
             + "af0a847a16043212ebb9353b3d98facff833bd9911dc1e474c71c44d356cdc69b03095fefbb503899999155034e2f96a0a34a8"
             + "4c30c4605f622f07305eeb1c0").getBytes());
-
-    public static final byte[] GENESIS_SIGNATURE = Hex.decode(("302D02143F962F937652A531AA72914822C885B59C99FBB002150"
-            + "08CDE6B5A1FD63D300879E8693CB59404CAD686E4").getBytes());
+    
+    public static final byte[] GENESIS_SIGNATURE = Hex.decode(("302C02144087A57D7A35CA0C49EF4D374EAEC732A49247700214"
+            + "71711F5F28010AC1D41A86291E4399F60964B8D2").getBytes());
     
     public static final Integer GENESIS_MINING_DIFFICULTY = 0;
 

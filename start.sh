@@ -40,7 +40,7 @@ stop() {
         if [ $(status $1) = true ]; then
             echo "${red}Error while trying to${normal} ${bold}${1^}${normal}"
         else
-            echo "${bold}${1^}${normal} has been stoped"
+            echo "${bold}${1^}${normal} has been stopped"
         fi
     else
         echo "${bold}${1^}${normal} ${red}has not been launched yet${normal}";

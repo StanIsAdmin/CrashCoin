@@ -20,26 +20,34 @@ class MinerConnection extends AbstractConnection {
     public MinerConnection(final Socket sock) throws IOException {
         super("MinerConnection", sock);
         allMiners.add(this);
+        
         // send last block of the blockchain to freshly connected miner
-        sendData(Main.getBlockChain().getLastBlock());
+        final Block lastBlock = Main.getBlockChain().getLastBlock();
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Send last block to miner ({0}): {1}", 
+                new Object[]{_ip, lastBlock.toString()});
+        sendData(lastBlock);
 
         start();
     }
 
     @Override
     protected void receiveData(final JSONable jsonData) {
-        System.out.println("[DEBUG] get value from miner/client: " + jsonData);
-
         if (jsonData instanceof Block) {
             final Block block = (Block) jsonData;
-
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block fomr miner ({0}): {1}", 
+                    new Object[]{_ip, block.toString()});
+            
             // Relay the data to the master node
             try {
                 MasterConnection.getMasterConnection().sendData(block);
             } catch (IOException ex) {
-                Logger.getLogger(MinerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Could not send block to Master {0}", 
+                        ex.getMessage());
             }
 
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from miner ({0}): {1}", 
+                    new Object[]{_ip, jsonData});
         }
 
     }

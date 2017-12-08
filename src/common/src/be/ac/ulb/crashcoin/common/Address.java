@@ -73,4 +73,8 @@ public class Address implements JSONable {
         final Address other = (Address) obj;
         return this.key.equals(other.key) && Arrays.equals(this.value, other.value);
     }
+    
+    public String toString() {
+        return key.getEncoded().toString();
+    }
 }
