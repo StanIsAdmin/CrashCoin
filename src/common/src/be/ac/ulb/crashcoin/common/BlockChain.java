@@ -14,14 +14,35 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Stock block
+ * Represents the CrashCoin BlockChain as a list of Block instances.
+ * 
+ * The add method has been overridden to verify the block to add and
+ * each of its transactions. 
  */
 public class BlockChain extends ArrayList<Block> implements JSONable {
     
     /* Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
+    
 
-    // Used by [Relay Node]
+    /**
+     * Creates a basic BlockChain instance, containing a single genesis block.
+     * 
+     * The genesis block is created through the createGenesisBlock() method.
+     * @see the createGenesisBlock() is created
+     */
+    public BlockChain()  {
+        this.availableInputs = new HashMap<>();
+        final Block genesis = createGenesisBlock();
+        super.add(genesis); // call to super does not perform validity check
+    }
+
+    /**
+     * Creates a BlockChain instance from its JSON representation.
+     * 
+     * @param json the JSON representation of the BlockChain, compatible with
+     * the result of BlockChain.toJSON()
+     */
     public BlockChain(final JSONObject json)  {
         this(); // Creates BC containing genesis bloc
         final JSONArray blockArray = json.getJSONArray("blockArray");
@@ -34,14 +55,6 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
                 throw new IllegalArgumentException("Unknow object in blockArray ! " + type);
             }
         }
-        // TODO
-    }
-
-    // Used by [Master node]
-    public BlockChain()  {
-        this.availableInputs = new HashMap<>();
-        final Block genesis = createGenesisBlock();
-        super.add(genesis); // call to super does not perform validity check
     }
 
     @Override
