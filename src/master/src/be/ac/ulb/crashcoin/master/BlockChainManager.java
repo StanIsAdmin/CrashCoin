@@ -28,10 +28,16 @@ public class BlockChainManager {
 
     private static BlockChainManager instance;
 
+    /**
+     * The newly created blockchain is empty.
+     */
     private BlockChainManager() {
         blockChain = createBlockChain();
     }
 
+    /**
+     * @return The blockChainManager (initially empty)
+     */
     public static BlockChainManager getInstance() {
         if (instance == null) {
             instance = new BlockChainManager();
@@ -43,6 +49,13 @@ public class BlockChainManager {
         return blockChain;
     }
 
+    /**
+     * Loads a blockChain from the file and returns it.
+     *
+     * This does not update this.blockChain
+     *
+     * @return the blockchain created from BLOCKCHAIN_SAVE_PATH
+     */
     private BlockChain createBlockChain() {
         FileReader fr;
         try {
@@ -64,6 +77,9 @@ public class BlockChainManager {
         return new BlockChain(jsonBlockChain);
     }
 
+    /**
+     * Save the blockchain to the BLOCKCHAIN_SAVE_PATH file.
+     */
     public void saveBlockChain() {
         FileWriter fw;
         try {
