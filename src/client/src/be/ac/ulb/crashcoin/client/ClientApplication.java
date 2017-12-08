@@ -14,14 +14,21 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.TransactionOutput;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.Console;
+import java.security.GeneralSecurityException;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import java.util.List;
 
 /**
  * Handle IO from user and network communication between nodes and wallet.
@@ -32,11 +39,11 @@ public class ClientApplication {
     
     private final Console console;
     private final Scanner reader = new Scanner(System.in);
-    private Wallet wallet;
+    private WalletClient wallet;
 
     public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, GeneralSecurityException {
         instance = this;
         wallet = null;
         
@@ -87,7 +94,7 @@ public class ClientApplication {
         }
     }
 
-    private void actionMenuRegistred(final int choice)  {
+    private void actionMenuRegistred(final int choice) throws GeneralSecurityException  {
         switch (choice) {
             case 1:
                 createTransaction();
@@ -166,7 +173,7 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            final Wallet tmpWallet = new Wallet();
+            final WalletClient tmpWallet = new WalletClient();
             tmpWallet.writeWalletFile(userPassword, accountName, tmpWallet.generateKeys());
         }
 
@@ -200,7 +207,7 @@ public class ClientApplication {
                 System.out.print("Please enter your password: ");
                 userPassword = reader.next().toCharArray();
             }
-            this.wallet = Wallet.readWalletFile(f, userPassword);
+            this.wallet = new WalletClient(f, userPassword);
             if(wallet != null) {
                 RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
                     wallet.getAddress().toJSON()));
@@ -217,35 +224,36 @@ public class ClientApplication {
      * transaction was aborded.
      *
      * @return The created transaction
+     * @throws java.security.GeneralSecurityException
      */
-    public Transaction createTransaction()  {
-        final Address srcAddress = wallet.getAddress();
-        Transaction transaction;
-        Transaction result = null;
+    public Transaction createTransaction() throws GeneralSecurityException  {
+        Transaction transaction = null;
         int amount = 0;
-
         do {
             System.out.println("Please enter the amount of the transaction,");
             System.out.println("Or enter -1 to escape the curent transaction.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
-
-            System.out.print("Destination : ");
-            String strDest = reader.next();
-            
-            // TODO get the inputs to make a transaction, and find a way to stop the while loop
-            
-            transaction = new Transaction(srcAddress);
-            /*input = new Transaction(srcAddress, amount);
-
-            transaction = new Transaction(srcAddress, amount, lockTime);*/
+            List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
+            if (referencedOutput == null) {
+                System.out.print("You don't have enough money.");
+            } else if (amount != -1){
+                System.out.print("Destination : ");
+                PublicKey dstPublicKey = this.stringToKey(reader.next());
+                final Address srcAddress = wallet.getAddress();
+                final Address dstAddress = new Address(dstPublicKey);
+                transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
+            }
         } while (amount != -1);
-
         if (amount != -1) {
             return transaction;
         }
-
         return null;
+    }
+    
+    private PublicKey stringToKey(String text) throws GeneralSecurityException {
+        byte[] key = JsonUtils.decodeBytes(text);
+        return Cryptography.createPublicKeyFromBytes(key);
     }
 
     public void showWallet() {
@@ -255,7 +263,7 @@ public class ClientApplication {
         });
     }
     
-    public Wallet getWallet() {
+    public WalletClient getWallet() {
         return wallet;
     }
     

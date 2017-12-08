@@ -27,8 +27,8 @@ public class TestWallet {
      *
      * @return A wallet
      */
-    private Wallet createWallet() {
-        return new Wallet();
+    private WalletClient createWallet() {
+        return new WalletClient();
     }
 
     /**
@@ -37,7 +37,7 @@ public class TestWallet {
      *
      * @return A pair of keys
      */
-    private KeyPair createKeyPair(final Wallet wallet) {
+    private KeyPair createKeyPair(final WalletClient wallet) {
         KeyPair keyPair = null;
         keyPair = wallet.generateKeys();
         return keyPair;
@@ -45,7 +45,7 @@ public class TestWallet {
 
     @Test
     public void testValidSignature() {
-        final Wallet wallet = createWallet();
+        final WalletClient wallet = createWallet();
         final KeyPair keyPair = createKeyPair(wallet);
 
         final byte[] transaction = randomBytes(50);
@@ -58,7 +58,7 @@ public class TestWallet {
     public void testBadPrivateKey() {
         // Let wallet and keyPairs be the wallet and the pair of keys associated to user's account
         // and stored on the hard drive.
-        final Wallet wallet = createWallet();
+        final WalletClient wallet = createWallet();
         final KeyPair keyPair = createKeyPair(wallet);
 
         // Let's suppose that an attacker entered a bad password and thus, got a bad DSA private key from
