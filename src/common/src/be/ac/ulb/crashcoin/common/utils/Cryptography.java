@@ -48,10 +48,19 @@ public class Cryptography {
     
     private static SecretKeyFactory factory = null;
     
+    /**
+     * Secure random number/bytes generators.
+     */
     private static SecureRandom secureRandom = null;
     
+    /**
+     * DSA key pair generator.
+     */
     private static KeyPairGenerator dsaKeyGen = null;
     
+    /**
+     * DSA public/private key constructor from bytes.
+     */
     private static KeyFactory dsaKeyFactory = null;
 
     /**
@@ -65,8 +74,7 @@ public class Cryptography {
             try {
                 hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);
             } catch(NoSuchAlgorithmException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to use SHA-256 hash... Abort!", ex);
-                System.exit(1);
+                logAndAbort("Unable to use SHA-256 hash... Abort!", ex);
             }
         }
         hasher.update(data);
@@ -180,8 +188,7 @@ public class Cryptography {
             try {
                 cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             } catch (NoSuchAlgorithmException | NoSuchPaddingException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to get cipher: \"AES/CBC/PKCS5Padding\". Abort!", ex);
-                System.exit(1);
+                logAndAbort("Unable to get cipher: \"AES/CBC/PKCS5Padding\". Abort!", ex);
             }
         }
         return cipher;
@@ -203,16 +210,15 @@ public class Cryptography {
             final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
             final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
             
-            final KeyFactory factory = KeyFactory.getInstance("DSA");
+            dsaKeyFactory = Cryptography.getDsaKeyFactory();
             
             // Create PublicKey and PrivateKey interfaces using the factory
-            final PrivateKey privateKey = factory.generatePrivate(privateKeySpec);
-            final PublicKey publicKey = factory.generatePublic(publicKeySpec);
+            final PrivateKey privateKey = dsaKeyFactory.generatePrivate(privateKeySpec);
+            final PublicKey publicKey = dsaKeyFactory.generatePublic(publicKeySpec);
             
             return (new KeyPair(publicKey, privateKey));
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create key pair. Abort!", ex);
-            System.exit(1);
+        } catch (InvalidKeySpecException ex) {
+            logAndAbort("Unable to create key pair. Abort!", ex);
         }
         return null;
     }
@@ -222,8 +228,7 @@ public class Cryptography {
             try {
                 factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "unable to create SecretKeyFactory. Abort!", ex);
-                System.exit(1);
+                logAndAbort("Unable to create SecretKeyFactory. Abort!", ex);
             }
         }
         return factory;
@@ -234,8 +239,7 @@ public class Cryptography {
             try {
                 secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
             } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create Secure Random \"SHA1PRNG\". Abort!", ex);
-                System.exit(1);
+                logAndAbort("Unable to create Secure Random \"SHA1PRNG\". Abort!", ex);
             }
         }
         return secureRandom;
@@ -265,8 +269,7 @@ public class Cryptography {
             
             return secretKey;
         } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to compute Secret Key. Abort!", ex);
-            System.exit(1);
+            logAndAbort("Unable to compute Secret Key. Abort!", ex);
         }
         return null;
     }
@@ -276,25 +279,18 @@ public class Cryptography {
             try {
                 dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
             } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "unable to create DSA Keygen. Abort!", ex);
-                System.exit(1);
+                logAndAbort("unable to create DSA Keygen. Abort!", ex);
             }
         }
         return dsaKeyGen;
     }
     
-    public static KeyFactory getDsaKeyFactory() {
-        if(dsaKeyFactory == null) {
-            try {
-                dsaKeyFactory = KeyFactory.getInstance("DSA");
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create DSA key factory. Abort!", ex);
-                System.exit(1);
-            }
-        }
-        return dsaKeyFactory;
-    }
-    
+    /**
+     * Transforms a byte array into a PrivateKey.
+     * 
+     * @param privateKeyBytes the bytes to transform into a private key
+     * @return the private key associated to the byte array
+     */
     public static PrivateKey getPrivateKeyFomBytes(final byte[] privateKeyBytes) {
         final X509EncodedKeySpec ks = new X509EncodedKeySpec(privateKeyBytes);
         dsaKeyFactory = Cryptography.getDsaKeyFactory();
@@ -302,21 +298,49 @@ public class Cryptography {
         try {
             pv = dsaKeyFactory.generatePrivate(ks);
         } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Address.class.getName()).log(Level.SEVERE, "Unable to generate private key from bytes. Abort!", ex);
-            System.exit(1);
+            logAndAbort("Unable to generate private key from bytes. Abort!", ex);
         }
         return pv;
     }
     
+    /**
+     * Transforms a byte array into a PublicKey.
+     * 
+     * @param publicKeyBytes the bytes to transform into a public key
+     * @return the public key associated to the byte array
+     */
     public static PublicKey getPublicKeyFromBytes(final byte[] publicKeyBytes) {
         dsaKeyFactory = Cryptography.getDsaKeyFactory();
         final X509EncodedKeySpec ks = new X509EncodedKeySpec(publicKeyBytes);
         try {
             return dsaKeyFactory.generatePublic(ks);
         } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to generate public key from bytes. Abort!", ex);
-            System.exit(1);
+            logAndAbort("Unable to generate public key from bytes. Abort!", ex);
         }
         return null;
+    }
+    
+    ///// private
+    
+    private static KeyFactory getDsaKeyFactory() {
+        if(dsaKeyFactory == null) {
+            try {
+                dsaKeyFactory = KeyFactory.getInstance("DSA");
+            } catch (NoSuchAlgorithmException ex) {
+                logAndAbort("Unable to create DSA key factory. Abort!", ex);
+            }
+        }
+        return dsaKeyFactory;
+    }
+    
+    /**
+     * Logs a message and the exception that goes with it, then aborts the program.
+     * 
+     * @param message The message to log (null if none)
+     * @param exception The exception that has been thrown
+     */
+    private static void logAndAbort(final String message, final Throwable exception) {
+        Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, message, exception);
+        System.exit(1);
     }
 }
