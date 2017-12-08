@@ -48,7 +48,7 @@ public class Wallet {
         this.publicKey = keyPair.getPublic();
     }
 
-    public void readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
+    protected void readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
         final ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));

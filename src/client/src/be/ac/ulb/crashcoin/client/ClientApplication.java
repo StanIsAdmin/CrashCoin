@@ -207,8 +207,7 @@ public class ClientApplication {
                 System.out.print("Please enter your password: ");
                 userPassword = reader.next().toCharArray();
             }
-            this.wallet = new WalletClient();
-            this.wallet.readWalletFile(f, userPassword);
+            this.wallet = new WalletClient(f, userPassword);
             if(wallet != null) {
                 RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
                     wallet.getAddress().toJSON()));

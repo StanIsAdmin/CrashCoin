@@ -18,10 +18,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.security.AlgorithmParameters;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,14 @@ public class WalletClient extends Wallet {
         transactionsList = new ArrayList<>();
     }
     
-    private WalletClient(KeyPair keypair) {
+    public WalletClient(final File f, final char[] userPassword) throws IOException, 
+            FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+        this();
+        this.readWalletFile(f, userPassword);
+    }
+    
+    public WalletClient(KeyPair keypair) {
         super(keypair);
         transactionsList = new ArrayList<>();
     }
