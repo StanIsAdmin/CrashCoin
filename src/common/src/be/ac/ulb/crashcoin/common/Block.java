@@ -4,7 +4,6 @@ import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,7 +126,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * false otherwise
      * @see isValid
      */
-    public boolean isHashValid() throws NoSuchAlgorithmException {
+    public boolean isHashValid()  {
         return isHashValid(Cryptography.hashBytes(headerToBytes()), this.difficulty);
     }
 
@@ -153,9 +152,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Set the header into a single byte array.
      *
      * @return a byte[] representing the header
-     * @throws NoSuchAlgorithmException if unable to hash
      */
-    public byte[] headerToBytes() throws NoSuchAlgorithmException {
+    public byte[] headerToBytes()  {
         final ByteBuffer buffer = ByteBuffer.allocate(Parameters.BLOCK_HEADER_SIZE);
         // insert magic number (4 bytes)
         buffer.putInt(Parameters.MAGIC_NUMBER);
@@ -175,9 +173,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Get hash of all transaction
      *
      * @return 32 bytes !
-     * @throws java.security.NoSuchAlgorithmException
      */
-    public byte[] getTransactionHash() throws NoSuchAlgorithmException {
+    public byte[] getTransactionHash()  {
         return Cryptography.hashBytes(this.transactionsToBytes());
     }
 
@@ -203,9 +200,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * Set the whole block in a single byte array.
      *
      * @return a byte[] representing the block
-     * @throws NoSuchAlgorithmException if unable to perform hashing
      */
-    public byte[] toBytes() throws NoSuchAlgorithmException {
+    public byte[] toBytes()  {
         final byte[] headerBytes = headerToBytes();
         final byte[] transactionBytes = transactionsToBytes();
         final ByteBuffer buffer = ByteBuffer.allocate(headerBytes.length + transactionBytes.length);

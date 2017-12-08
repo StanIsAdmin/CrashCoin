@@ -2,127 +2,186 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Transaction implements JSONable {
-
-    private final Address srcAddress;
-    private final Address destAddress;
-    private final Integer totalAmount;
+    
     private final Timestamp lockTime;
-    private byte[] signature;
-    private ArrayList<Input> inputs;
-    private ArrayList<Output> outputs;
-
+    
+    private ArrayList<TransactionInput> inputs = null;
+    private TransactionOutput transactionOutput;
     /**
-     * Constructor for transactions Transaction
+     * Output of the transaction that contains the remaining value after payement.
+     * 
+     * The amount of the output is 0 if not all crashcoins have been used,
+     * strictly positive if there is change, and the output is null if the
+     * transaction is self-rewarding.
+     */
+    private TransactionOutput changeOutput;
+    
+    private byte[] signature = null;
+
+    public Transaction(final Address destAddress)  {
+        this(destAddress, new Timestamp(System.currentTimeMillis()));
+    }
+    
+    /**
+     * Creates a reward transaction (transaction with no source address).
+     * The resulting transaction is without signature.
+     * 
+     * @see Parameters.MINING_REWRD
      *
-     * @param srcAddress CrashCoin address of the source
-     * @param destAddress CrashCoin address of the destination
-     * @param totalAmount Number of CrashCoins
-     * @param lockTime Transaction timestamp
+     * @param lockTime time of the creation of the transaction (if null: lockTime
+     *      is considered to be current timestamp)
+     * @param destAddress Address of the destination
      */    
-    public Transaction(final Address destAddress, final Integer totalAmount, final Timestamp lockTime) {
-        this(destAddress, null, totalAmount, lockTime);
-    }
-    
-    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime) {
-        this(destAddress, srcAddress, totalAmount, lockTime, null);
-    }
-    
-    public Transaction(final Address destAddress, final Address srcAddress, final Integer totalAmount, final Timestamp lockTime, final byte[] signature) {
-        super();
-        this.destAddress = destAddress;
-        this.srcAddress = srcAddress;
-        this.totalAmount = totalAmount;
+    public Transaction(final Address destAddress, final Timestamp lockTime)  {
+        // Add lock time
         this.lockTime = lockTime;
-        this.signature = signature;
+        
+        transactionOutput = new TransactionOutput(destAddress, Parameters.MINING_REWARD);
+        changeOutput = null;
+    }
+    
+    /**
+     * Creates a transaction without a signature.
+     * 
+     * @param srcAddress Source address of the transaction
+     * @param destAddress Destination address of the transaction
+     * @param amount Number of CrashCoins received by the destination address
+     * @param referencedOutputs List of referenced outputs, used as inputs
+     */
+    public Transaction(final Address srcAddress, final Address destAddress, final Integer amount, 
+            final List<TransactionOutput> referencedOutputs)  {
+        // Add lock time
+        this.lockTime = new Timestamp(System.currentTimeMillis());
+
+        // Create inputs
         this.inputs = new ArrayList<>();
-        this.outputs = new ArrayList<>();
+        Integer inputAmount = 0;
+        for (final TransactionOutput output : referencedOutputs) {
+            inputs.add(new TransactionInput(output));
+            inputAmount += output.getAmount();
+        }
+        
+        // Create outputs
+        this.transactionOutput = new TransactionOutput(destAddress, amount);
+        this.changeOutput = new TransactionOutput(srcAddress, inputAmount - amount);
+        
+        // Instantiate signature
+        this.signature = null;
     }
 
     /**
-     * Create Transaction instance from a JSON representation
-     *
+     * Create Transaction instance from a JSON representation.
+     * This transaction already contains a signature.
+     * 
      * @param json
      */
     public Transaction(final JSONObject json) {
-        this(new Address((JSONObject) json.get("destAddress")),
-                (json.has("srcAddress"))? new Address((JSONObject) json.get("srcAddress")) : null,
-                json.getInt("totalAmount"),
-                new Timestamp(json.getLong("lockTime")),
-                JsonUtils.decodeBytes(json.getString("signature")));
+        // Add lock time
+        this.lockTime = new Timestamp(json.getLong("lockTime"));
+        if(!json.getBoolean("isReward")) {
+            // Add inputs
+            this.inputs = new ArrayList<>();
+            for (final Object input : json.getJSONArray("inputs")) {
+                this.inputs.add(new TransactionInput((JSONObject) input));
+            }
+            
+            // change output is present only for non-reward transactions
+            this.changeOutput = new TransactionOutput((JSONObject) json.get("changeOutput"));
+        }
+        
+        // Add transaction output
+        this.transactionOutput = new TransactionOutput((JSONObject) json.get("transactionOutput"));
+        
+        // Add signature
+        this.signature = JsonUtils.decodeBytes(json.getString("signature"));
     }
 
     /**
-     * Get a JSON representation of the Address instance * TODO add signature
+     * Returns a JSON representation of the Address instance.
      */
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("destAddress", destAddress.toJSON());
-        json.put("signature", JsonUtils.encodeBytes(signature));
-        json.put("totalAmount", totalAmount);
         json.put("lockTime", lockTime.getTime());
-        if(srcAddress != null) {
-            json.put("srcAddress", srcAddress.toJSON());
+        json.put("isReward", isReward());
+        
+        if(!isReward()) {
+            final JSONArray jsonInputs = new JSONArray();
+            for (final TransactionInput input : inputs) {
+                jsonInputs.put(input.toJSON());
+            }
+            json.put("inputs", jsonInputs);
+            json.put("changeOutput", this.changeOutput.toJSON());
         }
+        json.put("transactionOutput", this.transactionOutput.toJSON());
+        json.put("signature", JsonUtils.encodeBytes(signature));
         return json;
     }
 
-    public void sign(PrivateKey privateKey) {
+    /**
+     * Add signature of the payer to the transaction.
+     * 
+     * Transactions signature is performed by DSA.
+     * 
+     * @see Cryptography.signTransaction
+     * 
+     * @param privateKey the private key of the payer (signer)
+     */
+    public void sign(final PrivateKey privateKey) {
         this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
     }
     
-    // Create a new transaction to a final destinator
-    public boolean createTransaction(final Transaction transaction,
-            final Address dstAddress, final Integer nCrashCoins) throws NoSuchAlgorithmException {
-        this.addInputTransaction(transaction);
-        this.addOutput(dstAddress, nCrashCoins);
-        return this.isValid();
-    }
-    
-    // Checks that the transaction is older that the other transaction
+    /**
+     * Checks that the transaction is older that the other transaction
+     * 
+     * @param other the transaction which timestamp is tested 
+     * 
+     * @return true if this very transaction is older that the other one.
+     */
     public boolean before(final Transaction other) {
         return lockTime.before(other.lockTime);
     }
-
-    public void addInputTransaction(final Transaction transaction) throws NoSuchAlgorithmException {
-        this.inputs.add(new Input(transaction));
-    }
     
-    public ArrayList<Input> getInputTransactions() {
-        return this.inputs;
-    }
-
-    public void addOutput(final Address address, final Integer nCrashCoins) {
-        this.outputs.add(new Output(address, nCrashCoins));
-    }
-
     /** Returns true if the standalone transaction is valid, false otherwise.
-     * A transaction by itself is valid if it meets all of these conditions :
-     * - the sum of inputs equals the sum of outputs
-     * - each output value is strictly positive
-     * - TODO use input values instead of totalAmount ?
+     * 
+     * A transaction by itself is valid if it meets all of these conditions :<br>
+     * - the sum of inputs equals the sum of outputs<br>
+     * - each output value is strictly positive<br>
      * 
      * @return true if the transaction is valid as described, false otherwise
      */
     public boolean isValid() {
-        // Check whether sum of inputs is lower than the sum of outputs
+        PublicKey addresseePublicKey = this.transactionOutput.getDestinationAddress().getPublicKey();
+        
+        if(isReward())
+            return this.inputs == null && this.changeOutput == null
+                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD)
+                    && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
+        // Check whether sum of inputs is equal to the sum of outputs
         Integer sum = 0;
-        for (Output output : this.outputs) {
-            if (output.nCrashCoins <= 0) return false;
-            sum += output.nCrashCoins;
+        for(final TransactionInput input : this.inputs) {
+            sum += input.getAmount();
         }
-        // The difference is considered as transaction fee
-        return Objects.equals(sum, totalAmount);
+        
+        return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
+                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount())
+                && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
     }
 
     /**
@@ -134,83 +193,23 @@ public class Transaction implements JSONable {
      * @return Bytes of the transaction
      */
     public byte[] toBytes() {
-        // Compute number of bytes required to represent inputs and outputs
-        Integer totalSize = 0;
-        for (Input input: inputs) {
-            totalSize += input.toBytes().length;
+        final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        try {    
+            byteBuffer.write(ByteBuffer.allocate(Long.BYTES).putLong(lockTime.getTime()).array());
+            if(!isReward()) {
+                for(final TransactionInput input : inputs)
+                    byteBuffer.write(input.toBytes());
+                byteBuffer.write(this.changeOutput.toBytes());
+            }
+            byteBuffer.write(this.transactionOutput.toBytes());
+        } catch (IOException ex) {
+            Logger.getLogger(Transaction.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (Output output: outputs) {
-            totalSize += output.toBytes().length;
-        }
-        totalSize += Parameters.INTEGER_N_BYTES;
-        // Add number of crashcoins of current transaction and user's address
-        byte[] srcAddressBytes;
-        if (srcAddress != null) {
-            srcAddressBytes = srcAddress.toBytes();
-            totalSize += srcAddressBytes.length;
-        }
-        final ByteBuffer buffer = ByteBuffer
-                .allocate(totalSize);
-        buffer.putInt(totalAmount);
-        if (srcAddress != null) {
-            srcAddressBytes = srcAddress.toBytes();
-            buffer.put(srcAddressBytes);
-        }
-        // Add inputs and outputs as bytes
-        for (Input input: inputs) {
-            buffer.put(input.toBytes());
-        }
-        for (Output output: outputs) {
-            buffer.put(output.toBytes());
-        }
-        return buffer.array();
+        return byteBuffer.toByteArray();
     }
-
-    /**
-     * String representation of a transaction
-     *
-     * @return String
-     */
-    @Override
-    public String toString() {
-        return "src: " + srcAddress + " | amount: " + totalAmount;
-    }
-
-    /**
-     * Input of a transaction, from the doc
-     * https://en.bitcoin.it/wiki/Transaction
-     */
-    public class Input {
-
-        final byte[] previousTx; // Hash value of a previous transaction
-
-        public Input(final Transaction previousTransaction) throws NoSuchAlgorithmException {
-            this.previousTx = Cryptography.hashBytes(previousTransaction.toBytes());
-        }
-                
-        /**
-         * Byte representation of a transaction input, which is simply the hash
-         * of the input transaction.
-         * 
-         * @return byte[]  Byte representation of the input
-         */
-        public byte[] toBytes() {
-            return previousTx;
-        }
-        
-        @Override
-        public boolean equals(final Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            Input other = (Input) obj;
-            return Arrays.equals(this.previousTx, other.previousTx);
-        }
-        
-        @Override
-        public int hashCode() {
-            return this.previousTx.hashCode();
-        }
+    
+    public boolean isReward() {
+        return this.changeOutput == null;
     }
 
     /**
@@ -219,13 +218,7 @@ public class Transaction implements JSONable {
      * @return
      */
     public Address getDestAddress() {
-        Address ret = null;
-        for (final Output output : outputs) {
-            if (output.getAddress().equals(srcAddress)) {
-                ret = output.getAddress();
-            }
-        }
-        return ret;
+        return this.transactionOutput.getDestinationAddress();
     }
 
     /**
@@ -234,70 +227,86 @@ public class Transaction implements JSONable {
      * @return
      */
     public Address getSrcAddress() {
-        return this.srcAddress;
+        return this.changeOutput.getDestinationAddress();
     }
 
     /**
-     * Output of a transaction, from the doc
-     * https://en.bitcoin.it/wiki/Transaction
+     * Get the list of transactions outputs references that are used as inputs
+     * in this very transaction.
+     * 
+     * A TransactionInput is basically a hash of a transaction output, and the amount
+     * of that output.
+     * 
+     * @see TransactionInput
+     * @see TransactionOutput
+     * 
+     * @return an ArrayList of TransactionInputs
      */
-    public class Output {
-
-        final Integer nCrashCoins;
-        final Address address;
-
-        public Output(final Address address, final Integer nCrashCoins) {
-            this.nCrashCoins = nCrashCoins;
-            this.address = address;
-        }
-
-        public Address getAddress() {
-            return this.address;
-        }
-        
-        /**
-         * Byte representation of a transaction output, which relies on
-         * the amount of CrashCoins and the receiver's address.
-         * 
-         * @return byte[] Byte representation
-         */
-        public byte[] toBytes() {
-            final ByteBuffer buffer = ByteBuffer
-                .allocate(address.toBytes().length + Parameters.INTEGER_N_BYTES);
-            buffer.putInt(nCrashCoins);
-            buffer.put(address.toBytes());
-            return buffer.array();
-        }
-    }
-    
-    public ArrayList<Input> getInputs() {
+    public ArrayList<TransactionInput> getInputs() {
         return inputs;
     }
     
-    public ArrayList<Output> getOutputs() {
-        return outputs;
+    /**
+     * Get the transaction output.
+     * 
+     * As opposed to the changeOutput, the transaction output is the output of
+     * the transaction that is destinated to the payee (receiver of the payement).
+     * 
+     * @see getChangeOutput
+     * @see transactionOutput
+     * @see changeOutput
+     * 
+     * @return the output to the payee.
+     */
+    public TransactionOutput getTransactionOutput() {
+        return this.transactionOutput;
+    }
+    
+    /**
+     * Get the change output.
+     * 
+     * As opposed to the transactionOutput, the change output is the output
+     * representing the change, i.e. when a wallet makes a transaction, it pays
+     * a certain amount of Crashcoins. If it pays too much, the remaining
+     * Crashcoins are redirected to its address as a change output.
+     * 
+     * @see getChangeOutput
+     * @see transactionOutput
+     * @see changeOutput
+     * 
+     * @return the change output
+     */
+    public TransactionOutput getChangeOutput() {
+        return this.changeOutput;
     }
 
-    /**
-     * Used for test purposes *
-     */
     @Override
     public boolean equals(final Object obj) {
-        Boolean res = true;
         if (this == obj) {
-            res = true;
+            return true;
         }
         if (obj == null) {
-            res = false;
+            return false;
         }
         if (getClass() != obj.getClass()) {
-            res = false;
+            return false;
         }
         final Transaction other = (Transaction) obj;
-        res &= this.totalAmount.equals(other.totalAmount) && this.lockTime.equals(other.lockTime) && this.destAddress.equals(other.destAddress);
-        if(this.srcAddress != null && other.srcAddress != null) {
-            res &= this.srcAddress.equals(other.srcAddress);
+        if (!Objects.equals(this.lockTime, other.lockTime)) {
+            return false;
         }
-        return res;
-    }
+        if (!Objects.equals(this.inputs, other.inputs)) {
+            return false;
+        }
+        if (!Objects.equals(this.transactionOutput, other.transactionOutput)) {
+            return false;
+        }
+        if (!Objects.equals(this.changeOutput, other.changeOutput)) {
+            return false;
+        }
+        if (!Arrays.equals(this.signature, other.signature)) {
+            return false;
+        }
+        return true;
+    }   
 }

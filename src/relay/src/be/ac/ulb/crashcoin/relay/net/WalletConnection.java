@@ -85,8 +85,8 @@ public class WalletConnection extends AbstractConnection {
             if(!block.isEmpty()) {
                 for (final Transaction transaction : block) {
                     // Not send transaction created by the miner
-                    if (transaction.getDestAddress().equals(walletAddress)
-                            || transaction.getSrcAddress().equals(walletAddress)) {
+                    if (transaction.getDestAddress().equals(walletAddress) || 
+                        (transaction.getSrcAddress() != null && transaction.getSrcAddress().equals(walletAddress)) ) {
                         sendData(transaction);
                     }
                 }

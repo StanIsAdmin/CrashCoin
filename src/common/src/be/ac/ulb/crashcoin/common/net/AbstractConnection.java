@@ -61,7 +61,8 @@ public abstract class AbstractConnection extends Thread {
                 if (readLine == null) {
                     break;
                 }
-                final JSONable resultObject = getObjectFromJsonObject(new JSONObject(readLine));
+                final JSONable resultObject;
+                resultObject = getObjectFromJsonObject(new JSONObject(readLine));
 
                 if (resultObject == null) {
                     Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Recieved unknow JSONObject: {0}", readLine);
