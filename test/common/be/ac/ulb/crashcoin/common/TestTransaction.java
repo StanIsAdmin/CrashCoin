@@ -19,7 +19,7 @@ public class TestTransaction {
     
     @Test
     public void testNotCorrectRewardTransactionVerification() {
-        Transaction transaction = TestUtils.createRewardTransaction();
+        Transaction transaction = TestUtils.createTransaction();
         transaction = TestUtils.alterTransaction(transaction);
         Assert.assertFalse(transaction.isValid());
     }

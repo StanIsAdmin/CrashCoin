@@ -46,7 +46,6 @@ public class RelayConnection extends AbstractConnection {
             if (chain.add(block)) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, "Save Block to BlockChain:\n{0}", 
                     new Object[]{block.toString()});
-                //TODO make blockChain "observable" or go through manager to add blocks ?
                 bcManager.saveBlockChain();
                 
                 // Broadcast the block to all the relay nodes
