@@ -255,8 +255,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
 
     @Override
     public String toString() {
-        String output = "--------------------";
-        output += "Block :\t";
+        String output = "--------------------\n";
+        output += "Block :\n";
         for (Transaction transaction : this) {
             output += transaction.toString();
             output += "\n";
