@@ -30,7 +30,7 @@ public class RelayConnection extends AbstractReconnectConnection {
     private final ArrayList<Block> blocksBuffer;
     /** Copy of the last block of the blockchain. */
     private Block lastBlock;
-    private boolean hasNewBlocks = false;
+    private boolean hasNewBlocks = false; // ?
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
         super("RelayConnection", new Socket(Parameters.RELAY_IP,
@@ -42,27 +42,38 @@ public class RelayConnection extends AbstractReconnectConnection {
 
     @Override
     protected void receiveData(final JSONable data) {
-        System.out.println("[DEBUG] get value from relay: " + data);
-
         if (data instanceof Transaction) {
             try {
+                final Transaction transaction = (Transaction) data;
                 mutex.acquire();
                 hasNewTransactions = true;
-                transactionsBuffer.add((Transaction) data);
+                transactionsBuffer.add(transaction);
                 mutex.release();
+                
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Recieve transaction from relay ({0}):\n{1}", 
+                    new Object[]{_ip, transaction.toString()});
             } catch (InterruptedException ex) {
-                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
+            
         } else if (data instanceof Block) {
             try {
+                final Block block = (Block) data;
                 mutex.acquire();
                 hasNewBlocks = true;
-                blocksBuffer.add((Block) data);
+                blocksBuffer.add(block);
                 lastBlock = blocksBuffer.get(blocksBuffer.size()-1);
                 mutex.release();
+                
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Recieve last block from relay ({0}):\n{1}", 
+                    new Object[]{_ip, block.toString()});
             } catch (InterruptedException ex) {
-                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
+            
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from relay ({0}): {1}", 
+                new Object[]{_ip, data});
         }
     }
 

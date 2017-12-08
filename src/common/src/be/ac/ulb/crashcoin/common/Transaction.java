@@ -148,6 +148,15 @@ public class Transaction implements JSONable {
     }
     
     /**
+     * Define the signature. <b>Only for genesis block</b>
+     * 
+     * @param signature byte of the signature
+     */
+    public void setSignature(final byte[] signature) {
+        this.signature = signature;
+    }
+    
+    /**
      * Checks that the transaction is older that the other transaction
      * 
      * @param other the transaction which timestamp is tested 
@@ -313,5 +322,15 @@ public class Transaction implements JSONable {
             return false;
         }
         return true;
-    }   
+    }
+    
+    @Override
+    public String toString() {
+        String output = "Transaction :\n";
+        output += "Amount : "+this.transactionOutput.getAmount()+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount())+"\n";
+        output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
+        output += "At     : "+this.lockTime.toString();
+        return output;
+    }
 }

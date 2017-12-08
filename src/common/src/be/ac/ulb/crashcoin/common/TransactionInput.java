@@ -65,7 +65,8 @@ public class TransactionInput implements JSONable {
             return false;
         }
         final TransactionInput other = (TransactionInput) obj;
-        return Arrays.equals(this.previousOutputHash, other.previousOutputHash) && this.previousOutputAmount.equals(other.previousOutputAmount);
+        return Arrays.equals(this.previousOutputHash, other.previousOutputHash) && 
+                this.previousOutputAmount.equals(other.previousOutputAmount);
     }
     
 }

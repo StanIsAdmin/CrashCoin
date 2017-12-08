@@ -81,7 +81,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * - marks the second output (change) as available for the sender, if any
      * @param addedBlock a valid block that has just been added to the blockchain
      */
-    private synchronized void updateAvailableInputs(Block addedBlock)  {
+    private synchronized void updateAvailableInputs(final Block addedBlock)  {
         for (final Transaction addedTransaction : addedBlock) {
             
             for (final TransactionInput usedInput : addedTransaction.getInputs()) {
@@ -115,7 +115,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return  First bad transaction found if there is one, null otherwise
      */
     protected Transaction getFirstBadTransaction(final Block block)  {
-        for (Transaction transaction: block) {
+        for (final Transaction transaction: block) {
             if (! isValidTransaction(transaction)) {
                 return transaction;
             }
@@ -133,7 +133,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @param transaction
      * @return 
      */
-    private boolean isValidTransaction(Transaction transaction)  {
+    private boolean isValidTransaction(final Transaction transaction)  {
         // Verify the transaction value and signature (if necessary)
         if (! transaction.isValid())
             return false;
@@ -182,13 +182,28 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         }
         return json;
     }
-
+    
+    @Override
+    public boolean equals(final Object equalsObject) {
+        boolean result = false;
+        if(this == equalsObject) {
+            result = true;
+        } else if(equalsObject instanceof BlockChain) {
+            final BlockChain equalsBlockChain = (BlockChain) equalsObject;
+            if(equalsBlockChain.size() == this.size()) {
+                result = containsAll(equalsBlockChain) && equalsBlockChain.containsAll(this);
+            }
+        }
+        return result;
+    }
+    
     protected static Block createGenesisBlock()  {
-        Block genesisBlock = new Block(new byte[0], 0);
-        PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
-        Address masterWallet = new Address(masterPublicKey);
-        Timestamp genesisTime = new Timestamp(0L);
-        Transaction reward = new Transaction(masterWallet, genesisTime);
+        final Block genesisBlock = new Block(new byte[0], 0);
+        final PublicKey masterPublicKey = Cryptography.createPublicKeyFromBytes(Parameters.MASTER_WALLET_PUBLIC_KEY);
+        final Address masterWallet = new Address(masterPublicKey);
+        final Timestamp genesisTime = new Timestamp(0L);
+        final Transaction reward = new Transaction(masterWallet, genesisTime);
+        reward.setSignature(Parameters.GENESIS_SIGNATURE);
         genesisBlock.add(reward);
         return genesisBlock;
     }
