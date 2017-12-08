@@ -24,6 +24,9 @@ public class Main {
     // TODO place in the configuration
     private static String userPrivateKeyStr = "";
     
+    private static String userPseudonym;
+    private static String userPassWord;
+    
     public static PrivateKey privateKey() {
         final byte[] keyBytes = JsonUtils.decodeBytes(userPrivateKeyStr);
         return Cryptography.getPrivateKeyFomBytes(keyBytes);
@@ -38,13 +41,20 @@ public class Main {
     }
 
     public static void main(final String[] args) {
-
+        
+        try {
+            userPseudonym = args[0];
+            userPseudonym = args[1];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        
         RelayConnection connection;
         // Connect to relay
         try {
             connection = RelayConnection.getRelayConnection();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
             return;
         }
 
@@ -53,13 +63,13 @@ public class Main {
         try {
             miner = Miner.getInstance();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
             return;
         }
         try {
             miner.startMining();
         } catch (InterruptedException  ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
     }
 
