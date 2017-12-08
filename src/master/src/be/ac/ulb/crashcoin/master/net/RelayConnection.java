@@ -44,7 +44,7 @@ public class RelayConnection extends AbstractConnection {
             
             // If block could be add
             if (chain.add(block)) {
-                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Save Block to BlockChain: {0}", 
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Save Block to BlockChain:\n{0}", 
                     new Object[]{block.toString()});
                 //TODO make blockChain "observable" or go through manager to add blocks ?
                 bcManager.saveBlockChain();
@@ -53,7 +53,7 @@ public class RelayConnection extends AbstractConnection {
                 sendToAll(data);
                 
             } else {
-                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Block invalid: {0}", 
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Block invalid:\n{0}", 
                     new Object[]{block.toString()});
             } 
             // TODO ? Inform Relay (and Miner that the block has been rejected) ?
