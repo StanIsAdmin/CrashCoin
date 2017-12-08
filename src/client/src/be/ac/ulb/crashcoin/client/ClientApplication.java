@@ -16,16 +16,15 @@ import javax.crypto.NoSuchPaddingException;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.Console;
 import java.security.GeneralSecurityException;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -256,9 +255,7 @@ public class ClientApplication {
     
     private PublicKey stringToKey(String text) throws GeneralSecurityException {
         byte[] key = JsonUtils.decodeBytes(text);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(key);
-        KeyFactory fact = KeyFactory.getInstance("DSA");
-        return fact.generatePublic(spec);
+        return Cryptography.createPublicKeyFromBytes(key);
     }
 
     public void showWallet() {
