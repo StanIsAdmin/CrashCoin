@@ -38,7 +38,6 @@ public class RelayConnection extends AbstractConnection {
             final BlockChain chain = bcManager.getBlockChain();
             // If block could be add
             if (chain.add(block)) {
-                //TODO make blockChain "observable" or go through manager to add blocks ?
                 bcManager.saveBlockChain();
                 // Broadcast the block to all the relay nodes
                 sendToAll(data);
