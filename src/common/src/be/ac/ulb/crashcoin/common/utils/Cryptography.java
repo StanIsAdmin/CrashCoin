@@ -145,7 +145,7 @@ public class Cryptography {
 
         boolean verified = false;
         try {
-            dsa.update(transaction, 0, transaction.length);
+            dsa.update(transaction);
             verified = dsa.verify(signature);
         } catch (SignatureException e) {
             Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, e.getMessage());

@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,17 +167,21 @@ public class Transaction implements JSONable {
      * @return true if the transaction is valid as described, false otherwise
      */
     public boolean isValid() {
+        PublicKey addresseePublicKey = this.transactionOutput.getDestinationAddress().getPublicKey();
+        
         if(isReward())
             return this.inputs == null && this.changeOutput == null
-                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD);
+                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD)
+                    && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
         // Check whether sum of inputs is equal to the sum of outputs
         Integer sum = 0;
         for(final TransactionInput input : this.inputs) {
             sum += input.getAmount();
         }
+        
         return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
-                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
-                //&& Cryptography.verifySignature(this.srcAddress.getPublicKey(), this.toBytes(), this.signature);
+                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount())
+                && Cryptography.verifySignature(addresseePublicKey, this.toBytes(), this.signature);
     }
 
     /**
