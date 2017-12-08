@@ -2,32 +2,29 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.sql.Timestamp;
 import org.json.JSONObject;
 
 public class TestUtils {
     
-    public static PrivateKey genPrivateKey() {
-        KeyPairGenerator kpg = Cryptography.getDsaKeyGen();
-        final KeyPair kp = kpg.generateKeyPair();
-        return kp.getPrivate();
+    private static KeyPair kp;
+    
+    public static void genKeyPair() {
+        if(kp == null) {
+            kp = Cryptography.getDsaKeyGen().generateKeyPair();
+        }
     }
     
     public static Address createAddress() {
-        KeyPairGenerator kpg = Cryptography.getDsaKeyGen();
-        final KeyPair kp = kpg.generateKeyPair();
-        final PublicKey pk = kp.getPublic();
-        return new Address(pk);
+        genKeyPair();
+        return new Address(kp.getPublic());
     }
 
     public static Block createBlock() {
         final Block block = new Block(new byte[]{(byte) 0x00}, 0);
         Transaction transaction;
         do {
-            transaction = createTransaction();
+            transaction = createRewardTransaction();
         } while (block.add(transaction));
         return block;
     }
@@ -38,17 +35,17 @@ public class TestUtils {
         return newBlockChain;
     }
 
-    public static Transaction createTransaction() {
+    public static Transaction createRewardTransaction() {
+        genKeyPair();
         final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         final Transaction transaction = new Transaction(createAddress(), timestamp);
-        transaction.sign(genPrivateKey());
+        transaction.sign(kp.getPrivate());
         return transaction;
     }
     
     public static Transaction alterTransaction(Transaction transaction) {
-        // Attempt to change the destination of the transaction.
         JSONObject json = transaction.toJSON();
-        json.put("destAddress", createAddress());
+        json.put("lockTime", System.currentTimeMillis());
         return new Transaction(json);
     }
     

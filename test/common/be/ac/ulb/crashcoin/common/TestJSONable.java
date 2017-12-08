@@ -25,7 +25,7 @@ public class TestJSONable {
 
     @Test
     public void testTransactionJSONConversion() {
-        final Transaction transaction = TestUtils.createTransaction();
+        final Transaction transaction = TestUtils.createRewardTransaction();
         final Transaction copy = new Transaction(transaction.toJSON());
         assertEquals(transaction, copy);
     }
