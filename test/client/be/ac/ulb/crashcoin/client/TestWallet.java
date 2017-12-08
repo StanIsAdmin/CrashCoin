@@ -41,11 +41,7 @@ public class TestWallet {
      */
     private KeyPair createKeyPair(final Wallet wallet) {
         KeyPair keyPair = null;
-        try {
-            keyPair = wallet.generateKeys();
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            e.printStackTrace();
-        }
+        keyPair = wallet.generateKeys();
         return keyPair;
     }
 

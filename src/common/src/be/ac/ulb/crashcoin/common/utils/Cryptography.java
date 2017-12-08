@@ -3,17 +3,28 @@ package be.ac.ulb.crashcoin.common.utils;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 
 /**
@@ -31,6 +42,14 @@ public class Cryptography {
      * Key derivator
      */
     private static RIPEMD160Digest ripemdHasher = null;
+    
+    private static Cipher cipher = null;
+    
+    private static SecretKeyFactory factory = null;
+    
+    private static SecureRandom secureRandom = null;
+    
+    private static KeyPairGenerator dsaKeyGen = null;
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -151,5 +170,113 @@ public class Cryptography {
             Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, e.getMessage());
         }
         return verified;
+    }
+    
+    public static Cipher getCipher() {
+        if(cipher == null) {
+            try {
+                cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to get cipher: \"AES/CBC/PKCS5Padding\". Abort!", ex);
+                System.exit(1);
+            }
+        }
+        return cipher;
+    }
+    
+    /**
+     * Convert encoded private and public keys (bytes) to Private / PublicKey
+     * interfaces and generate a KeyPair from them in order to construct a
+     * Wallet object in the signIn method<br>
+     * <b>Two different encoding</b>
+     *
+     * @param publicKeyBytes the public key with encoding X509
+     * @param privateKeyBytes the private key with encoding PKCS8
+     * @return the key pair
+     */
+    public static KeyPair createKeyPairFromEncodedKeys(byte[] publicKeyBytes, byte[] privateKeyBytes) {
+        try {
+            // Generate specs
+            final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+            final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+            
+            final KeyFactory factory = KeyFactory.getInstance("DSA");
+            
+            // Create PublicKey and PrivateKey interfaces using the factory
+            final PrivateKey privateKey = factory.generatePrivate(privateKeySpec);
+            final PublicKey publicKey = factory.generatePublic(publicKeySpec);
+            
+            return (new KeyPair(publicKey, privateKey));
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException ex) {
+            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create key pair. Abort!", ex);
+            System.exit(1);
+        }
+        return null;
+    }
+    
+    public static SecretKeyFactory getSecretKeyFactory() {
+        if(factory == null) {
+            try {
+                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "unable to create SecretKeyFactory. Abort!", ex);
+                System.exit(1);
+            }
+        }
+        return factory;
+    }
+    
+    public static SecureRandom getSecureRandom() {
+        if(secureRandom == null) {
+            try {
+                secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to create Secure Random \"SHA1PRNG\". Abort!", ex);
+                System.exit(1);
+            }
+        }
+        return secureRandom;
+    }
+    
+    /**
+     * Compute an encryption / decryption key (they are the same) from the
+     * password and the salt<br>
+     *
+     * Information: PBKDF2 is a password-based key derivation function Used
+     * PBKDF2WithHmacSHA1 instead of PBKDF2WithHmacSHA256 because of some
+     * problems if we run the project on java <= 7 (plus the guidelines say 128
+     * bits so it's ok)
+     *
+     * @param userPassword password of user
+     * @param salt extended string
+     * @return SecretKey
+     */
+    public static SecretKey computeSecretKey(final char[] userPassword, final byte[] salt) {
+
+        try {
+            factory = Cryptography.getSecretKeyFactory();
+            final KeySpec spec = new PBEKeySpec(userPassword, salt, Parameters.KEY_DERIVATION_ITERATION,
+                    Parameters.KEY_SIZE);
+            final SecretKey tmpKey = factory.generateSecret(spec);
+            final SecretKey secretKey = new SecretKeySpec(tmpKey.getEncoded(), "AES");
+            
+            return secretKey;
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "Unable to compute Secret Key. Abort!", ex);
+            System.exit(1);
+        }
+        return null;
+    }
+    
+    public static KeyPairGenerator getDsaKeyGen() {
+        if(dsaKeyGen == null) {
+            try {
+                dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
+            } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
+                Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, "unable to create DSA Keygen. Abort!", ex);
+                System.exit(1);
+            }
+        }
+        return dsaKeyGen;
     }
 }

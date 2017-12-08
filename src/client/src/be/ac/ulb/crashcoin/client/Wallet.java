@@ -5,8 +5,6 @@ import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -23,22 +21,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class Wallet {
 
@@ -53,13 +43,7 @@ public class Wallet {
      */
     public Wallet() {
         transactionsList = new ArrayList<>();
-        try {
-            dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("[Error] Could not find DSA key-pair generator");
-        } catch (NoSuchProviderException ex) {
-            System.out.println(ex);
-        }
+        dsaKeyGen = Cryptography.getDsaKeyGen();
     }
 
     /**
@@ -69,7 +53,6 @@ public class Wallet {
      * constructor, one cannot generate keys with the same wallet anymore.
      *
      * @param keyPair Pair of keys
-     * @throws NoSuchProviderException
      * @see signTransaction
      */
     private Wallet(final KeyPair keyPair) {
@@ -83,15 +66,13 @@ public class Wallet {
      * time per wallet.
      *
      * @return Pair of DSA keys
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
      */
-    public KeyPair generateKeys() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public KeyPair generateKeys() {
         if (publicKey != null) {
             System.out.println("[Error] Only one key pair can be assigned to a wallet");
             return null;
         }
-        final SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        final SecureRandom random = Cryptography.getSecureRandom();
         dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
         final KeyPair keyPair = dsaKeyGen.generateKeyPair();
         this.publicKey = keyPair.getPublic();
@@ -120,9 +101,8 @@ public class Wallet {
     }
 
     public static Wallet readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
-            IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
-            IllegalBlockSizeException, NoSuchProviderException {
+            IOException, ClassNotFoundException, InvalidKeySpecException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
         final ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
         final WalletInformation walletInformation = (WalletInformation) ois.readObject();
         ois.close();
@@ -133,11 +113,11 @@ public class Wallet {
         final byte[] encryptedPrivateKey = walletInformation.getEncryptedPrivateKey();
         final byte[] publicKeyBytes = walletInformation.getPublicKey();
 
-        final SecretKey decryptionKey = Wallet.computeSecretKey(userPassword, salt);
+        final SecretKey decryptionKey = Cryptography.computeSecretKey(userPassword, salt);
 
         // Decrypt the private key with the decryption key generated from the user password
         // Initialize a cipher to the decryption mode with the decryptionKey
-        final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        final Cipher cipher = Cryptography.getCipher();
         cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(iv));
 
         // Decrypt the private key
@@ -146,7 +126,7 @@ public class Wallet {
             final byte[] privateKeyBytes = cipher.doFinal(encryptedPrivateKey);
 
             // Create a PairKey with the encoded public and private keys
-            final KeyPair keyPair = Wallet.createKeyPairFromEncodedKeys(publicKeyBytes, privateKeyBytes);
+            final KeyPair keyPair = Cryptography.createKeyPairFromEncodedKeys(publicKeyBytes, privateKeyBytes);
 
             // Create a Wallet object with the KeyPair
             final Wallet wallet = new Wallet(keyPair);
@@ -194,8 +174,7 @@ public class Wallet {
     }
 
     public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
-            throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
+            throws InvalidKeySpecException, InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
         publicKey = keyPair.getPublic();
@@ -208,10 +187,8 @@ public class Wallet {
     
     
     public void writeWalletFile(final char[] userPassword, final String accountName, 
-            final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException,
-            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
-            IOException {
+            final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws InvalidKeyException,
+            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException, IOException {
 
         // Encrypt the private key using AES-128 protocol with the user password
         // Compute a salt to avoid dictionary attacks (to turn a password into a secret key)
@@ -220,11 +197,11 @@ public class Wallet {
         final byte[] salt = new byte[Parameters.SALT_SIZE];
         random.nextBytes(salt);
 
-        final SecretKey encryptionKey = this.computeSecretKey(userPassword, salt);
+        final SecretKey encryptionKey = Cryptography.computeSecretKey(userPassword, salt);
 
         // Encrypt the private key with the encryption key generated from the user password
         // Initialize a cipher to the encryption mode with the encryptionKey
-        final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        final Cipher cipher = Cryptography.getCipher();
         cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
 
         // Get the IV necessary to decrypt the message later
@@ -272,57 +249,6 @@ public class Wallet {
             Wallet.instance = new Wallet(keypair);
         }
         return Wallet.instance;
-    }
-
-    /**
-     * Compute an encryption / decryption key (they are the same) from the
-     * password and the salt<br>
-     *
-     * Information: PBKDF2 is a password-based key derivation function Used
-     * PBKDF2WithHmacSHA1 instead of PBKDF2WithHmacSHA256 because of some
-     * problems if we run the project on java <= 7 (plus the guidelines say 128
-     * bits so it's ok)
-     *
-     * @param userPassword password of user
-     * @param salt extended string
-     * @return SecretKey
-     */
-    private static SecretKey computeSecretKey(final char[] userPassword, final byte[] salt)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-
-        final SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        final KeySpec spec = new PBEKeySpec(userPassword, salt, Parameters.KEY_DERIVATION_ITERATION,
-                Parameters.KEY_SIZE);
-        final SecretKey tmpKey = factory.generateSecret(spec);
-        final SecretKey secretKey = new SecretKeySpec(tmpKey.getEncoded(), "AES");
-
-        return (secretKey);
-    }
-
-    /**
-     * Convert encoded private and public keys (bytes) to Private / PublicKey
-     * interfaces and generate a KeyPair from them in order to construct a
-     * Wallet object in the signIn method<br>
-     * <b>Two different encoding</b>
-     *
-     * @param publicKeyBytes the public key with encoding X509
-     * @param privateKeyBytes the private key with encoding PKCS8
-     * @return the key pair
-     */
-    private static KeyPair createKeyPairFromEncodedKeys(final byte[] publicKeyBytes, final byte[] privateKeyBytes)
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-
-        // Generate specs
-        final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-
-        final KeyFactory factory = KeyFactory.getInstance("DSA");
-
-        // Create PublicKey and PrivateKey interfaces using the factory
-        final PrivateKey privateKey = factory.generatePrivate(privateKeySpec);
-        final PublicKey publicKey = factory.generatePublic(publicKeySpec);
-
-        return (new KeyPair(publicKey, privateKey));
     }
 
     /**
