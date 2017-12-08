@@ -100,8 +100,7 @@ public class Miner {
     private void createBlock() throws IOException {
         // only create a new block if there is not a partial block already existing
         if(currentlyMinedBlock == null) {
-            // TODO get difficulty properly
-            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), Main.getDifficulty());
+            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), Parameters.MINING_DIFFICULTY);
         }
         final int nbTransactionsToAdd = Parameters.NB_TRANSACTIONS_PER_BLOCK - currentlyMinedBlock.size();
         if(nbTransactionsToAdd == 0) {
