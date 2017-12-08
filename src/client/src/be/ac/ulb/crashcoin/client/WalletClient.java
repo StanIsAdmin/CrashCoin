@@ -38,7 +38,6 @@ import javax.crypto.spec.IvParameterSpec;
 public class WalletClient extends Wallet {
     
     private final ArrayList<Transaction> transactionsList;
-    private static WalletClient instance;
     
     public WalletClient() {
         super();
@@ -48,25 +47,6 @@ public class WalletClient extends Wallet {
     private WalletClient(KeyPair keypair) {
         super(keypair);
         transactionsList = new ArrayList<>();
-    }
-    
-    // Only to debug !
-    public static void resetInstance() {
-        WalletClient.instance = null;
-    }
-    
-    public static WalletClient getInstance() {
-        if (WalletClient.instance == null) {
-            instance = new WalletClient();
-        }
-        return instance;
-    }
-    
-    public static WalletClient getInstance(KeyPair keypair) {
-        if (WalletClient.instance == null) {
-            instance = new WalletClient(keypair);
-        }
-        return instance;
     }
     
     public void addTransaction(final Transaction transaction) {
