@@ -64,7 +64,7 @@ public abstract class AbstractConnection extends Thread {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage());
         }
 
         close();
