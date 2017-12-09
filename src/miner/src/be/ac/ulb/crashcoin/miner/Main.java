@@ -1,47 +1,40 @@
 package be.ac.ulb.crashcoin.miner;
 
 import be.ac.ulb.crashcoin.common.Address;
-import be.ac.ulb.crashcoin.common.Parameters;
-import be.ac.ulb.crashcoin.common.net.JsonUtils;
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.IllegalBlockSizeException;
 
 /**
  * Entry point of the miner program.
  */
 public class Main {
     
-    // TODO place in the configuration
-    private static String userPrivateKeyStr = "";
-    
-    public static PrivateKey privateKey() {
-        final byte[] keyBytes = JsonUtils.decodeBytes(userPrivateKeyStr);
-        return Cryptography.getPrivateKeyFomBytes(keyBytes);
-    }
-
-    // Temporay --- for test purposes
-    public static Address getAddress() {
-        KeyPairGenerator kpg = Cryptography.getDsaKeyGen();
-        final KeyPair kp = kpg.generateKeyPair();
-        final PublicKey pk = kp.getPublic();
-        return new Address(pk);
-    }
+    private static Wallet userWallet;
 
     public static void main(final String[] args) {
-
+        
+        userWallet = new Wallet();
+        try {
+            userWallet.readWalletFile(args[1], args[0]);
+        } catch (IOException | ClassNotFoundException | InvalidKeySpecException 
+                | InvalidKeyException | InvalidAlgorithmParameterException 
+                | IllegalBlockSizeException | ArrayIndexOutOfBoundsException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        
         RelayConnection connection;
         // Connect to relay
         try {
             connection = RelayConnection.getRelayConnection();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
             return;
         }
 
@@ -50,13 +43,17 @@ public class Main {
         try {
             miner = Miner.getInstance();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
             return;
         }
         try {
             miner.startMining();
         } catch (InterruptedException  ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
+    }
+    
+    public static Address getUserAddress() {
+        return userWallet.getAddress();
     }
 }

@@ -21,7 +21,6 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -56,6 +55,17 @@ public class WalletClient extends Wallet {
     public WalletClient(KeyPair keypair) {
         super(keypair);
         transactionsList = new ArrayList<>();
+    }
+    
+    @Override
+    protected void actOnCorrectAuthentication() {
+        System.out.println("Welcome in your wallet!");
+//        Uncomment if you will get private and public key (currently used to get the private key of master)
+//        System.out.println("Your public key:");
+//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded()));
+//        System.out.println("Your private key:");
+//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded()));
+        System.out.println("");
     }
     
     public void addTransaction(final Transaction transaction) {
@@ -173,19 +183,6 @@ public class WalletClient extends Wallet {
         final KeyPair keyPair = dsaKeyGen.generateKeyPair();
         this.publicKey = keyPair.getPublic();
         return keyPair;
-    }
-    
-    /**
-     * Get the unique public key
-     *
-     * @return The public key
-     */
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-    
-    public Address getAddress() {
-        return new Address(publicKey);
     }
     
 }
