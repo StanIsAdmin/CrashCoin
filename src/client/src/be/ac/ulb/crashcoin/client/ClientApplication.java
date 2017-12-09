@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handle IO from user and network communication between nodes and wallet.
@@ -226,12 +228,12 @@ public class ClientApplication {
      * @return The created transaction
      * @throws java.security.GeneralSecurityException
      */
-    public Transaction createTransaction() throws GeneralSecurityException  {
+    public void createTransaction() throws GeneralSecurityException  {
         Transaction transaction = null;
         int amount = 0;
         do {
             System.out.println("Please enter the amount of the transaction,");
-            System.out.println("Or enter -1 to escape the curent transaction.");
+            System.out.println("Or enter -1 to join the main menu.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
             List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
@@ -243,12 +245,13 @@ public class ClientApplication {
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
+                try {
+                    RelayConnection.getInstance().sendData(transaction);
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
+                }
             }
         } while (amount != -1);
-        if (amount != -1) {
-            return transaction;
-        }
-        return null;
     }
     
     private PublicKey stringToKey(String text) throws GeneralSecurityException {
