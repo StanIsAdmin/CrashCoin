@@ -62,6 +62,7 @@ public class Cryptography {
      * DSA public/private key constructor from bytes.
      */
     private static KeyFactory dsaKeyFactory = null;
+    private static Signature signature;
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -105,49 +106,14 @@ public class Cryptography {
      */
     public static PublicKey createPublicKeyFromBytes(final byte[] key) {
         PublicKey pk = null;
+        final X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
+        dsaKeyFactory = Cryptography.getDsaKeyFactory();
         try {
-            final X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
-            final KeyFactory kf = KeyFactory.getInstance("DSA");
-            pk = kf.generatePublic(X509publicKey);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
+            pk = dsaKeyFactory.generatePublic(X509publicKey);
+        } catch (InvalidKeySpecException e) {
+            logAndAbort("Unable to create public key from bytes. Abort!", e);
         }
         return pk;
-    }
-    
-    public static Signature dsaFromPrivateKey(final PrivateKey privateKey) {
-        Signature dsa = null;
-        try {
-            dsa = Signature.getInstance("SHA1withDSA", "SUN");
-        } catch (NoSuchAlgorithmException e) {
-            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find DSA signature algorithm");
-        } catch (NoSuchProviderException e) {
-            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find provider for DSA");
-        }
-
-        try {
-            // Using private key to sign with DSA
-            dsa.initSign(privateKey);
-        } catch (InvalidKeyException e1) {
-            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
-        }
-        return dsa;
-    }
-
-    public static Signature dsaFromPublicKey(final PublicKey publicKey) {
-        Signature dsa = null;
-        try {
-            dsa = Signature.getInstance("SHA1withDSA", "SUN");
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
-            Logger.getLogger(Cryptography.class.getName()).severe(e2.getMessage());
-        }
-        try {
-            // Using public key to verify signatures
-            dsa.initVerify(publicKey);
-        } catch (InvalidKeyException e1) {
-            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
-        }
-        return dsa;
     }
 
     /**
@@ -165,7 +131,7 @@ public class Cryptography {
             dsa.update(bytes, 0, bytes.length);
             signature = dsa.sign();
         } catch (SignatureException e) {
-            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
+            logAndAbort("Unable to sign transaction. Abort!", e);
         }
         return signature;
     }
@@ -178,7 +144,7 @@ public class Cryptography {
             dsa.update(transaction);
             verified = dsa.verify(signature);
         } catch (SignatureException e) {
-            Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, e.getMessage());
+            logAndAbort("Unable to verify signature× Abort!", e);
         }
         return verified;
     }
@@ -205,18 +171,17 @@ public class Cryptography {
      * @return the key pair
      */
     public static KeyPair createKeyPairFromEncodedKeys(byte[] publicKeyBytes, byte[] privateKeyBytes) {
+        // Generate specs
+        final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        dsaKeyFactory = Cryptography.getDsaKeyFactory();
+        
         try {
-            // Generate specs
-            final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-            final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-            
-            dsaKeyFactory = Cryptography.getDsaKeyFactory();
-            
             // Create PublicKey and PrivateKey interfaces using the factory
             final PrivateKey privateKey = dsaKeyFactory.generatePrivate(privateKeySpec);
             final PublicKey publicKey = dsaKeyFactory.generatePublic(publicKeySpec);
             
-            return (new KeyPair(publicKey, privateKey));
+            return new KeyPair(publicKey, privateKey);
         } catch (InvalidKeySpecException ex) {
             logAndAbort("Unable to create key pair. Abort!", ex);
         }
@@ -299,23 +264,6 @@ public class Cryptography {
     }
     
     /**
-     * Transforms a byte array into a PublicKey.
-     * 
-     * @param publicKeyBytes the bytes to transform into a public key
-     * @return the public key associated to the byte array
-     */
-    public static PublicKey getPublicKeyFromBytes(final byte[] publicKeyBytes) {
-        dsaKeyFactory = Cryptography.getDsaKeyFactory();
-        final X509EncodedKeySpec ks = new X509EncodedKeySpec(publicKeyBytes);
-        try {
-            return dsaKeyFactory.generatePublic(ks);
-        } catch (InvalidKeySpecException ex) {
-            logAndAbort("Unable to generate public key from bytes. Abort!", ex);
-        }
-        return null;
-    }
-    
-    /**
      * Generates a DSA key pair, composed of a public key and a private key. The
      * key size is defined in parameters. This method can be called at most one
      * time per wallet.
@@ -373,6 +321,43 @@ public class Cryptography {
             }
         }
         return dsaKeyFactory;
+    }
+    
+    private static Signature getSignature() {
+        if(signature == null) {
+            try {
+                signature = Signature.getInstance("SHA1withDSA", "SUN");
+            } catch (NoSuchAlgorithmException e) {
+                logAndAbort("[Error] Could not find DSA signature algorithm. Abort!", e);
+            } catch (NoSuchProviderException e) {
+                logAndAbort("[Error] Could not find provider for DSA. Abort!", e);
+            }
+        }
+        return signature;
+    }
+    
+    private static Signature dsaFromPrivateKey(final PrivateKey privateKey) {
+        Signature dsa = Cryptography.getSignature();
+
+        try {
+            // Using private key to sign with DSA
+            dsa.initSign(privateKey);
+        } catch (InvalidKeyException e1) {
+            logAndAbort("Unable to create signature. Abort!", e1);
+        }
+        return dsa;
+    }
+    
+    private static Signature dsaFromPublicKey(final PublicKey publicKey) {
+        Signature dsa = Cryptography.getSignature();
+        
+        try {
+            // Using public key to verify signatures
+            dsa.initVerify(publicKey);
+        } catch (InvalidKeyException e1) {
+            logAndAbort("Unable to verify signature. Abort!", e1);
+        }
+        return dsa;
     }
     
     /**
