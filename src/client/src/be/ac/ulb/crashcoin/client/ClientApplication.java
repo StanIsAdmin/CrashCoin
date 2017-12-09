@@ -70,9 +70,11 @@ public class ClientApplication {
                     actionMenuRegistred(choice);
                 }
             }
-
+            
         } while (choice != 3);
+        System.out.println("Bey !");
         reader.close();
+        System.exit(0);
     }
 
     private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException,
