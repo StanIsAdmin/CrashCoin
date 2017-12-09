@@ -102,12 +102,12 @@ public class WalletClient extends Wallet {
             if(transaction.getInputs() != null) {
                 for(final TransactionInput transInput : transaction.getInputs()) {
                     if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
-                        return false;
+                        return true;
                     }
                 }
             }
         }
-        return true;
+        return false;
     }
     
     /**
