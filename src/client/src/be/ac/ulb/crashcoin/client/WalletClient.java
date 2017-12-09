@@ -17,6 +17,7 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -35,9 +36,11 @@ import javax.crypto.spec.IvParameterSpec;
 public class WalletClient extends Wallet {
     
     private final ArrayList<Transaction> transactionsList;
+    private final String accountName;
     
-    public WalletClient() {
+    public WalletClient(final String accountName, final char[] userPassword) {
         super();
+        this.accountName = accountName;
         transactionsList = new ArrayList<>();
     }
     
@@ -93,6 +96,22 @@ public class WalletClient extends Wallet {
     }
     
     /**
+     * Generates a DSA key pair, composed of a public key and a private key. The
+     * key size is defined in parameters. This method can be called at most one
+     * time per wallet.
+     *
+     * @return Pair of DSA keys
+     */
+    public static KeyPair generateKeys() {
+        final SecureRandom random = Cryptography.getSecureRandom();
+        KeyPairGenerator dsaKeyGen = Cryptography.getDsaKeyGen();
+        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
+        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
+        return keyPair;
+    }
+    
+    
+    /**
      * Methods used to write the current ClientWallent into a generated file.
      * @param userPassword
      * @param accountName
@@ -104,21 +123,18 @@ public class WalletClient extends Wallet {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    
-    public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
+    public static void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
             throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
-        publicKey = keyPair.getPublic();
-
         // Get the bytes representation of the keys
-        final byte[] publicKeyBytes = publicKey.getEncoded();
+        final byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
         
         writeWalletFile(userPassword, accountName, publicKeyBytes, keyPair.getPrivate().getEncoded());
     }
     
     
-    public void writeWalletFile(final char[] userPassword, final String accountName, 
+    public static void writeWalletFile(final char[] userPassword, final String accountName, 
             final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException, IOException {
 
@@ -163,24 +179,5 @@ public class WalletClient extends Wallet {
         System.out.println("The creation of your wallet completed successfully");
         System.out.println("Please sign in and start crashing coins");
     }
-    
-    /**
-     * Generates a DSA key pair, composed of a public key and a private key. The
-     * key size is defined in parameters. This method can be called at most one
-     * time per wallet.
-     *
-     * @return Pair of DSA keys
-     */
-    public KeyPair generateKeys() {
-        if (publicKey != null) {
-            System.out.println("[Error] Only one key pair can be assigned to a wallet");
-            return null;
-        }
-        final SecureRandom random = Cryptography.getSecureRandom();
-        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
-        this.publicKey = keyPair.getPublic();
-        return keyPair;
-    }
-    
+
 }

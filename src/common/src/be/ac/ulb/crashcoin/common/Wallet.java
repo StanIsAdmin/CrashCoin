@@ -2,7 +2,6 @@ package be.ac.ulb.crashcoin.common;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
@@ -26,14 +25,14 @@ import javax.crypto.spec.IvParameterSpec;
 public class Wallet {
 
     protected PublicKey publicKey;
-    protected KeyPairGenerator dsaKeyGen;
+//    protected KeyPairGenerator dsaKeyGen;
 
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
      */
     public Wallet() {
-        dsaKeyGen = Cryptography.getDsaKeyGen();
+//        dsaKeyGen = Cryptography.getDsaKeyGen();
     }
 
     /**
@@ -51,7 +50,7 @@ public class Wallet {
     }
     
     protected void actOnCorrectAuthentication() {
-        System.out.println("Authentication completed");
+        Logger.getLogger(getClass().getName()).info("Authentication completed");
     }
     
     public void readWalletFile(final String walletPath, final String userPassword) throws FileNotFoundException,
@@ -128,6 +127,10 @@ public class Wallet {
         return allIsOk;
     }
     
+//    public boolean signTransaction(final String password) {
+//        
+//    }
+//    
     /**
      * The objective of this method is to verify that the private key that we've
      * just decrypted in the login method using the user password is the valid
