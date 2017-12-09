@@ -127,7 +127,7 @@ public class RelayConnection extends AbstractReconnectConnection {
             mutex.acquire();
             this.hasNewTransactions = false;
             tmp = this.transactionsBuffer;
-            this.blocksBuffer.clear();
+            this.transactionsBuffer.clear();
             mutex.release();
         } catch (InterruptedException ex) {
             Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);

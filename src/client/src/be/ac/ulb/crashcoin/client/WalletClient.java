@@ -36,14 +36,16 @@ import javax.crypto.spec.IvParameterSpec;
  */
 public class WalletClient extends Wallet {
     
-    private final ArrayList<Transaction> transactionsList;
+    private final ArrayList<Transaction> acceptedTransactionsList;
+    private final ArrayList<Transaction> unacceptedTransactionsList;
     
     public WalletClient(final File f, final char[] userPassword) throws IOException, 
             FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InstantiationException {
         super(f, userPassword);
         
-        transactionsList = new ArrayList<>();
+        acceptedTransactionsList = new ArrayList<>();
+        unacceptedTransactionsList = new ArrayList<>();
     }
     
     @Override
@@ -57,19 +59,35 @@ public class WalletClient extends Wallet {
         System.out.println("");
     }
     
-    public void addTransaction(final Transaction transaction) {
-        this.transactionsList.add(transaction);
+    public void addAcceptedTransaction(final Transaction transaction) {
+        this.unacceptedTransactionsList.remove(transaction);
+        this.acceptedTransactionsList.add(transaction);
+    }
+    
+    public void addUnacceptedTransaction(final Transaction transaction) {
+        this.unacceptedTransactionsList.add(transaction);
+    }
+    
+    public ArrayList<Transaction> getAllTransaction() {
+        final ArrayList<Transaction> allTransaction = new ArrayList<>();
+        allTransaction.addAll(unacceptedTransactionsList);
+        allTransaction.addAll(acceptedTransactionsList);
+        return allTransaction;
     }
 
-    public ArrayList<Transaction> getTransactions() {
-        return this.transactionsList;
+    public ArrayList<Transaction> getAcceptedTransactions() {
+        return this.acceptedTransactionsList;
+    }
+    
+    public ArrayList<Transaction> getUnacceptedTransactions() {
+        return this.unacceptedTransactionsList;
     }
     
     public List<TransactionOutput> getUsefulTransactions(final int amount) {
         final List<TransactionOutput> transactions = new ArrayList<>();
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
-        for (final Transaction transaction: transactionsList) {
+        for (final Transaction transaction: getAllTransaction()) {
             
             final TransactionOutput transactionOut;
             // Get destination address
@@ -77,7 +95,7 @@ public class WalletClient extends Wallet {
                 transactionOut = transaction.getTransactionOutput();
                 
             // Get the address of the change back (the source user)
-            } else if(transaction.getChangeOutput().getDestinationAddress().equals(srcAddress)) { // TODO
+            } else if(transaction.getChangeOutput().getDestinationAddress().equals(srcAddress)) {
                 transactionOut = transaction.getChangeOutput();
                 
             } else {
@@ -86,9 +104,8 @@ public class WalletClient extends Wallet {
             
             if(!alreadyUsed(transactionOut.toBytes())) {
                 total += transactionOut.getAmount();
-                transactions.add(transaction.getTransactionOutput());
+                transactions.add(transactionOut);
             }
-            
             
             if (total >= amount) {
                 return transactions;
@@ -98,7 +115,7 @@ public class WalletClient extends Wallet {
     }
     
     private boolean alreadyUsed(final byte[] hashTransaction) {
-        for (final Transaction transaction: transactionsList) {
+        for (final Transaction transaction: getAllTransaction()) {
             if(transaction.getInputs() != null) {
                 for(final TransactionInput transInput : transaction.getInputs()) {
                     if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
