@@ -35,12 +35,6 @@ public class WalletConnection extends AbstractConnection {
         if (jsonData instanceof Transaction) {
             
             final Transaction transaction = (Transaction) jsonData;
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get transaction from wallet and send to miner "
-                    + "({0}): {1}", new Object[]{_ip, transaction.toString()});
-            
-            // Broadcast to the miners directly connected to the relay.
-            MinerConnection.sendToAll(jsonData);
-            
             
             // Relay the transaction to the master.
             try {

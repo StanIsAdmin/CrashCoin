@@ -22,7 +22,7 @@ public class RelayConnection extends AbstractReconnectConnection {
 
     private static RelayConnection instance = null;
 
-    Semaphore mutex = new Semaphore(1);
+    private final Semaphore mutex = new Semaphore(1);
     // Transactions to mined (make a block)
     private final ArrayList<Transaction> transactionsBuffer;
     private boolean hasNewTransactions = false;
@@ -106,10 +106,10 @@ public class RelayConnection extends AbstractReconnectConnection {
      * otherwise
      */
     public boolean hasTransactions() {
-        Boolean res = null;
+        Boolean res = false;
         try {
             mutex.acquire();
-            res = this.transactionsBuffer.isEmpty();
+            res = !this.transactionsBuffer.isEmpty();
             mutex.release();
         } catch (InterruptedException ex) {
             Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);

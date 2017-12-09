@@ -75,6 +75,7 @@ public class Miner {
             } else if (this.connection.hasBlocks()) {
                 this.removeAlreadyMinedTransactions();
             } else {
+                Logger.getLogger(getClass().getName()).info("Start mining new block");
                 makeBlockAndMineIt();
             }
         }
@@ -100,7 +101,8 @@ public class Miner {
     private void createBlock() throws IOException {
         // only create a new block if there is not a partial block already existing
         if(currentlyMinedBlock == null) {
-            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), Parameters.MINING_DIFFICULTY);
+            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), 
+                    Parameters.MINING_DIFFICULTY);
         }
         final int nbTransactionsToAdd = Parameters.NB_TRANSACTIONS_PER_BLOCK - currentlyMinedBlock.size();
         if(nbTransactionsToAdd == 0) {
@@ -126,6 +128,7 @@ public class Miner {
     private void makeBlockAndMineIt()  {
         this.transactions.addAll(this.connection.getTransactions());
         if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
+            Logger.getLogger(getClass().getName()).info("Really begin mining");
             try {
                 createBlock();
                 miner.setBlockToMine(currentlyMinedBlock);
@@ -141,6 +144,8 @@ public class Miner {
                 if(!updateCurrentBlock())
                     makeBlockAndMineIt();
             }
+        } else {
+            Logger.getLogger(getClass().getName()).info("Not enought transaction to begin mining");
         }
     }
     

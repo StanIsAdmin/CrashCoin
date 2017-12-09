@@ -70,7 +70,7 @@ public class Parameters {
     /**
      * Number of transactions required to form a block
      */
-    public static final Integer NB_TRANSACTIONS_PER_BLOCK = 10;
+    public static final Integer NB_TRANSACTIONS_PER_BLOCK = 2;
 
     /**
      * Magic number in the beginning of a block.
@@ -81,7 +81,7 @@ public class Parameters {
     /**
      * difficulty for mining in bits
      */
-    public static final Integer MINING_DIFFICULTY = 10;
+    public static final Integer MINING_DIFFICULTY = 3;
 
     public static final Integer MINING_REWARD = 100;
 

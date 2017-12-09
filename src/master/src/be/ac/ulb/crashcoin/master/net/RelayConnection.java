@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.master.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.master.BlockChainManager;
 import java.io.IOException;
@@ -54,6 +55,11 @@ public class RelayConnection extends AbstractConnection {
                     new Object[]{block.toString()});
             }
             // TODO ? Inform Relay (and Miner that the block has been rejected) ?
+            
+        } else if(data instanceof Transaction) {
+            // Broadcast "pool" transaction to all nodes
+            sendToAll(data);
+            
         } else {
             Logger.getLogger(getClass().getName()).log(Level.WARNING,
                     "Unexpected {0} received from relay {1} ({2})", 
