@@ -1,9 +1,15 @@
 package be.ac.ulb.crashcoin.client;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
+import javax.crypto.IllegalBlockSizeException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -22,31 +28,20 @@ public class TestWallet {
     }
 
     /**
-     * Instantiates a wallet and returns it. This is to save space in test
-     * methods.
-     *
-     * @return A wallet
-     */
-    private WalletClient createWallet() {
-        return new WalletClient();
-    }
-
-    /**
      * Generates a pair of keys from a wallet and returns it. This is to save
      * space in test methods.
      *
      * @return A pair of keys
      */
-    private KeyPair createKeyPair(final WalletClient wallet) {
-        KeyPair keyPair = null;
-        keyPair = wallet.generateKeys();
-        return keyPair;
+    private KeyPair createKeyPair() {
+        return WalletClient.generateKeys();
     }
 
     @Test
-    public void testValidSignature() {
-        final WalletClient wallet = createWallet();
-        final KeyPair keyPair = createKeyPair(wallet);
+    public void testValidSignature() throws IOException, FileNotFoundException, ClassNotFoundException, 
+            InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, 
+            InstantiationException {
+        final KeyPair keyPair = createKeyPair();
 
         final byte[] transaction = randomBytes(50);
         final byte[] signature = Cryptography.signTransaction(keyPair.getPrivate(), transaction);
@@ -55,15 +50,16 @@ public class TestWallet {
     }
 
     @Test
-    public void testBadPrivateKey() {
+    public void testBadPrivateKey()  throws IOException, FileNotFoundException, ClassNotFoundException, 
+            InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, 
+            InstantiationException {
         // Let wallet and keyPairs be the wallet and the pair of keys associated to user's account
         // and stored on the hard drive.
-        final WalletClient wallet = createWallet();
-        final KeyPair keyPair = createKeyPair(wallet);
+        final KeyPair keyPair = createKeyPair();
 
         // Let's suppose that an attacker entered a bad password and thus, got a bad DSA private key from
         // the decryption algorithm.
-        final PrivateKey badPrivateKey = createWallet().generateKeys().getPrivate();
+        final PrivateKey badPrivateKey = WalletClient.generateKeys().getPrivate();
 
         // The offline software must check whether this key is wrong or not. Let's do this by signing a
         // test transaction (it can be anything, let's write random bytes) and verify the signature.

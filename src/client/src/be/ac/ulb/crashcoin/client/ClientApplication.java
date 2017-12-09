@@ -176,7 +176,6 @@ public class ClientApplication {
             }
 
             // Create a new empty wallet and generate a key pair
-            final WalletClient tmpWallet = new WalletClient();
             WalletClient.writeWalletFile(userPassword, accountName, Cryptography.generateKeys());
         }
 

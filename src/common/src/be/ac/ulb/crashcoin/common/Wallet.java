@@ -11,9 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -25,14 +23,12 @@ import javax.crypto.spec.IvParameterSpec;
 public class Wallet {
 
     protected PublicKey publicKey;
-//    protected KeyPairGenerator dsaKeyGen;
 
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
      */
     public Wallet() {
-//        dsaKeyGen = Cryptography.getDsaKeyGen();
     }
 
     /**

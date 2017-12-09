@@ -17,7 +17,6 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -36,25 +35,16 @@ import javax.crypto.spec.IvParameterSpec;
 public class WalletClient extends Wallet {
     
     private final ArrayList<Transaction> transactionsList;
-    private final String accountName;
-    
-    public WalletClient(final String accountName, final char[] userPassword) {
-        super();
-        this.accountName = accountName;
-        transactionsList = new ArrayList<>();
-    }
+    private final File file;
     
     public WalletClient(final File f, final char[] userPassword) throws IOException, 
             FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InstantiationException {
-        this();
+        super();
         if(!readWalletFile(f, userPassword)) {
             throw new InstantiationException();
         }
-    }
-    
-    public WalletClient(final KeyPair keypair) {
-        super(keypair);
+        file = f;
         transactionsList = new ArrayList<>();
     }
     
@@ -65,7 +55,7 @@ public class WalletClient extends Wallet {
         System.out.println("Your public key :");
         System.out.println(JsonUtils.encodeBytes(this.publicKey.getEncoded()));
 //        System.out.println("Your private key:");
-//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded()));
+//        System.out.println(JsonUtils.encodeBytes(keyPair.getPrivate().getEncoded()));
         System.out.println("");
     }
     
@@ -93,7 +83,7 @@ public class WalletClient extends Wallet {
             }
         }
         return null;
-    }    
+    }
     
     /**
      * Methods used to write the current ClientWallent into a generated file.
@@ -111,10 +101,7 @@ public class WalletClient extends Wallet {
             throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
-        // Get the bytes representation of the keys
-        final byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
-        
-        writeWalletFile(userPassword, accountName, publicKeyBytes, keyPair.getPrivate().getEncoded());
+        writeWalletFile(userPassword, accountName, keyPair.getPublic().getEncoded(), keyPair.getPrivate().getEncoded());
     }
     
     
