@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.miner;
 
+import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class Main {
         }
     }
     
-    public static Wallet getUserWallet() {
-        return userWallet;
+    public static Address getUserAddress() {
+        return userWallet.getAddress();
     }
 }
