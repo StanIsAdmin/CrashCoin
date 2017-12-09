@@ -30,9 +30,23 @@ public class Wallet {
      * passes a Keypair to it.
      * 
      * @param f file that contains the wallet data
+     * @param userPassword user password
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
+     * @throws java.security.InvalidAlgorithmParameterException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.spec.InvalidKeySpecException
+     * @throws javax.crypto.IllegalBlockSizeException
+     * @throws java.lang.InstantiationException
      */
-    public Wallet(final File f) {
+    public Wallet(final File f, final char[] userPassword) throws IOException, FileNotFoundException, 
+            ClassNotFoundException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, 
+            IllegalBlockSizeException, InstantiationException {
         file = f;
+        
+        if(!readWalletFile(f, userPassword)) {
+            throw new InstantiationException();
+        }
     }
     
     protected void actOnCorrectAuthentication() {
