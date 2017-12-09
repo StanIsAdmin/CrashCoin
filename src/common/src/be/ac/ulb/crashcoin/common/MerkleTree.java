@@ -22,7 +22,7 @@ public class MerkleTree implements JSONable {
     
     private HashMap<Transaction, Node> leaves;
     private Node root;
-    private boolean isComplete; // A Merkle branch is not complete
+    private boolean isComplete; // TODO Currently not used ! A Merkle branch is not complete
     
     private static final Integer NO_SIDE = 0; // Merkle root
     private static final Integer LEFT = 1; // Left node of a pair
@@ -99,7 +99,7 @@ public class MerkleTree implements JSONable {
     public Node computeMerkleRoot(final List<Transaction> transactions) {
         this.leaves = new HashMap<>();
         final List<Node> leaves = new ArrayList<>();
-        for (Transaction transaction: transactions) {
+        for (final Transaction transaction: transactions) {
             final byte[] hash = Cryptography.hashBytes(transaction.toBytes());
             final Node node = new Node(hash);
             leaves.add(node);
