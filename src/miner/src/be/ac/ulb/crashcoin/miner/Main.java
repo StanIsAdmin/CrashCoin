@@ -26,7 +26,7 @@ public class Main {
         } catch (IOException | ClassNotFoundException | InvalidKeySpecException 
                 | InvalidKeyException | InvalidAlgorithmParameterException 
                 | IllegalBlockSizeException | ArrayIndexOutOfBoundsException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         
         RelayConnection connection;
