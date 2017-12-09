@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package be.ac.ulb.crashcoin.client;
 
 import be.ac.ulb.crashcoin.common.Address;
@@ -84,7 +79,7 @@ public class WalletClient extends Wallet {
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
         for (final Transaction transaction: transactionsList) {
-            if (transaction.getDestAddress() == srcAddress) {
+            if (transaction.getDestAddress().equals(srcAddress)) {
                 total += transaction.getTransactionOutput().getAmount();
             } else {
                 total -= transaction.getTransactionOutput().getAmount();
