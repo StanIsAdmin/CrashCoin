@@ -22,7 +22,6 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -81,7 +80,7 @@ public class WalletClient extends Wallet {
     }
     
     public List<TransactionOutput> getUsefulTransactions(final int amount) {
-        final List<TransactionOutput> transactions = null;
+        final List<TransactionOutput> transactions = new ArrayList<>();
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
         for (final Transaction transaction: transactionsList) {
