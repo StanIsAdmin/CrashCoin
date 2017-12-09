@@ -1,16 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package be.ac.ulb.crashcoin.client;
 
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.TransactionInput;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.common.WalletInformation;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +22,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -40,22 +38,11 @@ public class WalletClient extends Wallet {
     
     private final ArrayList<Transaction> transactionsList;
     
-    public WalletClient() {
-        super();
-        transactionsList = new ArrayList<>();
-    }
-    
     public WalletClient(final File f, final char[] userPassword) throws IOException, 
             FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InstantiationException {
-        this();
-        if(!readWalletFile(f, userPassword)) {
-            throw new InstantiationException();
-        }
-    }
-    
-    public WalletClient(final KeyPair keypair) {
-        super(keypair);
+        super(f, userPassword);
+        
         transactionsList = new ArrayList<>();
     }
     
@@ -63,10 +50,10 @@ public class WalletClient extends Wallet {
     protected void actOnCorrectAuthentication() {
         System.out.println("Welcome in your wallet!");
 //        Uncomment if you will get private and public key (currently used to get the private key of master)
-//        System.out.println("Your public key:");
-//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded()));
+        System.out.println("Your public key :");
+        System.out.println(JsonUtils.encodeBytes(this.publicKey.getEncoded()));
 //        System.out.println("Your private key:");
-//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded()));
+//        System.out.println(JsonUtils.encodeBytes(keyPair.getPrivate().getEncoded()));
         System.out.println("");
     }
     
@@ -79,21 +66,46 @@ public class WalletClient extends Wallet {
     }
     
     public List<TransactionOutput> getUsefulTransactions(final int amount) {
-        final List<TransactionOutput> transactions = null;
+        final List<TransactionOutput> transactions = new ArrayList<>();
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
         for (final Transaction transaction: transactionsList) {
-            if (transaction.getDestAddress() == srcAddress) {
-                total += transaction.getTransactionOutput().getAmount();
+            
+            final TransactionOutput transactionOut;
+            // Get destination address
+            if(transaction.getDestAddress().equals(srcAddress)) {
+                transactionOut = transaction.getTransactionOutput();
+                
+            // Get the address of the change back (the source user)
+            } else if(transaction.getChangeOutput().getDestinationAddress().equals(srcAddress)) { // TODO
+                transactionOut = transaction.getChangeOutput();
+                
             } else {
-                total -= transaction.getTransactionOutput().getAmount();
+                continue;
             }
-            transactions.add(transaction.getTransactionOutput());
+            
+            if(!alreadyUsed(transactionOut.toBytes())) {
+                total += transactionOut.getAmount();
+                transactions.add(transaction.getTransactionOutput());
+            }
+            
+            
             if (total >= amount) {
                 return transactions;
             }
         }
         return null;
+    }
+    
+    private boolean alreadyUsed(final byte[] hashTransaction) {
+        for (final Transaction transaction: transactionsList) {
+            for(final TransactionInput transInput : transaction.getInputs()) {
+                if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     /**
@@ -108,21 +120,15 @@ public class WalletClient extends Wallet {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    
-    public void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
+    public static void writeWalletFile(final char[] userPassword, final String accountName, final KeyPair keyPair) 
             throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
-        publicKey = keyPair.getPublic();
-
-        // Get the bytes representation of the keys
-        final byte[] publicKeyBytes = publicKey.getEncoded();
-        
-        writeWalletFile(userPassword, accountName, publicKeyBytes, keyPair.getPrivate().getEncoded());
+        writeWalletFile(userPassword, accountName, keyPair.getPublic().getEncoded(), keyPair.getPrivate().getEncoded());
     }
     
     
-    public void writeWalletFile(final char[] userPassword, final String accountName, 
+    public static void writeWalletFile(final char[] userPassword, final String accountName, 
             final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException, IOException {
 
@@ -167,24 +173,5 @@ public class WalletClient extends Wallet {
         System.out.println("The creation of your wallet completed successfully");
         System.out.println("Please sign in and start crashing coins");
     }
-    
-    /**
-     * Generates a DSA key pair, composed of a public key and a private key. The
-     * key size is defined in parameters. This method can be called at most one
-     * time per wallet.
-     *
-     * @return Pair of DSA keys
-     */
-    public KeyPair generateKeys() {
-        if (publicKey != null) {
-            System.out.println("[Error] Only one key pair can be assigned to a wallet");
-            return null;
-        }
-        final SecureRandom random = Cryptography.getSecureRandom();
-        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
-        this.publicKey = keyPair.getPublic();
-        return keyPair;
-    }
-    
+
 }

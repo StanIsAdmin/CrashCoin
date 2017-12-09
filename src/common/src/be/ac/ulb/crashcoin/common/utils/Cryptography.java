@@ -17,6 +17,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.Cipher;
@@ -109,7 +110,7 @@ public class Cryptography {
             final KeyFactory kf = KeyFactory.getInstance("DSA");
             pk = kf.generatePublic(X509publicKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
         }
         return pk;
     }
@@ -119,16 +120,16 @@ public class Cryptography {
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("[Error] Could not find DSA signature algorithm");
+            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find DSA signature algorithm");
         } catch (NoSuchProviderException e) {
-            System.out.println("[Error] Could not find provider for DSA");
+            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find provider for DSA");
         }
 
         try {
             // Using private key to sign with DSA
             dsa.initSign(privateKey);
         } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
         }
         return dsa;
     }
@@ -138,13 +139,13 @@ public class Cryptography {
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
-            e2.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e2.getMessage());
         }
         try {
             // Using public key to verify signatures
             dsa.initVerify(publicKey);
         } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
         }
         return dsa;
     }
@@ -164,7 +165,7 @@ public class Cryptography {
             dsa.update(bytes, 0, bytes.length);
             signature = dsa.sign();
         } catch (SignatureException e) {
-            e.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
         }
         return signature;
     }
@@ -312,6 +313,53 @@ public class Cryptography {
             logAndAbort("Unable to generate public key from bytes. Abort!", ex);
         }
         return null;
+    }
+    
+    /**
+     * Generates a DSA key pair, composed of a public key and a private key. The
+     * key size is defined in parameters. This method can be called at most one
+     * time per wallet.
+     *
+     * @return Pair of DSA keys
+     */
+    public static KeyPair generateKeys() {
+        final SecureRandom random = Cryptography.getSecureRandom();
+        Cryptography.getDsaKeyGen();
+        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
+        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
+        return keyPair;
+    }
+    
+    /**
+     * The objective of this method is to verify that the private key that we've
+     * just decrypted in the login method using the user password is the valid
+     * one. If the user entered a wrong password the decryption cipher would
+     * still produce some results, i.e. a wrong private key
+     *
+     * To solve this, Antoine proposed to create a fake local trasaction with
+     * the private key that we've just decrypted and verify it with the public
+     * key associated with the user. If the transaction cannot be verified with
+     * the public key, then the private key and the password were wrong.
+     *
+     * @param keyPair the key pair
+     * @return True if signature is valid
+     */
+    public static Boolean verifyPrivateKey(final KeyPair keyPair) {
+        final Boolean verified;
+        final PrivateKey privateKey = keyPair.getPrivate();
+        final PublicKey publicKey = keyPair.getPublic();
+
+        // Create dummy transaction
+        final byte[] dummyTransaction = new byte[50];
+        new Random().nextBytes(dummyTransaction);
+
+        // Sign the dummy transaction with the private key that we want to verify
+        final byte[] dummySignature = Cryptography.signTransaction(privateKey, dummyTransaction);
+
+        // Verify the signature using the public key and the specific Wallet method
+        verified = Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
+
+        return verified;
     }
     
     ///// private

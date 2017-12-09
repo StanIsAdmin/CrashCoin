@@ -33,7 +33,7 @@ public class WalletConnection extends AbstractConnection {
     protected void receiveData(final JSONable jsonData) {
 
         if (jsonData instanceof Transaction) {
-            // TODO new transaction management
+            
             final Transaction transaction = (Transaction) jsonData;
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Get transaction from wallet and send to miner "
                     + "({0}): {1}", new Object[]{_ip, transaction.toString()});

@@ -136,6 +136,17 @@ public class ClientApplication {
         System.out.println(""); // Add empty line
         System.out.print("Please enter your choice : ");
     }
+    
+    private char[] askPassword() {
+        char[] userPassword;
+        if (console != null) {
+            userPassword = console.readPassword("Enter your secret password: ");
+        } else {
+            System.out.print("Please enter your password: ");
+            userPassword = reader.next().toCharArray();
+        }
+        return userPassword;
+    }
 
     public void signUp() throws InvalidKeySpecException,
             NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
@@ -158,26 +169,15 @@ public class ClientApplication {
             char[] userPassword = null;
             boolean check = false;
             while (!check) {
-                char[] passwordChecker;
-                System.out.print("Password : ");
-                if (console != null) {
-                    userPassword = console.readPassword();
-                } else {
-                    userPassword = reader.next().toCharArray();
-                }
+                userPassword = this.askPassword();
                 System.out.print("Confirm password : ");
-                if (console != null) {
-                    passwordChecker = console.readPassword();
-                } else {
-                    passwordChecker = reader.next().toCharArray();
-                }
+                final char[] passwordChecker = this.askPassword();
                 check = Arrays.equals(userPassword, passwordChecker);
                 check = check && (userPassword != null);
             }
 
             // Create a new empty wallet and generate a key pair
-            final WalletClient tmpWallet = new WalletClient();
-            tmpWallet.writeWalletFile(userPassword, accountName, tmpWallet.generateKeys());
+            WalletClient.writeWalletFile(userPassword, accountName, Cryptography.generateKeys());
         }
 
     }
@@ -203,13 +203,7 @@ public class ClientApplication {
             //    in RAM, in case an attacker has access to it
             // Note: we use Console.readPassword only in console since IDEs
             //       do not work with consoles
-            char[] userPassword;
-            if (console != null) { // If using a console
-                userPassword = console.readPassword("Enter your secret password: ");
-            } else { // Is using an IDE
-                System.out.print("Please enter your password: ");
-                userPassword = reader.next().toCharArray();
-            }
+            char[] userPassword = this.askPassword();
             
             try {
                 this.wallet = new WalletClient(f, userPassword);
@@ -229,7 +223,6 @@ public class ClientApplication {
      * It returns the checked transaction and -1 in the case that the
      * transaction was aborded.
      *
-     * @return The created transaction
      * @throws java.security.GeneralSecurityException
      */
     public void createTransaction() throws GeneralSecurityException  {
@@ -249,10 +242,16 @@ public class ClientApplication {
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
-                try {
-                    RelayConnection.getInstance().sendData(transaction);
-                } catch (IOException ex) {
-                    Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
+                final char[] password = this.askPassword();
+                if(!wallet.signTransaction(password, transaction)) {
+                    System.err.println("Could not sign transaction");
+                    
+                } else {
+                    try {
+                        RelayConnection.getInstance().sendData(transaction);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
+                    }
                 }
             }
         } while (amount != -1);

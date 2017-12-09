@@ -29,7 +29,7 @@ public class TransactionInput implements JSONable {
     @Override
     public JSONObject toJSON() {
         final JSONObject json = JSONable.super.toJSON();
-        json.put("previousOutputHash", this.previousOutputHash);
+        json.put("previousOutputHash", JsonUtils.encodeBytes(this.previousOutputHash));
         json.put("previousOutputAmount", this.previousOutputAmount);
         return json;
     }

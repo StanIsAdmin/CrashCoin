@@ -330,8 +330,8 @@ public class Transaction implements JSONable {
     @Override
     public String toString() {
         String output = "Transaction :\n";
-        output += "Amount : "+this.transactionOutput.getAmount() +
-                        ((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) + "\n";
+        output += "Amount : "+this.transactionOutput.getAmount() + "\n";
+        output += "Charge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
         output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
         output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
         output += "At     : "+this.lockTime.toString();

@@ -2,7 +2,6 @@ package be.ac.ulb.crashcoin.common;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
@@ -14,7 +13,6 @@ import java.io.ObjectInputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -26,50 +24,74 @@ import javax.crypto.spec.IvParameterSpec;
 public class Wallet {
 
     protected PublicKey publicKey;
-    protected KeyPairGenerator dsaKeyGen;
-
+    private final File file;
+    
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
+     * 
+     * @param accountName name of the user who owns the wallet
+     * @param userPassword user password
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
+     * @throws java.security.InvalidAlgorithmParameterException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.spec.InvalidKeySpecException
+     * @throws javax.crypto.IllegalBlockSizeException
+     * @throws java.lang.InstantiationException
      */
-    public Wallet() {
-        dsaKeyGen = Cryptography.getDsaKeyGen();
+    public Wallet(final String accountName, final char[] userPassword) throws IOException, FileNotFoundException, 
+            ClassNotFoundException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, 
+            IllegalBlockSizeException, InstantiationException {
+        this(new File(Parameters.WALLETS_PATH + accountName + ".wallet"), userPassword);
     }
-
+    
     /**
-     * Constructs a wallet from a key pair. Only the public key is stored. For
-     * that reason, the key pair needs to be passed to signTransaction to be
-     * able to sign a transaction. After constructing a wallet using this
-     * constructor, one cannot generate keys with the same wallet anymore.
-     *
-     * @param keyPair Pair of keys
-     * @see Cryptography#signTransaction(java.security.PrivateKey, byte[])
+     * Constructs an empty wallet. This constructor behaves differently if one
+     * passes a Keypair to it.
+     * 
+     * @param f file that contains the wallet data
+     * @param userPassword user password
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
+     * @throws java.security.InvalidAlgorithmParameterException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.spec.InvalidKeySpecException
+     * @throws javax.crypto.IllegalBlockSizeException
+     * @throws java.lang.InstantiationException
      */
-    public Wallet(final KeyPair keyPair) {
-        this();
-        this.publicKey = keyPair.getPublic();
+    public Wallet(final File f, final char[] userPassword) throws IOException, FileNotFoundException, 
+            ClassNotFoundException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, 
+            IllegalBlockSizeException, InstantiationException {
+        file = f;
+        
+        if(!canReadWalletFile(userPassword)) {
+            throw new InstantiationException();
+        } else {
+            this.actOnCorrectAuthentication();
+        }
     }
     
     protected void actOnCorrectAuthentication() {
-        System.out.println("Authentication completed");
+        Logger.getLogger(getClass().getName()).info("Authentication completed");
     }
     
-    public void readWalletFile(final String walletPath, final String userPassword) throws FileNotFoundException,
+    private boolean canReadWalletFile(final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
-        this.readWalletFile(new File(walletPath), userPassword.toCharArray());
+        return readWalletFile(userPassword) != null;
     }
-
-    protected boolean readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
+    
+    private PrivateKey readWalletFile(final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
-        boolean allIsOk = false;
+        PrivateKey privateKey = null;
         final WalletInformation walletInformation;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             walletInformation = (WalletInformation) ois.readObject();
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error with file {0}", ex.getMessage());
-            return allIsOk;
+            return privateKey;
         }
 
         // Retrieve wallet information stored on disk
@@ -94,10 +116,9 @@ public class Wallet {
             final KeyPair keyPair = Cryptography.createKeyPairFromEncodedKeys(publicKeyBytes, privateKeyBytes);
 
             // Verify the private key generated by the password entered by the user
-            if (this.verifyPrivateKey(keyPair)) {
+            if (Cryptography.verifyPrivateKey(keyPair)) {
                 this.publicKey = keyPair.getPublic();
-                this.actOnCorrectAuthentication();
-                allIsOk = true;
+                privateKey = keyPair.getPrivate();
 
             } else {
                 System.out.println("The password you entered is incorrect");
@@ -125,39 +146,26 @@ public class Wallet {
              */
             System.out.println("The password you entered is incorrect");
         }
-        return allIsOk;
+        return privateKey;
     }
     
-    /**
-     * The objective of this method is to verify that the private key that we've
-     * just decrypted in the login method using the user password is the valid
-     * one. If the user entered a wrong password the decryption cipher would
-     * still produce some results, i.e. a wrong private key
-     *
-     * To solve this, Antoine proposed to create a fake local trasaction with
-     * the private key that we've just decrypted and verify it with the public
-     * key associated with the user. If the transaction cannot be verified with
-     * the public key, then the private key and the password were wrong.
-     *
-     * @param keyPair the key pair
-     * @return True if signature is valid
-     */
-    public Boolean verifyPrivateKey(final KeyPair keyPair) {
-        final Boolean verified;
-        final PrivateKey privateKey = keyPair.getPrivate();
-        final PublicKey publicKey = keyPair.getPublic();
-
-        // Create dummy transaction
-        final byte[] dummyTransaction = new byte[50];
-        new Random().nextBytes(dummyTransaction);
-
-        // Sign the dummy transaction with the private key that we want to verify
-        final byte[] dummySignature = Cryptography.signTransaction(privateKey, dummyTransaction);
-
-        // Verify the signature using the public key and the specific Wallet method
-        verified = Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
-
-        return (verified);
+    public boolean signTransaction(final String password, final Transaction transaction) {
+        return signTransaction(password.toCharArray(), transaction);
+    }
+    
+    public boolean signTransaction(final char[] password, final Transaction transaction) {
+        boolean isValid = false;
+        PrivateKey privateKey;
+        try {
+            privateKey = readWalletFile(password);
+            transaction.sign(privateKey);
+            isValid = true;
+            
+        } catch (IOException | ClassNotFoundException | InvalidKeySpecException | InvalidKeyException | 
+                InvalidAlgorithmParameterException | IllegalBlockSizeException ex) {
+            Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        return isValid;
     }
     
     /**
