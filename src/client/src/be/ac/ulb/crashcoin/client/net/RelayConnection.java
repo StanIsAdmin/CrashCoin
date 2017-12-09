@@ -21,6 +21,7 @@ public class RelayConnection extends AbstractReconnectConnection {
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
         super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_WALLET_LISTENER));
+        start();
     }
 
     @Override
@@ -40,7 +41,6 @@ public class RelayConnection extends AbstractReconnectConnection {
         
         if(data instanceof Transaction) {
             final Transaction transaction = (Transaction) data;
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Receive transaction: {0}", transaction.toString());
             final WalletClient wallet = ClientApplication.getInstance().getWallet();
             if(wallet != null) {
                 wallet.addTransaction(transaction);
