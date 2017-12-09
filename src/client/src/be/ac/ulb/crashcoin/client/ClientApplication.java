@@ -43,7 +43,8 @@ public class ClientApplication {
 
     public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, GeneralSecurityException {
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, 
+            GeneralSecurityException {
         instance = this;
         wallet = null;
         
@@ -207,15 +208,18 @@ public class ClientApplication {
                 System.out.print("Please enter your password: ");
                 userPassword = reader.next().toCharArray();
             }
-            this.wallet = new WalletClient(f, userPassword);
-            if(wallet != null) {
-                RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
-                    wallet.getAddress().toJSON()));
+            
+            try {
+                this.wallet = new WalletClient(f, userPassword);
+            } catch (InstantiationException ex) {
+                return; // Error when open wallet
             }
+            RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
+                wallet.getAddress().toJSON()));
         } else {
             System.out.println("The wallet identifier that you entered cannot be found");
-
         }
+        
     }
 
     /**

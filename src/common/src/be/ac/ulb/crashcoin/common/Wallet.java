@@ -54,21 +54,22 @@ public class Wallet {
         System.out.println("Authentication completed");
     }
     
-    public void readWalletFile(String walletPath, String userPassword) throws FileNotFoundException,
+    public void readWalletFile(final String walletPath, final String userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
         this.readWalletFile(new File(walletPath), userPassword.toCharArray());
     }
 
-    protected void readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
+    protected boolean readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+        boolean allIsOk = false;
         final WalletInformation walletInformation;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
             walletInformation = (WalletInformation) ois.readObject();
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error with file {0}", ex.getMessage());
-            return;
+            return allIsOk;
         }
 
         // Retrieve wallet information stored on disk
@@ -96,6 +97,7 @@ public class Wallet {
             if (this.verifyPrivateKey(keyPair)) {
                 this.publicKey = keyPair.getPublic();
                 this.actOnCorrectAuthentication();
+                allIsOk = true;
 
             } else {
                 System.out.println("The password you entered is incorrect");
@@ -122,8 +124,8 @@ public class Wallet {
             * 
              */
             System.out.println("The password you entered is incorrect");
-
         }
+        return allIsOk;
     }
     
     /**

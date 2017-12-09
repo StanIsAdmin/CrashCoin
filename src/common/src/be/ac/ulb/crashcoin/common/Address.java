@@ -76,6 +76,6 @@ public class Address implements JSONable {
     
     @Override
     public String toString() {
-        return Arrays.toString(key.getEncoded());
+        return JsonUtils.encodeBytes(key.getEncoded());
     }
 }
