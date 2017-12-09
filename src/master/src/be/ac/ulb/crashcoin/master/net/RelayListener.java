@@ -25,8 +25,8 @@ public class RelayListener extends AbstractListener {
         new RelayConnection(sock);
     }
 
-    public static RelayListener getListener() throws IOException {
-        if (instance == null) {
+    public static synchronized RelayListener getListener() throws IOException {
+        if (instance == null) { // TODO it's seems to me that it is not thread safe. Even if we do not need it here, may be we shoud write it in comment? #Alexis
             instance = new RelayListener();
         }
         return instance;

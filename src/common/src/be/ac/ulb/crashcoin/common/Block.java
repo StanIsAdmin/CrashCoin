@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * contains detailed information about all or part of the transactions,
  * within a merkle tree.
  *
- * Contents of the header: 
+ * Contents of the header:
  * - nonce value (4 bytes)
  * - hash of the previous block (32 bytes = 256 bits)
  * - merkle tree root (32 bytes)
@@ -50,12 +50,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     /**
      * Create Block instance from a JSON representation
      *
-     * @param json
+     * @param json the Block's JSON representation, compatible with toJSON()
      */
     public Block(final JSONObject json) {
         this(
-            JsonUtils.decodeBytes(json.getString("previousBlock")), 
-            json.getInt("difficulty"), 
+            JsonUtils.decodeBytes(json.getString("previousBlock")),
+            json.getInt("difficulty"),
             json.getInt("nonce"),
             JsonUtils.decodeBytes(json.getString("merkleRoot")));
         final JSONArray transactionsArray = json.getJSONArray("listTransactions");
@@ -104,12 +104,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         }
         return json;
     }
-    
+
     /**
      * Checks that a transaction is indeed present inside of the block,
      * given its hash. Then, if a transaction hash is matched, it returns the
      * corresponding transaction. Otherwise it returns null.
-     * 
+     *
      * @param hashed  Transaction hash value
      * @return  Whether it is present in the blok or not
      */
@@ -123,11 +123,11 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     }
 
     /**
-     * Checks if a hash satisfies the difficulty
+     * Checks if a hash satisfies the difficulty.
      *
      * @return true if the hash starts with the right amount of null bits and
      * false otherwise
-     * @see isValid
+     * @see isHashValid
      */
     public boolean isHashValid()  {
         return isHashValid(Cryptography.hashBytes(headerToBytes()), this.difficulty);
@@ -140,9 +140,9 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * @param difficulty The number of null bits that are required
      * @return true if the hash starts with the right amount of null bits and
      * false otherwise
-     * @see Parameters.MINING_DIFFICULTY
+     * @see be.ac.ulb.crashcoin.common.Parameters#MINING_DIFFICULTY
      */
-    public boolean isHashValid(final byte[] hash, final Integer difficulty) {
+    public static boolean isHashValid(final byte[] hash, final Integer difficulty) {
         if (hash == null || difficulty > Byte.SIZE * hash.length) {
             return false;
         }
@@ -267,5 +267,5 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         output += "--------------------";
         return output;
     }
-    
+
 }

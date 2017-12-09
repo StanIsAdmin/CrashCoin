@@ -43,7 +43,7 @@ public class Wallet {
      * constructor, one cannot generate keys with the same wallet anymore.
      *
      * @param keyPair Pair of keys
-     * @see signTransaction
+     * @see Cryptography#signTransaction(java.security.PrivateKey, byte[])
      */
     public Wallet(final KeyPair keyPair) {
         this();

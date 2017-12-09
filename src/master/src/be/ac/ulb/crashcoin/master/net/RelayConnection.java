@@ -35,7 +35,6 @@ public class RelayConnection extends AbstractConnection {
 
     @Override
     protected void receiveData(final JSONable data) {
-        
         if (data instanceof Block) {
             final Block block = (Block) data;
 
@@ -47,18 +46,18 @@ public class RelayConnection extends AbstractConnection {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, "Save Block to BlockChain:\n{0}", 
                     new Object[]{block.toString()});
                 bcManager.saveBlockChain();
-                
+
                 // Broadcast the block to all the relay nodes
                 sendToAll(data);
-                
             } else {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, "Block invalid:\n{0}", 
                     new Object[]{block.toString()});
-            } 
+            }
             // TODO ? Inform Relay (and Miner that the block has been rejected) ?
         } else {
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from relay ({0}): {1}", 
-                new Object[]{_ip, data});
+            Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                    "Unexpected {0} received from relay {1} ({2})", 
+                    new Object[]{data.getClass().getName(), _ip, data});
         }
     }
 

@@ -1,7 +1,7 @@
 # CrashCoin
 A fully functional and inefficient cryptocurrency, written in Java.
 
-![logo](./more/logo.png "CrashCoin™")
+![logo](./docs/logo.png "CrashCoin™")
 
 ## Compile
 Compile the project with maven:

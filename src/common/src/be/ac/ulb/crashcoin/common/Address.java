@@ -18,9 +18,9 @@ public class Address implements JSONable {
     }
 
     /**
-     * Create Address instance from a JSON representation
+     * Create Address instance from a JSON representation.
      *
-     * @param json
+     * @param json the Address JSON representation, compatible with toJSON()
      */
     public Address(final JSONObject json) {
         final byte[] keyBytes = JsonUtils.decodeBytes(json.getString("key"));
