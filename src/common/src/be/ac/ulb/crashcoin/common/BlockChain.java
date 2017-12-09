@@ -71,7 +71,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      */
     @Override
     public final boolean add(final Block block) {
-        boolean valid = isValidNextBlock(block, Parameters.MINING_DIFFICULTY);
+        final boolean valid = isValidNextBlock(block, Parameters.MINING_DIFFICULTY);
         if (valid) {
             super.add(block);
             updateAvailableInputs(block);
