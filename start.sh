@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# VARIABLES
+MINER_WALLET_USERNAME="test"
+MINER_WALLET_PASSWORD="test"
+
+
+
 command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Install screen by typing 'apt-get install screen' in order to use Crashcoin."; exit 1; }
 
 if test -t 1; then
@@ -28,7 +34,7 @@ start() {
         echo "${red}${1^} already started${normal}";
     else
         echo "${green}Starting${normal} ${bold}${1^}${normal}";
-        screen -S $1 -d -m java -jar dist/$1.jar
+        screen -S $1 -d -m java -jar dist/$1.jar $2
     fi
 }
 
@@ -36,7 +42,7 @@ stop() {
     if [ $(status $1) = true ]; then
         echo "Stopping ${bold}${1^}${normal}";
         screen -X -S $1 stuff "^C"
-        sleep 3
+        sleep 2
         if [ $(status $1) = true ]; then
             echo "${red}Error while trying to${normal} ${bold}${1^}${normal}"
         else
@@ -68,24 +74,24 @@ printStatus() {
 }
 
 startType() {
-    cmdSelctType "start" $1
+    cmdSelectType "start" $1
 }
 
 stopType() {
-    cmdSelctType "stop" $1
+    cmdSelectType "stop" $1
 }
 
 restartType() {
-    cmdSelctType "stop" $1
+    cmdSelectType "stop" $1
     sleep 1
-    cmdSelctType "start" $1
+    cmdSelectType "start" $1
 }
 
 viewType() {
-    cmdSelctType "view" $1
+    cmdSelectType "view" $1
 }
 
-cmdSelctType() {
+cmdSelectType() {
     case "$2" in
         all)
             $1 "master"
@@ -94,7 +100,7 @@ cmdSelctType() {
             sleep 1
             $1 "client"
             sleep 1
-            $1 "miner"
+            $1 "miner" "$MINER_WALLET_USERNAME $MINER_WALLET_PASSWORD"
             ;;
         relay)
             $1 "relay"
@@ -106,7 +112,7 @@ cmdSelctType() {
             $1 "master"
             ;;
         miner)
-            $1 "miner"
+            $1 "miner" "$MINER_WALLET_USERNAME $MINER_WALLET_PASSWORD"
             ;;
        *)
            echo "${red}Usage${normal}: $0 $1 {${italic}all|client|master|relay|miner${normal}}"
