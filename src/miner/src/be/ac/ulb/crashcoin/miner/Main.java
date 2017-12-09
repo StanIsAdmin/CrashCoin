@@ -21,7 +21,7 @@ public class Main {
     public static void main(final String[] args) {
         
         try {
-            userWallet = new Wallet(args[1], args[0].toCharArray());
+            userWallet = new Wallet(args[0], args[1].toCharArray());
         } catch (IOException | ClassNotFoundException | InvalidKeySpecException 
                 | InvalidKeyException | InvalidAlgorithmParameterException 
                 | IllegalBlockSizeException | InstantiationException ex) {
