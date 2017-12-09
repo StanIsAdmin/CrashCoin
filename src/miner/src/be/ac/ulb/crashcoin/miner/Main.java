@@ -20,12 +20,11 @@ public class Main {
 
     public static void main(final String[] args) {
         
-        userWallet = new Wallet();
         try {
-            userWallet.readWalletFile(args[1], args[0]);
+            userWallet = new Wallet(args[1], args[0].toCharArray());
         } catch (IOException | ClassNotFoundException | InvalidKeySpecException 
                 | InvalidKeyException | InvalidAlgorithmParameterException 
-                | IllegalBlockSizeException | ArrayIndexOutOfBoundsException ex) {
+                | IllegalBlockSizeException | InstantiationException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         
