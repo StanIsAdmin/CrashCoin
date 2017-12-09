@@ -249,6 +249,9 @@ public class ClientApplication {
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
+                System.out.println("Password : ");
+                final String password = reader.next();
+                // @Remy insert here
                 try {
                     RelayConnection.getInstance().sendData(transaction);
                 } catch (IOException ex) {

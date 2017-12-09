@@ -84,7 +84,7 @@ public class WalletClient extends Wallet {
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
         for (final Transaction transaction: transactionsList) {
-            if (transaction.getDestAddress() == srcAddress) {
+            if (transaction.getDestAddress().equals(srcAddress)) {
                 total += transaction.getTransactionOutput().getAmount();
             } else {
                 total -= transaction.getTransactionOutput().getAmount();
