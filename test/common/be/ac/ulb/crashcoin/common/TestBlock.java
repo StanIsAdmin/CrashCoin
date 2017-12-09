@@ -11,22 +11,22 @@ public class TestBlock {
 
     @Test
     public void testIsValidDifficultyTooBig() {
-        byte[] array = new byte[1];
-        Block block = createBlock();
+        final byte[] array = new byte[1];
+        final Block block = createBlock();
         assertFalse(block.isHashValid(array, 10));
     }
 
     @Test
     public void testIsValidIsTrue() {
-        byte[] array = {0b01001100};
-        Block block = createBlock();
+        final byte[] array = {0b01001100};
+        final Block block = createBlock();
         assertTrue(block.isHashValid(array, 1));
     }
 
     @Test
     public void testIsValidIsFalse() {
-        byte[] array = {0b01001100};
-        Block block = createBlock();
+        final byte[] array = {0b01001100};
+        final Block block = createBlock();
         assertFalse(block.isHashValid(array, 2));
     }
 }

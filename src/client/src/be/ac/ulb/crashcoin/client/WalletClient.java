@@ -78,11 +78,11 @@ public class WalletClient extends Wallet {
         return this.transactionsList;
     }
     
-    public List<TransactionOutput> getUsefulTransactions(int amount) {
-        List<TransactionOutput> transactions = null;
-        Address srcAddress = new Address(this.publicKey);
+    public List<TransactionOutput> getUsefulTransactions(final int amount) {
+        final List<TransactionOutput> transactions = null;
+        final Address srcAddress = new Address(this.publicKey);
         int total = 0;
-        for (Transaction transaction: transactionsList) {
+        for (final Transaction transaction: transactionsList) {
             if (transaction.getDestAddress() == srcAddress) {
                 total += transaction.getTransactionOutput().getAmount();
             } else {
