@@ -171,7 +171,7 @@ public class ClientApplication {
             while (!check) {
                 userPassword = this.askPassword();
                 System.out.print("Confirm password : ");
-                char[] passwordChecker = this.askPassword();
+                final char[] passwordChecker = this.askPassword();
                 check = Arrays.equals(userPassword, passwordChecker);
                 check = check && (userPassword != null);
             }

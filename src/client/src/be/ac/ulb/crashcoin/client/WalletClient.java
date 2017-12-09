@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.client;
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
+import be.ac.ulb.crashcoin.common.TransactionInput;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.common.WalletInformation;
@@ -21,6 +22,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -68,17 +70,42 @@ public class WalletClient extends Wallet {
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
         for (final Transaction transaction: transactionsList) {
-            if (transaction.getDestAddress().equals(srcAddress)) {
-                total += transaction.getTransactionOutput().getAmount();
+            
+            final TransactionOutput transactionOut;
+            // Get destination address
+            if(transaction.getDestAddress().equals(srcAddress)) {
+                transactionOut = transaction.getTransactionOutput();
+                
+            // Get the address of the change back (the source user)
+            } else if(transaction.getChangeOutput().getDestinationAddress().equals(srcAddress)) { // TODO
+                transactionOut = transaction.getChangeOutput();
+                
             } else {
-                total -= transaction.getTransactionOutput().getAmount();
+                continue;
             }
-            transactions.add(transaction.getTransactionOutput());
+            
+            if(!alreadyUsed(transactionOut.toBytes())) {
+                total += transactionOut.getAmount();
+                transactions.add(transaction.getTransactionOutput());
+            }
+            
+            
             if (total >= amount) {
                 return transactions;
             }
         }
         return null;
+    }
+    
+    private boolean alreadyUsed(final byte[] hashTransaction) {
+        for (final Transaction transaction: transactionsList) {
+            for(final TransactionInput transInput : transaction.getInputs()) {
+                if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     /**
