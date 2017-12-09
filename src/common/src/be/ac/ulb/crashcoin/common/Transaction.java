@@ -42,7 +42,7 @@ public class Transaction implements JSONable {
      * Creates a reward transaction (transaction with no source address).
      * The resulting transaction is without signature.
      *
-     * @see Parameters.MINING_REWRD
+     * @see Parameters#MINING_REWARD
      *
      * @param lockTime time of the creation of the transaction (if null: lockTime
      *      is considered to be current timestamp)
@@ -139,7 +139,7 @@ public class Transaction implements JSONable {
      *
      * Transactions signature is performed by DSA.
      *
-     * @see Cryptography.signTransaction
+     * @see Cryptography#signTransaction(java.security.PrivateKey, byte[])
      *
      * @param privateKey the private key of the payer (signer)
      */

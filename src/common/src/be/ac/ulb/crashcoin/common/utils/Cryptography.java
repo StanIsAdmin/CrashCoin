@@ -249,12 +249,7 @@ public class Cryptography {
      * Compute an encryption / decryption key (they are the same) from the
      * password and the salt<br>
      *
-     * Information: PBKDF2 is a password-based key derivation function Used
-     * PBKDF2WithHmacSHA1 instead of PBKDF2WithHmacSHA256 because of some
-     * problems if we run the project on java <= 7 (plus the guidelines say 128
-     * bits so it's ok)
-     *
-     * @param userPassword password of user
+     * @param userPassword password of the user
      * @param salt extended string
      * @return SecretKey
      */
