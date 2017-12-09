@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.client.net;
 
 import be.ac.ulb.crashcoin.client.ClientApplication;
+import be.ac.ulb.crashcoin.client.WalletClient;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
@@ -8,6 +9,8 @@ import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -37,10 +40,17 @@ public class RelayConnection extends AbstractReconnectConnection {
         
         if(data instanceof Transaction) {
             final Transaction transaction = (Transaction) data;
-            System.out.println("Receve transaction: " + transaction);
-            ClientApplication.getInstance().getWallet().addTransaction(transaction);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Receive transaction: {0}", transaction.toString());
+            final WalletClient wallet = ClientApplication.getInstance().getWallet();
+            if(wallet != null) {
+                wallet.addTransaction(transaction);
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
+                        + "transaction:\n{0}", transaction.toString());
+            }
+            
         } else {
-            System.err.println("Receive unknowed object: " + data.toString());
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Receive unknowed object: {0}", data.toString());
         }
     }
 
