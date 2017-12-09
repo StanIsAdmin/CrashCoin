@@ -6,6 +6,8 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +42,23 @@ public class Miner {
     private Block currentlyMinedBlock = null;
     
     private boolean currentBlockIsNew = true;
+    
+    /** object used to sort a list of Transactions according to their timestamp. */
+    private static final Comparator<Transaction> transactionsComparator;
+    
+    static {
+        transactionsComparator = new Comparator<Transaction>() {
+            @Override
+            public int compare(Transaction t1, Transaction t2) {
+                if(t1.before(t2))
+                    return -1;
+                else if(t2.before(t1))
+                    return +1;
+                else
+                    return 0;
+            }
+        };
+    }
 
     /**
      * Constructor of Miner.
@@ -105,6 +124,8 @@ public class Miner {
                     Parameters.MINING_DIFFICULTY);
         }
         final int nbTransactionsToAdd = Parameters.NB_TRANSACTIONS_PER_BLOCK - currentlyMinedBlock.size();
+        // sort the pending transactions according to their timestamp
+        Collections.sort(this.transactions, Miner.transactionsComparator);
         if(nbTransactionsToAdd == 0) {
             currentBlockIsNew = false;
             return;
