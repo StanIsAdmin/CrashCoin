@@ -67,7 +67,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * and update the set of transactions available as inputs.
      *
      * @param block
-     * @return wether the block was added to the blockchain.
+     * @return whether the block was added to the blockchain.
      */
     @Override
     public final boolean add(final Block block) {
@@ -143,7 +143,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      *
      * @see Transaction.isValid
      * @param transaction
-     * @return
+     * @return true if the transaction is valid as defined, false otherwise
      */
     private boolean isValidTransaction(final Transaction transaction)  {
         // Verify the transaction value and signature (if necessary)
