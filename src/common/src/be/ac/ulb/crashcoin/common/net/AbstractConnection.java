@@ -58,7 +58,7 @@ public abstract class AbstractConnection extends Thread {
      * Wait for input line, then call the abstract receiveData with a newly
      * created object described by the read line.
      *
-     * @See getObjectFromJsonObject (private)
+     * @see #getObjectFromJsonObject(org.json.JSONObject)
      */
     @Override
     public void run() {

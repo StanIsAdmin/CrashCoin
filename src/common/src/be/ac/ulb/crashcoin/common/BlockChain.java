@@ -31,7 +31,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * Creates a BlockChain which contains only the genesis block.
      *
      * The genesis block is created through the createGenesisBlock() method.
-     * @see createGenesisBlock()
+     * @see #createGenesisBlock
      */
     public BlockChain()  {
         this.availableInputs = new HashMap<>();
@@ -46,7 +46,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      *
      * @param json the JSON representation of the BlockChain, compatible with
      * the result of BlockChain.toJSON()
-     * @see toJson()
+     * @see #toJSON
      */
     public BlockChain(final JSONObject json)  {
         this(); // Creates BC containing genesis bloc
