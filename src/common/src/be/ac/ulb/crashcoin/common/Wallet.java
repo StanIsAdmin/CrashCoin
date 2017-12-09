@@ -15,6 +15,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -51,9 +53,13 @@ public class Wallet {
     protected void readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
-        final ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
-        final WalletInformation walletInformation = (WalletInformation) ois.readObject();
-        ois.close();
+        final WalletInformation walletInformation;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+            walletInformation = (WalletInformation) ois.readObject();
+        } catch(IOException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error with file {0}", ex.getMessage());
+            return;
+        }
 
         // Retrieve wallet information stored on disk
         final byte[] salt = walletInformation.getSalt();
