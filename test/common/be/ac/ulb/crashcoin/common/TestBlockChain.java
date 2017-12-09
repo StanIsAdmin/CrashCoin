@@ -7,7 +7,7 @@ public class TestBlockChain {
 
     @Test
     public void testBlockChainGenesisCreation()  {
-        BlockChain bc = new BlockChain();
+        final BlockChain bc = new BlockChain();
         assertTrue(bc.size() == 1);
     }
 }
