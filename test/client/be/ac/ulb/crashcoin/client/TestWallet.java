@@ -34,7 +34,7 @@ public class TestWallet {
      * @return A pair of keys
      */
     private KeyPair createKeyPair() {
-        return WalletClient.generateKeys();
+        return Cryptography.generateKeys();
     }
 
     @Test
@@ -59,7 +59,7 @@ public class TestWallet {
 
         // Let's suppose that an attacker entered a bad password and thus, got a bad DSA private key from
         // the decryption algorithm.
-        final PrivateKey badPrivateKey = WalletClient.generateKeys().getPrivate();
+        final PrivateKey badPrivateKey = Cryptography.generateKeys().getPrivate();
 
         // The offline software must check whether this key is wrong or not. Let's do this by signing a
         // test transaction (it can be anything, let's write random bytes) and verify the signature.
