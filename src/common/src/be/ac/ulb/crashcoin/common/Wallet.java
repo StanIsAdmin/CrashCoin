@@ -23,26 +23,16 @@ import javax.crypto.spec.IvParameterSpec;
 public class Wallet {
 
     protected PublicKey publicKey;
+    private final File file;
 
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
+     * 
+     * @param f file that contains the wallet data
      */
-    public Wallet() {
-    }
-
-    /**
-     * Constructs a wallet from a key pair. Only the public key is stored. For
-     * that reason, the key pair needs to be passed to signTransaction to be
-     * able to sign a transaction. After constructing a wallet using this
-     * constructor, one cannot generate keys with the same wallet anymore.
-     *
-     * @param keyPair Pair of keys
-     * @see Cryptography#signTransaction(java.security.PrivateKey, byte[])
-     */
-    public Wallet(final KeyPair keyPair) {
-        this();
-        this.publicKey = keyPair.getPublic();
+    public Wallet(final File f) {
+        file = f;
     }
     
     protected void actOnCorrectAuthentication() {

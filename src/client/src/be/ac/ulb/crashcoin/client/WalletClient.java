@@ -35,16 +35,15 @@ import javax.crypto.spec.IvParameterSpec;
 public class WalletClient extends Wallet {
     
     private final ArrayList<Transaction> transactionsList;
-    private final File file;
     
     public WalletClient(final File f, final char[] userPassword) throws IOException, 
             FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InstantiationException {
-        super();
+        super(f);
         if(!readWalletFile(f, userPassword)) {
             throw new InstantiationException();
         }
-        file = f;
+        
         transactionsList = new ArrayList<>();
     }
     
