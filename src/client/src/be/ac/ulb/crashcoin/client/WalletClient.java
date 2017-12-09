@@ -99,13 +99,15 @@ public class WalletClient extends Wallet {
     
     private boolean alreadyUsed(final byte[] hashTransaction) {
         for (final Transaction transaction: transactionsList) {
-            for(final TransactionInput transInput : transaction.getInputs()) {
-                if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
-                    return false;
+            if(transaction.getInputs() != null) {
+                for(final TransactionInput transInput : transaction.getInputs()) {
+                    if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
+                        return true;
+                    }
                 }
             }
         }
-        return true;
+        return false;
     }
     
     /**
