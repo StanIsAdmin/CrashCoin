@@ -93,23 +93,7 @@ public class WalletClient extends Wallet {
             }
         }
         return null;
-    }
-    
-    /**
-     * Generates a DSA key pair, composed of a public key and a private key. The
-     * key size is defined in parameters. This method can be called at most one
-     * time per wallet.
-     *
-     * @return Pair of DSA keys
-     */
-    public static KeyPair generateKeys() {
-        final SecureRandom random = Cryptography.getSecureRandom();
-        KeyPairGenerator dsaKeyGen = Cryptography.getDsaKeyGen();
-        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
-        return keyPair;
-    }
-    
+    }    
     
     /**
      * Methods used to write the current ClientWallent into a generated file.
