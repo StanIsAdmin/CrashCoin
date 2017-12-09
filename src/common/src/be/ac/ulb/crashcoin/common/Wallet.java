@@ -24,7 +24,27 @@ public class Wallet {
 
     protected PublicKey publicKey;
     private final File file;
-
+    
+    /**
+     * Constructs an empty wallet. This constructor behaves differently if one
+     * passes a Keypair to it.
+     * 
+     * @param accountName name of the user who owns the wallet
+     * @param userPassword user password
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
+     * @throws java.security.InvalidAlgorithmParameterException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.spec.InvalidKeySpecException
+     * @throws javax.crypto.IllegalBlockSizeException
+     * @throws java.lang.InstantiationException
+     */
+    public Wallet(final String accountName, final char[] userPassword) throws IOException, FileNotFoundException, 
+            ClassNotFoundException, InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, 
+            IllegalBlockSizeException, InstantiationException {
+        this(new File(Parameters.WALLETS_PATH + accountName + ".wallet"), userPassword);
+    }
+    
     /**
      * Constructs an empty wallet. This constructor behaves differently if one
      * passes a Keypair to it.
@@ -53,13 +73,7 @@ public class Wallet {
         Logger.getLogger(getClass().getName()).info("Authentication completed");
     }
     
-    public void readWalletFile(final String walletPath, final String userPassword) throws FileNotFoundException,
-            IOException, ClassNotFoundException, InvalidKeySpecException,
-            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
-        this.readWalletFile(new File(walletPath), userPassword.toCharArray());
-    }
-
-    protected boolean readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
+    private boolean readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
         boolean allIsOk = false;
