@@ -185,7 +185,7 @@ public class Transaction implements JSONable {
                     && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD);
 
         // Verify the digital signature with the sender's Public Key
-        PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
+        final PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
         if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature))
             return false;
 
@@ -244,7 +244,7 @@ public class Transaction implements JSONable {
         if(isReward()) {
             return null;
         }
-        return this.changeOutput.getDestinationAddress();
+        return this.changeOutput == null ? null : this.changeOutput.getDestinationAddress();
     }
 
     /**
@@ -330,7 +330,8 @@ public class Transaction implements JSONable {
     @Override
     public String toString() {
         String output = "Transaction :\n";
-        output += "Amount : "+this.transactionOutput.getAmount()+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount())+"\n";
+        output += "Amount : "+this.transactionOutput.getAmount() +
+                        ((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) + "\n";
         output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
         output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
         output += "At     : "+this.lockTime.toString();

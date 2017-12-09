@@ -8,8 +8,8 @@ import be.ac.ulb.crashcoin.common.net.JsonUtils;
 
 public class Address implements JSONable {
 
-    private PublicKey key; // Public key
-    private byte[] value; // CrashCoin address, derived from the public key
+    private final PublicKey key; // Public key
+    private final byte[] value; // CrashCoin address, derived from the public key
 
     public Address(final PublicKey key) {
         super();
@@ -74,7 +74,8 @@ public class Address implements JSONable {
         return this.key.equals(other.key) && Arrays.equals(this.value, other.value);
     }
     
+    @Override
     public String toString() {
-        return key.getEncoded().toString();
+        return JsonUtils.encodeBytes(key.getEncoded());
     }
 }

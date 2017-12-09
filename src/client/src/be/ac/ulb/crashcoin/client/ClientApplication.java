@@ -45,7 +45,8 @@ public class ClientApplication {
 
     public ClientApplication() throws IOException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, GeneralSecurityException {
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, 
+            GeneralSecurityException {
         instance = this;
         wallet = null;
         
@@ -209,15 +210,18 @@ public class ClientApplication {
                 System.out.print("Please enter your password: ");
                 userPassword = reader.next().toCharArray();
             }
-            this.wallet = new WalletClient(f, userPassword);
-            if(wallet != null) {
-                RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
-                    wallet.getAddress().toJSON()));
+            
+            try {
+                this.wallet = new WalletClient(f, userPassword);
+            } catch (InstantiationException ex) {
+                return; // Error when open wallet
             }
+            RelayConnection.getInstance().sendData(new Message(Message.GET_TRANSACTIONS_FROM_WALLET, 
+                wallet.getAddress().toJSON()));
         } else {
             System.out.println("The wallet identifier that you entered cannot be found");
-
         }
+        
     }
 
     /**
@@ -236,12 +240,12 @@ public class ClientApplication {
             System.out.println("Or enter -1 to join the main menu.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
-            List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
+            final List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
             if (referencedOutput == null) {
                 System.out.print("You don't have enough money.");
             } else if (amount != -1){
                 System.out.print("Destination : ");
-                PublicKey dstPublicKey = this.stringToKey(reader.next());
+                final PublicKey dstPublicKey = this.stringToKey(reader.next());
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
@@ -254,8 +258,8 @@ public class ClientApplication {
         } while (amount != -1);
     }
     
-    private PublicKey stringToKey(String text) throws GeneralSecurityException {
-        byte[] key = JsonUtils.decodeBytes(text);
+    private PublicKey stringToKey(final String text) throws GeneralSecurityException {
+        final byte[] key = JsonUtils.decodeBytes(text);
         return Cryptography.createPublicKeyFromBytes(key);
     }
 

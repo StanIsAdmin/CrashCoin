@@ -47,12 +47,14 @@ public class WalletClient extends Wallet {
     
     public WalletClient(final File f, final char[] userPassword) throws IOException, 
             FileNotFoundException, ClassNotFoundException, InvalidKeySpecException, 
-            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, InstantiationException {
         this();
-        this.readWalletFile(f, userPassword);
+        if(!readWalletFile(f, userPassword)) {
+            throw new InstantiationException();
+        }
     }
     
-    public WalletClient(KeyPair keypair) {
+    public WalletClient(final KeyPair keypair) {
         super(keypair);
         transactionsList = new ArrayList<>();
     }
@@ -76,11 +78,11 @@ public class WalletClient extends Wallet {
         return this.transactionsList;
     }
     
-    public List<TransactionOutput> getUsefulTransactions(int amount) {
-        List<TransactionOutput> transactions = null;
-        Address srcAddress = new Address(this.publicKey);
+    public List<TransactionOutput> getUsefulTransactions(final int amount) {
+        final List<TransactionOutput> transactions = null;
+        final Address srcAddress = new Address(this.publicKey);
         int total = 0;
-        for (Transaction transaction: transactionsList) {
+        for (final Transaction transaction: transactionsList) {
             if (transaction.getDestAddress() == srcAddress) {
                 total += transaction.getTransactionOutput().getAmount();
             } else {

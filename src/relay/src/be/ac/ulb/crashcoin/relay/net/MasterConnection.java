@@ -30,7 +30,7 @@ public class MasterConnection extends AbstractReconnectConnection {
         // Receive BlockChain (normaly, only at the first connection
         if (jsonData instanceof BlockChain) {
             final BlockChain blockChain = (BlockChain) jsonData;
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get BlockChain of size {0} from master", 
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get BlockChain of size {0} from master", 
                     new Object[]{blockChain.size()});
             Main.setBlockChain(blockChain);
 
@@ -39,7 +39,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             final Block block = (Block) jsonData;
             Main.getBlockChain().add(block);
             
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get block from master and save to blockchain: {0}", 
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block from master and save to blockchain: {0}", 
                     new Object[]{block.toString()});
 
             // Broadcast to the miners the validate/mined block so that they can

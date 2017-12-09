@@ -58,6 +58,8 @@ public class WalletConnection extends AbstractConnection {
 
             switch (request) {
                 case Message.GET_TRANSACTIONS_FROM_WALLET:
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Get message from wallet ({0}): " + 
+                            Message.GET_TRANSACTIONS_FROM_WALLET, _ip);
                     sendTransactions(option);
                     break;
 
