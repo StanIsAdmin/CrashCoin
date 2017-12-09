@@ -175,17 +175,4 @@ public class WalletClient extends Wallet {
         return keyPair;
     }
     
-    /**
-     * Get the unique public key
-     *
-     * @return The public key
-     */
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-    
-    public Address getAddress() {
-        return new Address(publicKey);
-    }
-    
 }

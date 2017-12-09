@@ -47,6 +47,12 @@ public class Wallet {
         this();
         this.publicKey = keyPair.getPublic();
     }
+    
+    public void readWalletFile(String walletPath, String userPassword) throws FileNotFoundException,
+            IOException, ClassNotFoundException, InvalidKeySpecException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+        this.readWalletFile(new File(walletPath), userPassword.toCharArray());
+    }
 
     protected void readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
@@ -147,4 +153,18 @@ public class Wallet {
 
         return (verified);
     }
+    
+    /**
+     * Get the unique public key
+     *
+     * @return The public key
+     */
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
+    
+    public Address getAddress() {
+        return new Address(publicKey);
+    }
+    
 }

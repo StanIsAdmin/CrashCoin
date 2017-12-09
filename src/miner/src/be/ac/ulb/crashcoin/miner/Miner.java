@@ -171,7 +171,7 @@ public class Miner {
     }
 
     private Transaction selfRewarding()  {
-        Transaction transaction = new Transaction(Main.getAddress());
+        Transaction transaction = new Transaction(Main.getUserWallet().getAddress());
         transaction.sign(Main.privateKey());
         return transaction;
     }
