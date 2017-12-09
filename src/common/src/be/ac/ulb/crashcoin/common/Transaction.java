@@ -241,6 +241,9 @@ public class Transaction implements JSONable {
      * @return
      */
     public Address getSrcAddress() {
+        if(isReward()) {
+            return null;
+        }
         return this.changeOutput.getDestinationAddress();
     }
 
