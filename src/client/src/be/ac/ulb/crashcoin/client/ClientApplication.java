@@ -264,9 +264,13 @@ public class ClientApplication {
 
     public void showWallet() {
         final ArrayList<Transaction> transactionList = wallet.getTransactions();
+        if(transactionList.isEmpty()) {
+            System.out.println("You are broke... (Wallet is empty)");
+        } else {
         transactionList.forEach((transaction) -> {
             System.out.println(transaction.toString());
         });
+        }
     }
     
     public WalletClient getWallet() {
