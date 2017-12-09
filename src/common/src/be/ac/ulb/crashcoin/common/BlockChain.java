@@ -26,6 +26,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     /** Maps inputs available for transactions to the Address they belong to */
     private final Map<byte[], TransactionOutput> availableInputs;
+    
+    /** Maps a new block's used inputs from their hashes */
+    private final Map<byte[], TransactionOutput> tempUsedInputs;
+    
+    /** Maps a new block's generated available inputs from their hashes */
+    private final Map<byte[], TransactionOutput> tempAvailableInputs;
 
     /**
      * Creates a BlockChain which contains only the genesis block.
@@ -35,6 +41,9 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      */
     public BlockChain()  {
         this.availableInputs = new HashMap<>();
+        this.tempUsedInputs = new HashMap<>();
+        this.tempAvailableInputs = new HashMap<>();
+        
         final Block genesis = createGenesisBlock();
         super.add(genesis); // call to super does not perform validity check
     }
@@ -62,6 +71,14 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         }
     }
 
+    public Block getLastBlock() {
+        return this.get(this.size() - 1);
+    }
+
+    private byte[] getLastBlockToBytes()  {
+        return Cryptography.hashBytes(get(this.size() - 1).headerToBytes());
+    }
+    
     /**
      * Verifies the block, add it to the end of the blockChain if it is valid
      * and update the set of transactions available as inputs.
@@ -74,49 +91,34 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         final boolean valid = isValidNextBlock(block, Parameters.MINING_DIFFICULTY);
         if (valid) {
             super.add(block);
-            updateAvailableInputs(block);
         } else {
+            // Remove the block's available inputs, put back the ones it used
+            revertAvailbleInputs();
             Logger.getLogger(BlockChain.class.getName()).log(Level.WARNING, "Invalid block discarded");
         }
         return valid;
     }
-
+    
     /**
-     * Updates the internal representation of transactions available as inputs.
+     * Performs checks one the given block and returns whether it may be
+     * appended to the Blockchain.
      *
-     * Transactions (outputs) received by an Address can only be used once
-     * as inputs for new transactions from the same address.
-     * This function assumes the received block is valid, and for each of its
-     * transactions :
-     * - removes all used inputs from the pool of available inputs
-     * - marks the first output an available input for the receiver
-     * - marks the second output (change) as available for the sender, if any
-     * @param addedBlock a valid block that has just been added to the blockchain
+     * - The proof of work realised must correspond to the difficulty indicated
+     *   in the block
+     * - The difficulty indicated must correspond to the required difficulty
+     * - The block must indicate the current last block as previous block
+     *
+     * @param block The block to check
+     * @param difficulty the difficulty required
+     * @return wether the block may validly appended to the blockchain.
      */
-    private synchronized void updateAvailableInputs(final Block addedBlock)  {
-        for (final Transaction addedTransaction : addedBlock) {
-
-            for (final TransactionInput usedInput : addedTransaction.getInputs()) {
-                this.availableInputs.remove(usedInput.toBytes());
-            }
-
-            final TransactionOutput transactionOutput = addedTransaction.getTransactionOutput();
-            this.availableInputs.put(Cryptography.hashBytes(transactionOutput.toBytes()), transactionOutput);
-            final TransactionOutput changeOutput = addedTransaction.getChangeOutput();
-            // only added to the hashmap if change is strictly positive:
-            // outputs with 0 change would never be used again, therefore it is
-            // not necessary to keep them in memory
-            if(!addedTransaction.isReward() && changeOutput.getAmount() > 0)
-                this.availableInputs.put(Cryptography.hashBytes(changeOutput.toBytes()), changeOutput);
-        }
-    }
-
-    public Block getLastBlock() {
-        return this.get(this.size() - 1);
-    }
-
-    private byte[] getLastBlockToBytes()  {
-        return Cryptography.hashBytes(get(this.size() - 1).headerToBytes());
+    protected boolean isValidNextBlock(final Block block, final int difficulty)  {
+        boolean result = block.isHashValid() // check that the hash corresponds the indicated difficulty
+                && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
+                && // Previous hash block is valid
+                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
+        result &= (getFirstBadTransaction(block) != null);
+        return result;
     }
 
     /**
@@ -127,6 +129,8 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return  First bad transaction found if there is one, null otherwise
      */
     protected Transaction getFirstBadTransaction(final Block block)  {
+        tempUsedInputs.clear();
+        tempAvailableInputs.clear();
         for (final Transaction transaction: block) {
             if (! isValidTransaction(transaction)) {
                 return transaction;
@@ -153,42 +157,61 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         if(!transaction.isReward()) {
             // Verify that each input is available and belongs to the sender
             for (final TransactionInput input: transaction.getInputs()) {
-                final TransactionOutput referencedOutput = this.availableInputs.get(Cryptography.hashBytes(input.toBytes()));
+                // Temporarily remove the input so that it can't be used again
+                final byte[] inputHash = Cryptography.hashBytes(input.toBytes());
+                final TransactionOutput referencedOutput = this.availableInputs.remove(inputHash);
                 if (referencedOutput == null)
                     return false;
+                // Keep a copy of the discarded input, to put back if the block is invalid
+                tempUsedInputs.put(inputHash, referencedOutput);
+                
                 // verify that the destination address of the referenced output corrponds to
                 // the address of the payer (i.e. destination addess of the change output)
                 if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
                     return false;
             }
         }
+        
+        // Temporarily add the the outputs to the set of available inputs
+        this.addAvailableTransactionOutputs(transaction);
 
         // All verifications having passed, the transaction is valid
         return true;
     }
-
-    // TODO Should it be moved to Block?
-    // Used by [master node]
+    
     /**
-     * Performs checks one the given block and returns whether it may be
-     * appended to the Blockchain.
-     *
-     * - The proof of work realised must correspond to the difficulty indicated
-     *   in the block
-     * - The difficulty indicated must correspond to the required difficulty
-     * - The block must indicate the current last block as previous block
-     *
-     * @param block The block to check
-     * @param difficulty the difficulty required
-     * @return wether the block may validly appended to the blockchain.
+     * Adds a transaction's outputs to the set of available inputs.
+     * 
+     * @param transaction the transaction to (temporarily) validate.
      */
-    protected boolean isValidNextBlock(final Block block, final int difficulty)  {
-        boolean result = block.isHashValid() // check that the hash corresponds the indicated difficulty
-                && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
-                && // Previous hash block is valid
-                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
-        result &= (getFirstBadTransaction(block) != null);
-        return result;
+    private void addAvailableTransactionOutputs(final Transaction transaction) {
+        // Add the transactino output
+        final TransactionOutput transactionOutput = transaction.getTransactionOutput();
+        final byte[] transactionHash = Cryptography.hashBytes(transactionOutput.toBytes());
+        this.availableInputs.put(transactionHash, transactionOutput);
+        this.tempAvailableInputs.put(transactionHash, transactionOutput);
+        
+        // Add the change output, only if it exists and has a strictly positive amount
+        // (this avoids keeping useless transactions in memory)
+        final TransactionOutput changeOutput = transaction.getTransactionOutput();
+        if (! transaction.isReward() && changeOutput.getAmount() > 0) {
+            final byte[] changeHash = Cryptography.hashBytes(changeOutput.toBytes());
+            this.availableInputs.put(changeHash, changeOutput);
+            this.tempAvailableInputs.put(changeHash, changeOutput);
+        }
+    }
+    
+/**
+     * Updates the internal representation of transactions available as inputs,
+     * after a block has been discarded.
+     *
+     * While a block is verified, the inputs it uses are removed from the set
+     * of available inputs, and the outputs it generates are added to that set.
+     * This function reverts the process thanks to temporary sets of
+     */
+    private synchronized void revertAvailbleInputs()  {
+        this.availableInputs.keySet().removeAll(this.tempAvailableInputs.keySet());
+        this.availableInputs.putAll(this.tempUsedInputs);
     }
 
     @Override
