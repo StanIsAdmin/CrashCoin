@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * contains detailed information about all or part of the transactions,
  * within a merkle tree.
  *
- * Contents of the header: 
+ * Contents of the header:
  * - nonce value (4 bytes)
  * - hash of the previous block (32 bytes = 256 bits)
  * - merkle tree root (32 bytes)
@@ -54,8 +54,8 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      */
     public Block(final JSONObject json) {
         this(
-            JsonUtils.decodeBytes(json.getString("previousBlock")), 
-            json.getInt("difficulty"), 
+            JsonUtils.decodeBytes(json.getString("previousBlock")),
+            json.getInt("difficulty"),
             json.getInt("nonce"),
             JsonUtils.decodeBytes(json.getString("merkleRoot")));
         final JSONArray transactionsArray = json.getJSONArray("listTransactions");
@@ -104,12 +104,12 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         }
         return json;
     }
-    
+
     /**
      * Checks that a transaction is indeed present inside of the block,
      * given its hash. Then, if a transaction hash is matched, it returns the
      * corresponding transaction. Otherwise it returns null.
-     * 
+     *
      * @param hashed  Transaction hash value
      * @return  Whether it is present in the blok or not
      */
@@ -142,7 +142,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
      * false otherwise
      * @see Parameters.MINING_DIFFICULTY
      */
-    public boolean isHashValid(final byte[] hash, final Integer difficulty) {
+    public static boolean isHashValid(final byte[] hash, final Integer difficulty) {
         if (hash == null || difficulty > Byte.SIZE * hash.length) {
             return false;
         }
@@ -267,5 +267,5 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         output += "--------------------";
         return output;
     }
-    
+
 }
