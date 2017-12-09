@@ -14,7 +14,7 @@ public final class BlockMiner {
      *
      * @param block The block to mine
      */
-    public BlockMiner(Block block) {
+    public BlockMiner(final Block block) {
         this();
         setBlockToMine(block);
     }

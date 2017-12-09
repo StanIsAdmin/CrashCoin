@@ -154,7 +154,7 @@ public class Miner {
      */
     private boolean updateCurrentBlock() {
         boolean hasRemovedBlocks = false;
-        ArrayList<Block> newlyMinedBlocks = connection.getBlocks();
+        final ArrayList<Block> newlyMinedBlocks = connection.getBlocks();
         for(final Block newBlock : newlyMinedBlocks) {
             for(final Transaction minedTransaction : newBlock) {
                 if(currentlyMinedBlock.contains(minedTransaction)) {

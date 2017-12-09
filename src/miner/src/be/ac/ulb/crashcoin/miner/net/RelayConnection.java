@@ -30,7 +30,6 @@ public class RelayConnection extends AbstractReconnectConnection {
     private final ArrayList<Block> blocksBuffer;
     /** Copy of the last block of the blockchain. */
     private Block lastBlock;
-    private boolean hasNewBlocks = false; // ?
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
         super("RelayConnection", new Socket(Parameters.RELAY_IP,
@@ -60,7 +59,6 @@ public class RelayConnection extends AbstractReconnectConnection {
             try {
                 final Block block = (Block) data;
                 mutex.acquire();
-                hasNewBlocks = true;
                 blocksBuffer.add(block);
                 lastBlock = blocksBuffer.get(blocksBuffer.size()-1);
                 mutex.release();
@@ -161,7 +159,6 @@ public class RelayConnection extends AbstractReconnectConnection {
         ArrayList<Block> tmp = new ArrayList<>();
         try {
             mutex.acquire();
-            this.hasNewBlocks = false;
             tmp = this.blocksBuffer;
             this.blocksBuffer.clear();
             mutex.release();
