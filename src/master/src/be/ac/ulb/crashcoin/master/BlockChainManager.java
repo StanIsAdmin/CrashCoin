@@ -29,7 +29,9 @@ public class BlockChainManager {
     private static BlockChainManager instance;
 
     /**
-     * The newly created blockchain is empty.
+     * Creates a BlockChainManager instance, and its default blockChain.
+     * 
+     * @see default BlockChain constructor
      */
     private BlockChainManager() {
         blockChain = createBlockChain();
