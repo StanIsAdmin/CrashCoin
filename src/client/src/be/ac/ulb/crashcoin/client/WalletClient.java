@@ -11,6 +11,7 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.Wallet;
 import be.ac.ulb.crashcoin.common.WalletInformation;
+import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,6 +22,7 @@ import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -63,8 +65,8 @@ public class WalletClient extends Wallet {
     protected void actOnCorrectAuthentication() {
         System.out.println("Welcome in your wallet!");
 //        Uncomment if you will get private and public key (currently used to get the private key of master)
-//        System.out.println("Your public key:");
-//        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPublic().getEncoded()));
+        System.out.println("Your public key :");
+        System.out.println(JsonUtils.encodeBytes(this.publicKey.getEncoded()));
 //        System.out.println("Your private key:");
 //        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(keyPair.getPrivate().getEncoded()));
         System.out.println("");
