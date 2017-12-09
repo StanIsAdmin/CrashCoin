@@ -2,7 +2,6 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.json.JSONObject;
 
