@@ -228,7 +228,6 @@ public class ClientApplication {
      * It returns the checked transaction and -1 in the case that the
      * transaction was aborded.
      *
-     * @return The created transaction
      * @throws java.security.GeneralSecurityException
      */
     public void createTransaction() throws GeneralSecurityException  {
@@ -250,11 +249,15 @@ public class ClientApplication {
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
                 System.out.println("Password : ");
                 final String password = reader.next();
-                // @Remy insert here
-                try {
-                    RelayConnection.getInstance().sendData(transaction);
-                } catch (IOException ex) {
-                    Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
+                if(!wallet.signTransaction(password, transaction)) {
+                    System.err.println("Could not sign transaction");
+                    
+                } else {
+                    try {
+                        RelayConnection.getInstance().sendData(transaction);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
+                    }
                 }
             }
         } while (amount != -1);

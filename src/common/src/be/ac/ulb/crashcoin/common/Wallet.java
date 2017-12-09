@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +65,7 @@ public class Wallet {
             IllegalBlockSizeException, InstantiationException {
         file = f;
         
-        if(!readWalletFile(f, userPassword)) {
+        if(!canReadWalletFile(userPassword)) {
             throw new InstantiationException();
         }
     }
@@ -73,16 +74,22 @@ public class Wallet {
         Logger.getLogger(getClass().getName()).info("Authentication completed");
     }
     
-    private boolean readWalletFile(final File f, final char[] userPassword) throws FileNotFoundException,
+    private boolean canReadWalletFile(final char[] userPassword) throws FileNotFoundException,
             IOException, ClassNotFoundException, InvalidKeySpecException,
             InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
-        boolean allIsOk = false;
+        return readWalletFile(userPassword) != null;
+    }
+    
+    private PrivateKey readWalletFile(final char[] userPassword) throws FileNotFoundException,
+            IOException, ClassNotFoundException, InvalidKeySpecException,
+            InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+        PrivateKey privateKey = null;
         final WalletInformation walletInformation;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             walletInformation = (WalletInformation) ois.readObject();
         } catch(IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error with file {0}", ex.getMessage());
-            return allIsOk;
+            return privateKey;
         }
 
         // Retrieve wallet information stored on disk
@@ -110,7 +117,7 @@ public class Wallet {
             if (Cryptography.verifyPrivateKey(keyPair)) {
                 this.publicKey = keyPair.getPublic();
                 this.actOnCorrectAuthentication();
-                allIsOk = true;
+                privateKey = keyPair.getPrivate();
 
             } else {
                 System.out.println("The password you entered is incorrect");
@@ -138,12 +145,27 @@ public class Wallet {
              */
             System.out.println("The password you entered is incorrect");
         }
-        return allIsOk;
+        return privateKey;
     }
     
-//    public boolean signTransaction(final String password) {
-//        
-//    }
+    public boolean signTransaction(final String password, final Transaction transaction) {
+        return signTransaction(password.toCharArray(), transaction);
+    }
+    
+    public boolean signTransaction(final char[] password, final Transaction transaction) {
+        boolean isValid = false;
+        PrivateKey privateKey;
+        try {
+            privateKey = readWalletFile(password);
+            transaction.sign(privateKey);
+            isValid = true;
+            
+        } catch (IOException | ClassNotFoundException | InvalidKeySpecException | InvalidKeyException | 
+                InvalidAlgorithmParameterException | IllegalBlockSizeException ex) {
+            Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        return isValid;
+    }
     
     /**
      * Get the unique public key

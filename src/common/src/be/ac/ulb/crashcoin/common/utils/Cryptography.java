@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.common.utils;
 
-import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -111,7 +110,7 @@ public class Cryptography {
             final KeyFactory kf = KeyFactory.getInstance("DSA");
             pk = kf.generatePublic(X509publicKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            e.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
         }
         return pk;
     }
@@ -121,16 +120,16 @@ public class Cryptography {
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("[Error] Could not find DSA signature algorithm");
+            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find DSA signature algorithm");
         } catch (NoSuchProviderException e) {
-            System.out.println("[Error] Could not find provider for DSA");
+            Logger.getLogger(Cryptography.class.getName()).severe("[Error] Could not find provider for DSA");
         }
 
         try {
             // Using private key to sign with DSA
             dsa.initSign(privateKey);
         } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
         }
         return dsa;
     }
@@ -140,13 +139,13 @@ public class Cryptography {
         try {
             dsa = Signature.getInstance("SHA1withDSA", "SUN");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e2) {
-            e2.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e2.getMessage());
         }
         try {
             // Using public key to verify signatures
             dsa.initVerify(publicKey);
         } catch (InvalidKeyException e1) {
-            e1.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e1.getMessage());
         }
         return dsa;
     }
@@ -166,7 +165,7 @@ public class Cryptography {
             dsa.update(bytes, 0, bytes.length);
             signature = dsa.sign();
         } catch (SignatureException e) {
-            e.printStackTrace();
+            Logger.getLogger(Cryptography.class.getName()).severe(e.getMessage());
         }
         return signature;
     }
