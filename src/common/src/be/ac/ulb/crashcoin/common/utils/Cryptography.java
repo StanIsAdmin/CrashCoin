@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.common.utils;
 
-import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -69,7 +68,7 @@ public class Cryptography {
      * @param data the byte array to hash
      * @return A 32 byte long byte[] with the SHA-256 of the transaction
      */
-    public static byte[] hashBytes(byte[] data) {
+    public static byte[] hashBytes(final byte[] data) {
         if (hasher == null) {
             try {
                 hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);

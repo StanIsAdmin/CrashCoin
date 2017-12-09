@@ -29,10 +29,9 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         
-        RelayConnection connection;
         // Connect to relay
         try {
-            connection = RelayConnection.getRelayConnection();
+            RelayConnection.getRelayConnection();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
             return;

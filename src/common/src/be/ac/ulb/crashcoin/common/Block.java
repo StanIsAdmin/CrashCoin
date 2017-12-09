@@ -260,7 +260,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     public String toString() {
         String output = "--------------------\n";
         output += "Block :\n";
-        for (Transaction transaction : this) {
+        for (final Transaction transaction : this) {
             output += transaction.toString();
             output += "\n";
         }

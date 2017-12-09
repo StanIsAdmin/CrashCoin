@@ -7,7 +7,7 @@ package be.ac.ulb.crashcoin.miner;
  */
 public class AbortMiningException extends Exception {
     public AbortMiningException() {
-        
+        super();
     }
     
     public AbortMiningException(final String message) {

@@ -2,13 +2,12 @@ package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.security.KeyPair;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.json.JSONObject;
 
 public class TestUtils {
     
-    private static KeyPair kp = Cryptography.getDsaKeyGen().generateKeyPair();
+    private static final KeyPair kp = Cryptography.getDsaKeyGen().generateKeyPair();
     
     public static Address createAddress() {
         return new Address(kp.getPublic());

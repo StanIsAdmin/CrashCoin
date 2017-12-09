@@ -20,7 +20,7 @@ public class WalletListener extends AbstractListener {
     }
 
     @Override
-    protected void createNewConnection(Socket sock) throws IOException {
+    protected void createNewConnection(final Socket sock) throws IOException {
         new WalletConnection(sock);
     }
 
