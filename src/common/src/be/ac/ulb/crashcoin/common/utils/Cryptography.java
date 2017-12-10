@@ -144,7 +144,7 @@ public class Cryptography {
             dsa.update(transaction);
             verified = dsa.verify(signature);
         } catch (SignatureException e) {
-            logAndAbort("Unable to verify signature× Abort!", e);
+            verified = false;
         }
         return verified;
     }

@@ -11,14 +11,12 @@ import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.TransactionOutput;
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
 import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.Console;
-import java.security.GeneralSecurityException;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -44,9 +42,8 @@ public class ClientApplication {
     private WalletClient wallet;
 
     public ClientApplication() throws IOException,
-            InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException, 
-            GeneralSecurityException {
+            InvalidKeySpecException, InvalidKeyException, InvalidParameterSpecException,
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, ClassNotFoundException {
         instance = this;
         wallet = null;
         
@@ -72,13 +69,13 @@ public class ClientApplication {
             }
             
         } while (choice != 3);
-        System.out.println("Bey !");
+        System.out.println("Bye!");
         reader.close();
         System.exit(0);
     }
 
     private void actionMenuNotRegistered(final int choice) throws ClassNotFoundException, IOException, FileNotFoundException,
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
             InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidParameterSpecException {
         switch (choice) {
             case 1:
@@ -99,7 +96,7 @@ public class ClientApplication {
         }
     }
 
-    private void actionMenuRegistred(final int choice) throws GeneralSecurityException  {
+    private void actionMenuRegistred(final int choice) {
         switch (choice) {
             case 1:
                 createTransaction();
@@ -139,20 +136,20 @@ public class ClientApplication {
         System.out.print("Please enter your choice : ");
     }
     
-    private char[] askPassword() {
+    private char[] askPassword(final String message) {
         char[] userPassword;
         if (console != null) {
-            userPassword = console.readPassword("Enter your secret password: ");
+            userPassword = console.readPassword(message);
         } else {
-            System.out.print("Please enter your password: ");
+            System.out.print(message);
             userPassword = reader.next().toCharArray();
         }
         return userPassword;
     }
 
-    public void signUp() throws InvalidKeySpecException,
-            NoSuchPaddingException, InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException,
-            BadPaddingException, InvalidAlgorithmParameterException, FileNotFoundException, IOException {
+    public void signUp() throws InvalidKeySpecException, InvalidKeyException,
+            InvalidParameterSpecException, IllegalBlockSizeException,
+            BadPaddingException, FileNotFoundException, IOException {
         System.out.println("\n");
         System.out.println("Sign up");
         System.out.println("-------\n");
@@ -171,9 +168,8 @@ public class ClientApplication {
             char[] userPassword = null;
             boolean check = false;
             while (!check) {
-                userPassword = this.askPassword();
-                System.out.print("Confirm password : ");
-                final char[] passwordChecker = this.askPassword();
+                userPassword = this.askPassword("Enter your secret password: ");
+                final char[] passwordChecker = this.askPassword("Confirm password : ");
                 check = Arrays.equals(userPassword, passwordChecker);
                 check = check && (userPassword != null);
             }
@@ -185,8 +181,8 @@ public class ClientApplication {
     }
 
     public void signIn() throws FileNotFoundException, ClassNotFoundException, IOException,
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException,
-            IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException,
+            IllegalBlockSizeException {
 
         System.out.println("\n");
         System.out.println("Sign in");
@@ -205,7 +201,7 @@ public class ClientApplication {
             //    in RAM, in case an attacker has access to it
             // Note: we use Console.readPassword only in console since IDEs
             //       do not work with consoles
-            final char[] userPassword = this.askPassword();
+            final char[] userPassword = this.askPassword("Enter your secret password: ");
             
             try {
                 this.wallet = new WalletClient(f, userPassword);
@@ -224,10 +220,8 @@ public class ClientApplication {
      * Ask the user to create the transaction.<br>
      * It returns the checked transaction and -1 in the case that the
      * transaction was aborded.
-     *
-     * @throws java.security.GeneralSecurityException
      */
-    public void createTransaction() throws GeneralSecurityException  {
+    public void createTransaction() {
         Transaction transaction = null;
         int amount = 0;
         do {
@@ -244,11 +238,12 @@ public class ClientApplication {
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
-                final char[] password = this.askPassword();
+                final char[] password = this.askPassword("Enter your secret password to confirm transaction: ");
                 if(!wallet.signTransaction(password, transaction)) {
                     System.err.println("Could not sign transaction");
                     
                 } else {
+                    transaction.setSignature(new byte[] {0x12});
                     try {
                         RelayConnection.getInstance().sendData(transaction);
                     } catch (IOException ex) {
@@ -260,7 +255,7 @@ public class ClientApplication {
         } while (amount != -1);
     }
     
-    private PublicKey stringToKey(final String text) throws GeneralSecurityException {
+    private PublicKey stringToKey(final String text) {
         final byte[] key = JsonUtils.decodeBytes(text);
         return Cryptography.createPublicKeyFromBytes(key);
     }
