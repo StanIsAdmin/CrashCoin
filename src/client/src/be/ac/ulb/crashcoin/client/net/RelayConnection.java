@@ -58,7 +58,6 @@ public class RelayConnection extends AbstractReconnectConnection {
         } else if(data instanceof Message) {
             final Message message = (Message) data;
             if(message.getRequest().equals(Message.TRANSACTIONS_NOT_VALID)) {
-                // TODO pour Robin
                 // @see #transactionConcernCurrentWallet
                 final Transaction transaction = new Transaction(message.getOption());
                 if(wallet != null) {
