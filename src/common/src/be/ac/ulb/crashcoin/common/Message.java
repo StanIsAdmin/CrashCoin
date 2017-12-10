@@ -21,7 +21,12 @@ public class Message implements JSONable {
     private final JSONObject option;
 
     public Message(final String request) {
-        this(request, null);
+        this.request = request;
+        this.option = null;
+    }
+    
+    public Message(final String request, final JSONable option) {
+        this(request, option.toJSON());
     }
 
     public Message(final String request, final JSONObject option) {
@@ -47,5 +52,13 @@ public class Message implements JSONable {
 
     public JSONObject getOption() {
         return this.option;
+    }
+    
+    @Override
+    public String toString() {
+        String output = "Message: ";
+        output += this.request+"\n";
+        output += this.option.toString();
+        return output;
     }
 }

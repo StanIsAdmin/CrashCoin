@@ -191,6 +191,7 @@ public class Cryptography {
         return null;
     }
 
+
     public static boolean verifySignature(final PublicKey publicKey, final byte[] data, final byte[] signature) {
         // Use public key to verify signatures
         try {

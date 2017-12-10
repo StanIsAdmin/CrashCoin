@@ -10,14 +10,18 @@ import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  *
  */
 public class WalletConnection extends AbstractConnection {
+    
+    private static final HashMap<Address, WalletConnection> allWallets = new HashMap<>();
 
     public WalletConnection(final Socket sock) throws IOException {
         super("WalletConnection", sock);
@@ -83,6 +87,8 @@ public class WalletConnection extends AbstractConnection {
         }
         final Address walletAddress = new Address(option);
         final BlockChain currentBlockChain = Main.getBlockChain();
+        // Add only after the wallet 'starting' request.
+        allWallets.put(walletAddress, this);
         
         int index = 0;
         for (final Block block : currentBlockChain) {
@@ -100,6 +106,47 @@ public class WalletConnection extends AbstractConnection {
                         + "(index: {0})", index);
             }
             ++index;
+        }
+    }
+    
+    private static void sendTransactionTo(final Address addr, final Transaction trans) {
+        WalletConnection target = null;
+        for(final Address checkAddress : allWallets.keySet()) {
+            if(addr.equals(checkAddress)) {
+                target = allWallets.get(checkAddress);
+                break;
+            }
+        }
+        
+        if(target != null) {
+            target.sendData(trans);
+        }
+    }
+    
+    public static void sendTransactionTo(final Transaction transaction) {
+        sendTransactionTo(transaction.getDestAddress(), transaction);
+        if(transaction.getSrcAddress() != null) {
+            sendTransactionTo(transaction.getSrcAddress(), transaction);
+        }
+    }
+    
+    /**
+     * Send the unvalid transactions to all the wallets that are related to them.
+     * @param option the option of the Message received from master
+     */
+    public static void handleTransactionsNotValid(final JSONObject option) {
+        final JSONArray badTransactionsArray = option.getJSONArray("transactions");
+        for(int i = 0; i < badTransactionsArray.length(); ++i) {
+            // create a message telling that the transaction is not valid
+            final JSONObject badTransactionJSON = badTransactionsArray.getJSONObject(i);
+            final Message badTransactionMessage = new Message(Message.TRANSACTIONS_NOT_VALID, badTransactionJSON);
+            
+            // get the connections to the wallet that is source of the transaction
+            final Transaction badTransaction = new Transaction(badTransactionJSON);
+            for(final Address possibleSrc : allWallets.keySet()) {
+                if(possibleSrc.equals(badTransaction.getSrcAddress()))
+                    allWallets.get(possibleSrc).sendData(badTransactionMessage);
+            }
         }
     }
 }

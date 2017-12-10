@@ -54,7 +54,7 @@ public class WalletClient extends Wallet {
         System.out.println("");
     }
     
-    public void addAcceptedTransaction(final Transaction transaction) {
+    public synchronized void addAcceptedTransaction(final Transaction transaction) {
         this.unacceptedTransactionsList.remove(transaction);
         this.acceptedTransactionsList.add(transaction);
     }
@@ -63,7 +63,26 @@ public class WalletClient extends Wallet {
         this.unacceptedTransactionsList.add(transaction);
     }
     
-    public ArrayList<Transaction> getAllTransaction() {
+    public synchronized void updateTransactionStatus(final Transaction transaction) {
+        if(this.unacceptedTransactionsList.contains(transaction)) {
+            this.unacceptedTransactionsList.remove(transaction);
+        }
+        // if already contained in accepted transactions list (just in case of)
+        if(!this.acceptedTransactionsList.contains(transaction)) {
+            this.acceptedTransactionsList.add(transaction);
+        }
+    }
+    
+    public synchronized void removeNotValidTransaction(final Transaction transaction) {
+        if(this.unacceptedTransactionsList.contains(transaction)) {
+            this.unacceptedTransactionsList.remove(transaction);
+        }
+        if(this.acceptedTransactionsList.contains(transaction)) {
+            this.acceptedTransactionsList.remove(transaction);
+        }
+    }
+    
+    public ArrayList<Transaction> getAllTransactions() {
         final ArrayList<Transaction> allTransaction = new ArrayList<>();
         allTransaction.addAll(unacceptedTransactionsList);
         allTransaction.addAll(acceptedTransactionsList);
@@ -82,7 +101,7 @@ public class WalletClient extends Wallet {
         final List<TransactionOutput> transactions = new ArrayList<>();
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
-        for (final Transaction transaction: getAllTransaction()) {
+        for (final Transaction transaction: getAllTransactions()) {
             
             final TransactionOutput transactionOut;
             // Get destination address
@@ -110,7 +129,7 @@ public class WalletClient extends Wallet {
     }
     
     private boolean alreadyUsed(final byte[] hashTransaction) {
-        for (final Transaction transaction: getAllTransaction()) {
+        for (final Transaction transaction: getAllTransactions()) {
             if(transaction.getInputs() != null) {
                 for(final TransactionInput transInput : transaction.getInputs()) {
                     if(Arrays.equals(transInput.getHashBytes(), hashTransaction)) {

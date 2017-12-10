@@ -34,7 +34,6 @@ public class TestUtils {
     }
     
     public static Transaction createTransaction() {
-        //TODO put actual inputs, and a non-zero amount
         final Address senderAddress = new Address(kp.getPublic());
         final TransactionOutput output = new TransactionOutput(senderAddress, 10);
         final ArrayList<TransactionOutput> inputs = new ArrayList<>();
