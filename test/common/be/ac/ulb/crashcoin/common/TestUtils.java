@@ -30,8 +30,10 @@ public class TestUtils {
     
     public static Transaction createTransaction() {
         //TODO put actual inputs, and a non-zero amount
-        final BlockChain bc = createBlockchain();
-        final Transaction transaction = new Transaction(createAddress(), createAddress(), 0, new ArrayList<>());
+        final TransactionOutput output = new TransactionOutput(createAddress(), 10);
+        final ArrayList<TransactionOutput> inputs = new ArrayList<>();
+        inputs.add(output);
+        final Transaction transaction = new Transaction(createAddress(), createAddress(), 10, inputs);
         transaction.sign(kp.getPrivate());
         return transaction;
     }
