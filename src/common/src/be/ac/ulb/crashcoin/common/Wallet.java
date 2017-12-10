@@ -108,8 +108,9 @@ public class Wallet {
         PrivateKey privateKey;
         try {
             privateKey = readWalletFile(password);
-            transaction.sign(privateKey);
-            isValid = true;
+            isValid = privateKey != null;
+            if(isValid)
+                transaction.sign(privateKey);
             
         } catch (IOException | ClassNotFoundException | InvalidKeySpecException | InvalidKeyException | 
                 InvalidAlgorithmParameterException | IllegalBlockSizeException ex) {

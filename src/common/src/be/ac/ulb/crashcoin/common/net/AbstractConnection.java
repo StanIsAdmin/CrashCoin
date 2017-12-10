@@ -49,7 +49,7 @@ public abstract class AbstractConnection extends Thread {
                 new Object[]{_ip, _port});
     }
 
-    public final void sendData(final JSONable jsonData) {
+    public final synchronized void sendData(final JSONable jsonData) {
         _output.write(jsonData.toJSON() + "\n");
         _output.flush();
     }
