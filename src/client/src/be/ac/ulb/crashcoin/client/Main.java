@@ -29,8 +29,8 @@ public class Main {
             port = Integer.parseInt(argv[1]);
         } else {
             Logger.getLogger(Main.class.getName()).log(Level.INFO, "Default ip and port were applied.");
-            ip = Parameters.MASTER_IP;
-            port = Parameters.MASTER_PORT_LISTENER;
+            ip = Parameters.RELAY_IP;
+            port = Parameters.RELAY_PORT_WALLET_LISTENER;
         }
         
         // Init connection with relay
