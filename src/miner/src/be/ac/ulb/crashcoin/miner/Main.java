@@ -53,6 +53,7 @@ public class Main {
                 | InvalidKeyException | InvalidAlgorithmParameterException 
                 | IllegalBlockSizeException | InstantiationException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+            return;
         }
         
         // Connect to relay
@@ -60,21 +61,23 @@ public class Main {
             RelayConnection.getRelayConnection();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
-            return;
+            System.exit(1);
         }
 
         // create a miner... And start mining... Whut else?
-        Miner miner;
+        final Miner miner;
         try {
             miner = Miner.getInstance();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+            System.exit(1);
             return;
         }
         try {
             miner.startMining();
         } catch (InterruptedException  ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+            System.exit(1);
         }
     }
     
