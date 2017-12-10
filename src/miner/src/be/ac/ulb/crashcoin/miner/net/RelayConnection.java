@@ -3,9 +3,9 @@ package be.ac.ulb.crashcoin.miner.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Message;
-import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
+import be.ac.ulb.crashcoin.miner.Main;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -34,11 +34,10 @@ public class RelayConnection extends AbstractReconnectConnection {
     /** Copy of the last block of the blockchain. */
     private Block lastBlock;
     
-    private HashSet<Transaction> badTransactionsBuffer;
+    private final HashSet<Transaction> badTransactionsBuffer;
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
-        super("RelayConnection", new Socket(Parameters.RELAY_IP,
-                Parameters.RELAY_PORT_MINER_LISTENER));
+        super("RelayConnection", new Socket(Main.getIp(), Main.getPort()));
         this.transactionsBuffer = new ArrayList<>();
         this.blocksBuffer = new ArrayList<>();
         this.badTransactionsBuffer = new HashSet<>();

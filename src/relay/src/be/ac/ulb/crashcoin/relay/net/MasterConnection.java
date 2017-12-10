@@ -4,7 +4,6 @@ import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Message;
-import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import be.ac.ulb.crashcoin.relay.Main;
@@ -28,7 +27,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     private static HashSet<Transaction> transactionsBuffer;
 
     private MasterConnection() throws UnsupportedEncodingException, IOException {
-        super("master", new Socket(Parameters.MASTER_IP, Parameters.MASTER_PORT_LISTENER));
+        super("master", new Socket(Main.getIP(), Main.getPort()));
         MasterConnection.transactionsBuffer = new HashSet<>();
         start();
     }

@@ -4,9 +4,19 @@
 MINER_WALLET_USERNAME="test"
 MINER_WALLET_PASSWORD="test"
 
+SCREEN_CONFIG="~/.screenrc"
 
 
 command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Install screen by typing 'apt-get install screen' in order to use Crashcoin."; exit 1; }
+
+if [ ! -f ~/.screenrc ]; then
+    echo "Do you want to create file $SCREEN_CONFIG to allow scroll on screen [Y,n]"
+    read input
+    if [[ $input == "Y" || $input == "y" ]]; then
+        echo "termcapinfo xterm* ti@:te@" >> ~/.screenrc # Could not define variable
+    fi
+fi
+
 
 if test -t 1; then
     # see if it supports colors...
