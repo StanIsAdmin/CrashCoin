@@ -40,4 +40,4 @@ bin/
 wallets/
 
 # CrashCoin BlockChain
-master/
+/master/
