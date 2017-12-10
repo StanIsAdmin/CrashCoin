@@ -126,10 +126,6 @@ public class Cryptography {
         Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, message, exception);
         System.exit(1);
     }
-    
-    public static KeyPair generateKeyPair() {
-        return dsaKeyGenerator.generateKeyPair();
-    }
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -283,7 +279,7 @@ public class Cryptography {
      *
      * @return Pair of DSA keys
      */
-    public static KeyPair generateKeys() {
+    public static KeyPair generateKeyPair() {
         dsaKeyGenerator.initialize(Parameters.DSA_KEYS_N_BITS, randomGenerator);
         final KeyPair keyPair = dsaKeyGenerator.generateKeyPair();
         return keyPair;
