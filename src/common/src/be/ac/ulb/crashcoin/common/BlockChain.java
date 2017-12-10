@@ -133,7 +133,8 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         tempUsedInputs.clear();
         tempAvailableInputs.clear();
         for (final Transaction transaction: block) {
-            if (! isValidTransaction(transaction)) {
+            final boolean isReward = (transaction == block.get(block.size()-1));
+            if (! isValidTransaction(transaction, isReward)) {
                 return transaction;
             }
         }
@@ -142,45 +143,53 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
 
     /**
      * Returns true if transaction is valid, false otherwise.
-     * For a transaction to be valid, it has to fulfill all of these requirements :
-     * - transaction.isValid() == true
-     * - have only previously-unused inputs that belong to the sender
+     * The validity check depends on whether the transaction is meant to be 
+     * a reward or not.
+     * For a reward transaction to be valid, it has to meet all of these conditions :<br>
+     * - transaction.isValidReward() == true<br>
+     * <br>
+     * For a non-reward transaction to be valid, it has to meet all of these conditions :<br>
+     * - transaction.isValidNonReward() == true<br>
+     * 
      *
-     * @see Transaction.isValid
+     * @see Transaction#isValidNonReward() 
+     * @see Transaction#isValidReward() 
      * @param transaction
      * @return true if the transaction is valid as defined, false otherwise
      */
-    private boolean isValidTransaction(final Transaction transaction)  {
-        // Verify the transaction value and signature (if necessary)
-        if (! transaction.isValid())
+    private boolean isValidTransaction(final Transaction transaction, boolean isReward)  {
+        // Verify the transaction is valid as a reward
+        if (isReward)
+            return transaction.isValidReward();
+        
+        // Verify the transaction is valid as a non-reward
+        if (! transaction.isValidNonReward())
             return false;
 
-        if(!transaction.isReward()) {
-            // Verify that each input is available and belongs to the sender
-            for (final TransactionInput input: transaction.getInputs()) {
-                // Temporarily remove the input so that it can't be used again
-                final byte[] inputHash = input.getHashBytes();
-                
-                TransactionOutput referencedOutput = null;
-                // Must use loop because "byte[]".equals juste test instance and not value
-                for(final byte[] addressAvailable : availableInputs.keySet()) {
-                    if(Arrays.equals(addressAvailable, inputHash)) {
-                        referencedOutput = availableInputs.remove(addressAvailable);
-                        break;
-                    }
+        // Verify that each input is available and belongs to the sender
+        for (final TransactionInput input: transaction.getInputs()) {
+            // Temporarily remove the input so that it can't be used again
+            final byte[] inputHash = input.getHashBytes();
+
+            TransactionOutput referencedOutput = null;
+            // Must use loop because "byte[]".equals juste test instance and not value
+            for(final byte[] addressAvailable : availableInputs.keySet()) {
+                if(Arrays.equals(addressAvailable, inputHash)) {
+                    referencedOutput = availableInputs.remove(addressAvailable);
+                    break;
                 }
-                
-                if (referencedOutput == null) {
-                    return false;
-                }
-                // Keep a copy of the discarded input, to put back if the block is invalid
-                tempUsedInputs.put(inputHash, referencedOutput);
-                
-                // verify that the destination address of the referenced output corrponds to
-                // the address of the payer (i.e. destination addess of the change output)
-                if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
-                    return false;
             }
+
+            if (referencedOutput == null) {
+                return false;
+            }
+            // Keep a copy of the discarded input, to put back if the block is invalid
+            tempUsedInputs.put(inputHash, referencedOutput);
+
+            // verify that the destination address of the referenced output corrponds to
+            // the address of the payer (i.e. destination addess of the change output)
+            if(!referencedOutput.getDestinationAddress().equals(transaction.getSrcAddress()))
+                return false;
         }
         
         // Temporarily add the the outputs to the set of available inputs

@@ -18,7 +18,7 @@ public class TestJSONable {
 
     @Test
     public void testBlockJSONConversion() {
-        final Block block = TestUtils.createBlock();
+        final Block block = TestUtils.createValidSecondBlock();
         final Block copy = new Block(block.toJSON());
         assertEquals(block, copy);
     }
@@ -33,6 +33,7 @@ public class TestJSONable {
     @Test
     public void testBlockChainJSONConcversion() {
         final BlockChain blockChain = TestUtils.createBlockchain();
+        blockChain.add(TestUtils.createValidSecondBlock());
         final BlockChain copy = new BlockChain(blockChain.toJSON());
         assertEquals(blockChain, copy);
     }

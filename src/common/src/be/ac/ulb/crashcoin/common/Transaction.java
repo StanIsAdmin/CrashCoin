@@ -166,24 +166,40 @@ public class Transaction implements JSONable {
     public boolean before(final Transaction other) {
         return lockTime.before(other.lockTime);
     }
+    
+
+    public boolean isReward() {
+        return this.changeOutput == null;
+    }
+    
+    /**
+     * Returns true if the transaction is a valid mining reward, false otherwise.
+     * 
+     * A mining reward is valid if it meets all of these conditions :<br>
+     * - it is a mining reward (the change output is null)<br>
+     * - the input array is null<br>
+     * - the amount equals Parameters.MINING_REWARD
+     * @see Parameters#MINING_REWARD
+     * @return true if the transaction is valid as described, false otherwise
+     */
+    public boolean isValidReward() {
+        return this.isReward()
+                && this.inputs == null
+                && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD);
+    }
 
     /**
-     * Returns true if the standalone transaction is valid, false otherwise.
+     * Returns true if the standalone transaction is valid and is not a mining
+     * reward, false otherwise.
      *
-     * A transaction by itself is valid if it meets all of these conditions :<br>
-     * - if it is a mining reward, its amount equals Parameters.MINING_REWARD
-     * - otherwise, the sum of inputs equals the sum of outputs and<br>
-     * - each output value is strictly positive, and<br>
+     * A non-reward transaction is valid if it meets all of these conditions :<br>
+     * - the sum of inputs equals the sum of outputs<br>
+     * - each output value is strictly positive<br>
      * - the transaction data is digitally signed by the sender<br>
      *
      * @return true if the transaction is valid as described, false otherwise
      */
-    public boolean isValid() {
-        // Rewards are limited to a given amount
-        if(isReward())
-            return this.inputs == null && this.changeOutput == null
-                    && this.transactionOutput.getAmount().equals(Parameters.MINING_REWARD);
-
+    public boolean isValidNonReward() {
         // Verify the digital signature with the sender's Public Key
         final PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
         if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature)) {
@@ -192,12 +208,13 @@ public class Transaction implements JSONable {
         }
 
         // Check whether sum of inputs is equal to the sum of outputs
-        Integer sum = 0;
+        Integer inputSum = 0;
         for(final TransactionInput input : this.inputs) {
-            sum += input.getAmount();
+            inputSum += input.getAmount();
         }
-        return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
-                && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
+        return this.transactionOutput.getAmount() > 0 
+                && this.changeOutput.getAmount() >= 0
+                && inputSum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
     }
 
     /**
@@ -222,10 +239,6 @@ public class Transaction implements JSONable {
             Logger.getLogger(Transaction.class.getName()).log(Level.SEVERE, null, ex);
         }
         return byteBuffer.toByteArray();
-    }
-
-    public boolean isReward() {
-        return this.changeOutput == null;
     }
 
     /**
