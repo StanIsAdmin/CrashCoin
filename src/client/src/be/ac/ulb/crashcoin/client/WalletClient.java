@@ -102,7 +102,7 @@ public class WalletClient extends Wallet {
                 continue;
             }
             
-            if(!alreadyUsed(transactionOut.toBytes())) {
+            if(!alreadyUsed(transactionOut.getHashBytes())) {
                 total += transactionOut.getAmount();
                 transactions.add(transactionOut);
             }
