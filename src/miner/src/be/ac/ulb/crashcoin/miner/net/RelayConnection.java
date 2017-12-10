@@ -5,7 +5,6 @@ import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -193,6 +192,6 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the hash of the last block
      */
     public byte[] getLastBlockOfBlockChainHash()  {
-        return Cryptography.hashBytes(lastBlock.headerToBytes());
+        return lastBlock.getHashHeader();
     }
 }

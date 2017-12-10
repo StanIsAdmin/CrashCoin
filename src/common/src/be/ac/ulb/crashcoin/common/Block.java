@@ -132,7 +132,7 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     public boolean isHashValid()  {
         return isHashValid(Cryptography.hashBytes(headerToBytes()), this.difficulty);
     }
-
+    
     /**
      * Checks if a hash satisfies the difficulty
      *
@@ -170,6 +170,16 @@ public class Block extends ArrayList<Transaction> implements JSONable {
         // insert nonce (4 bytes)
         buffer.putInt(nonce);
         return buffer.array();
+    }
+    
+    /**
+     * Get hash of the header byte
+     * 
+     * @return a byte[] representing the hash of the header
+     * @see #headerToBytes() 
+     */
+    public byte[] getHashHeader() {
+        return Cryptography.hashBytes(headerToBytes());
     }
 
     /**
@@ -259,10 +269,11 @@ public class Block extends ArrayList<Transaction> implements JSONable {
     @Override
     public String toString() {
         String output = "--------------------\n";
-        output += "Block :\n";
+        output += "Block: " + JsonUtils.encodeBytes(this.getHashHeader()) + "\n";
+        output += "Nonce: " + nonce + "\tDifficulty: " + this.difficulty + "\n";
+        output += "Previous block: " + JsonUtils.encodeBytes(this.previousBlock) + "\n";
         for (final Transaction transaction : this) {
             output += transaction.toString();
-            output += "\n";
         }
         output += "--------------------";
         return output;
