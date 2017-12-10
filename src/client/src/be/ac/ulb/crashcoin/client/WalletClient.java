@@ -59,13 +59,23 @@ public class WalletClient extends Wallet {
         System.out.println("");
     }
     
-    public void addAcceptedTransaction(final Transaction transaction) {
+    public synchronized void addAcceptedTransaction(final Transaction transaction) {
         this.unacceptedTransactionsList.remove(transaction);
         this.acceptedTransactionsList.add(transaction);
     }
     
     public void addUnacceptedTransaction(final Transaction transaction) {
         this.unacceptedTransactionsList.add(transaction);
+    }
+    
+    public synchronized void updateTransactionStatus(final Transaction transaction) {
+        if(this.unacceptedTransactionsList.contains(transaction)) {
+            this.unacceptedTransactionsList.remove(transaction);
+        }
+        // if already contained in accepted transactions list (just in case of)
+        if(!this.acceptedTransactionsList.contains(transaction)) {
+            this.acceptedTransactionsList.add(transaction);
+        }
     }
     
     public ArrayList<Transaction> getAllTransaction() {
