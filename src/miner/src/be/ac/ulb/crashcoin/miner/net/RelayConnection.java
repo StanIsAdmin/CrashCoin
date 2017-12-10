@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.miner.net;
 
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
@@ -10,9 +11,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Connection to relay node<br>
@@ -30,12 +34,15 @@ public class RelayConnection extends AbstractReconnectConnection {
     private final ArrayList<Block> blocksBuffer;
     /** Copy of the last block of the blockchain. */
     private Block lastBlock;
+    
+    private HashSet<Transaction> badTransactionsBuffer;
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
         super("RelayConnection", new Socket(Parameters.RELAY_IP,
                 Parameters.RELAY_PORT_MINER_LISTENER));
         this.transactionsBuffer = new ArrayList<>();
         this.blocksBuffer = new ArrayList<>();
+        this.badTransactionsBuffer = new HashSet<>();
         start();
     }
 
@@ -68,10 +75,25 @@ public class RelayConnection extends AbstractReconnectConnection {
             } catch (InterruptedException ex) {
                 Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
-            
+        } else if(data instanceof Message) {
+            final Message message = (Message)data;
+            switch(message.getRequest()) {
+                case Message.TRANSACTIONS_NOT_VALID:
+                    handleTransactionsNotValid(message.getOption());
+                    break;
+                default:
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Recevied message with unknown request: {0}", message.getRequest());
+            }
         } else {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from relay ({0}): {1}", 
                 new Object[]{_ip, data});
+        }
+    }
+    
+    private void handleTransactionsNotValid(final JSONObject option) {
+        final JSONArray badTransactions = option.getJSONArray("transactions");
+        for(int i = 0; i < badTransactions.length(); ++i) {
+            badTransactionsBuffer.add((Transaction) badTransactions.get(i));
         }
     }
 
@@ -115,6 +137,14 @@ public class RelayConnection extends AbstractReconnectConnection {
             Logger.getLogger(RelayConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return res;
+    }
+    
+    public boolean hasBadTransaction() {
+        return !this.badTransactionsBuffer.isEmpty();
+    }
+    
+    public HashSet<Transaction> getBadTransactions() {
+        return this.badTransactionsBuffer;
     }
 
     /**

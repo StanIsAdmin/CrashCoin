@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.relay.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
@@ -13,6 +14,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Connection to master node<br>
@@ -32,8 +35,8 @@ public class MasterConnection extends AbstractReconnectConnection {
 
     @Override
     protected void receiveData(final JSONable jsonData) {
-        // Receive BlockChain (normaly, only at the first connection
         if (jsonData instanceof BlockChain) {
+            // Receive BlockChain (normaly, only at the first connection
             final BlockChain blockChain = (BlockChain) jsonData;
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Get BlockChain of size {0} from master", 
                     new Object[]{blockChain.size()});
@@ -69,9 +72,33 @@ public class MasterConnection extends AbstractReconnectConnection {
             // Broadcast to the miners directly connected to the relay.
             MinerConnection.sendToAll(jsonData);
             
+        } else if(jsonData instanceof Message) {
+            final Message message = (Message)jsonData;
+            switch(message.getRequest()) {
+                case Message.TRANSACTIONS_NOT_VALID:
+                    handleTransactionsNotValid(message.getOption());
+                    // send bad transactions to each miner
+                    MinerConnection.sendToAll(jsonData);
+                    break;
+                default:
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, "Recevied a message with unkown request: {0}", message.getRequest());
+            }
         } else {
-            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknowed value from master ({0}): {1}", 
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "Get unknown value from master ({0}): {1}", 
                 new Object[]{_ip, jsonData});
+        }
+    }
+     
+    /**
+     * Remove all of the not valid transactions from the transactions buffer.
+     * 
+     * @param option the option of the recevied message containing all the bad transactions
+     */
+    private void handleTransactionsNotValid(final JSONObject option) {
+        final JSONArray badTransactions = option.getJSONArray("transactions");
+        for(int i = 0; i < badTransactions.length(); ++i) {
+            final Transaction badTransaction = (Transaction) badTransactions.get(i);
+            MasterConnection.transactionsBuffer.remove(badTransaction);
         }
     }
 

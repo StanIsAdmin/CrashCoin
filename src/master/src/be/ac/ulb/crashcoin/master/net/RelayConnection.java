@@ -3,6 +3,7 @@ package be.ac.ulb.crashcoin.master.net;
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.master.BlockChainManager;
@@ -12,6 +13,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Connection to a Relay
@@ -53,6 +56,7 @@ public class RelayConnection extends AbstractConnection {
             } else {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, "Block invalid:\n{0}", 
                     new Object[]{block.toString()});
+                sendNotValidTransactions(block);
             }
             // TODO ? Inform Relay (and Miner that the block has been rejected) ?
             
@@ -71,6 +75,23 @@ public class RelayConnection extends AbstractConnection {
     protected void close() {
         super.close();
         allRelay.remove(this);
+    }
+    
+    /**
+     * Send the transactions that are not valid to all the relays.
+     * 
+     * @param block 
+     */
+    private void sendNotValidTransactions(final Block block) {
+        final HashSet<Transaction> allBadTransactions = bcManager.getBlockChain().getBadTransactions(block);
+        if(allBadTransactions.isEmpty())
+            return;
+        final JSONArray badTransactions = new JSONArray();
+        badTransactions.put(allBadTransactions);
+        final JSONObject option = new JSONObject();
+        option.put("transactions", badTransactions);
+        final Message transactionsNotValid = new Message(Message.TRANSACTIONS_NOT_VALID, option);
+        sendToAll(transactionsNotValid);
     }
 
     public static void sendToAll(final JSONable data) {
