@@ -45,6 +45,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         this.tempAvailableInputs = new HashMap<>();
         
         final Block genesis = createGenesisBlock();
+        addAvailableTransactionOutputs(genesis.get(0)); // add first transaction to the available inputs
         super.add(genesis); // call to super does not perform validity check
     }
 
@@ -117,7 +118,15 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
                 && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
                 && // Previous hash block is valid
                 Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
-        result &= (getFirstBadTransaction(block) != null);
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "{0} && {1} && {2}", 
+                new Object[]{block.isHashValid(), difficulty == block.getDifficulty(), 
+                    Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes())});
+        final Transaction transaction = getFirstBadTransaction(block);
+        result &= (transaction == null);
+        if(transaction != null) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Invalid transaction: {0}", transaction);
+        }
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Result: {0}", result);
         return result;
     }
 
@@ -155,6 +164,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             return false;
 
         if(!transaction.isReward()) {
+            Logger.getLogger(getClass().getName()).info("Is valid but..."); // TODO reprendre ici @Robin, @Denis, @Stan, @Rémy
             // Verify that each input is available and belongs to the sender
             for (final TransactionInput input: transaction.getInputs()) {
                 // Temporarily remove the input so that it can't be used again

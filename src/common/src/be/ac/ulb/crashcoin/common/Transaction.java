@@ -186,14 +186,20 @@ public class Transaction implements JSONable {
 
         // Verify the digital signature with the sender's Public Key
         final PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
-        if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature))
+        if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature)) {
+            Logger.getLogger(getClass().getName()).info("Error with Signature");
             return false;
+        }
 
         // Check whether sum of inputs is equal to the sum of outputs
         Integer sum = 0;
         for(final TransactionInput input : this.inputs) {
             sum += input.getAmount();
         }
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Sum: {0}", sum);
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "{0} > 0 && {1} >= 0 && sum == {2}", 
+                new Object[]{this.transactionOutput.getAmount(), this.changeOutput.getAmount(), 
+                    this.transactionOutput.getAmount() + this.changeOutput.getAmount()});
         return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
                 && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
     }
