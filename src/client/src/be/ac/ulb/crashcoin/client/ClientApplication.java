@@ -139,12 +139,12 @@ public class ClientApplication {
         System.out.print("Please enter your choice : ");
     }
     
-    private char[] askPassword() {
+    private char[] askPassword(final String message) {
         char[] userPassword;
         if (console != null) {
-            userPassword = console.readPassword("Enter your secret password: ");
+            userPassword = console.readPassword(message);
         } else {
-            System.out.print("Please enter your password: ");
+            System.out.print(message);
             userPassword = reader.next().toCharArray();
         }
         return userPassword;
@@ -171,9 +171,8 @@ public class ClientApplication {
             char[] userPassword = null;
             boolean check = false;
             while (!check) {
-                userPassword = this.askPassword();
-                System.out.print("Confirm password : ");
-                final char[] passwordChecker = this.askPassword();
+                userPassword = this.askPassword("Enter your secret password: ");
+                final char[] passwordChecker = this.askPassword("Confirm password : ");
                 check = Arrays.equals(userPassword, passwordChecker);
                 check = check && (userPassword != null);
             }
@@ -205,7 +204,7 @@ public class ClientApplication {
             //    in RAM, in case an attacker has access to it
             // Note: we use Console.readPassword only in console since IDEs
             //       do not work with consoles
-            final char[] userPassword = this.askPassword();
+            final char[] userPassword = this.askPassword("Enter your secret password: ");
             
             try {
                 this.wallet = new WalletClient(f, userPassword);
@@ -244,7 +243,7 @@ public class ClientApplication {
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
-                final char[] password = this.askPassword();
+                final char[] password = this.askPassword("Enter your secret password to confirm transaction: ");
                 if(!wallet.signTransaction(password, transaction)) {
                     System.err.println("Could not sign transaction");
                     
