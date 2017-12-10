@@ -9,7 +9,6 @@ public class Message implements JSONable {
 
     public static final String GET_TRANSACTIONS_FROM_WALLET = "GET_TRANSACTIONS_FROM_WALLET";
     public static final String GET_LAST_BLOCK = "GET_LAST_BLOCK";
-    public static final String GET_DUMMY_TRANSACTION = "GET_TRANSACTION_FROM_RELAY";
     public static final String TRANSACTIONS_NOT_VALID = "TRANSACTIONS_NOT_VALID";
 
     /**

@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.client.net;
 
 import be.ac.ulb.crashcoin.client.ClientApplication;
 import be.ac.ulb.crashcoin.client.WalletClient;
+import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Message;
 import be.ac.ulb.crashcoin.common.Parameters;
@@ -43,7 +44,12 @@ public class RelayConnection extends AbstractReconnectConnection {
         if(data instanceof Transaction) {
             final Transaction transaction = (Transaction) data;
             if(wallet != null) {
-                wallet.addAcceptedTransaction(transaction);
+                if(transactionConcernCurrentWallet(transaction)) {
+                    wallet.addAcceptedTransaction(transaction);
+                } else {
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Recieve transaction with no link "
+                            + "with current wallet:\n{0}", transaction.toString());
+                }
             } else {
                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
                         + "transaction:\n{0}", transaction.toString());
@@ -51,18 +57,31 @@ public class RelayConnection extends AbstractReconnectConnection {
             
         } else if(data instanceof Message) {
             final Message message = (Message) data;
-            if(message.getRequest().equals(Message.GET_DUMMY_TRANSACTION)) {
-                final Transaction transaction = new Transaction(message.getOption());
-                if(wallet != null) {
-                    wallet.removeDummyTransaction(transaction);
-                } else {
-                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
-                            + "message:\n{0}", message.toString());
-                }
+            if(message.getRequest().equals(Message.TRANSACTIONS_NOT_VALID)) {
+                // TODO pour Robin
+                // @see #transactionConcernCurrentWallet
+//                message.getOption();
+//                final Transaction transaction = new Transaction();
+//                if(wallet != null) {
+//                    wallet.removeDummyTransaction(transaction);
+//                } else {
+//                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
+//                            + "message:\n{0}", message.toString());
+//                }
             }
         } else {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Receive unknowed object: {0}", data.toString());
         }
+    }
+    
+    private boolean transactionConcernCurrentWallet(final Transaction transaction) {
+        final WalletClient wallet = ClientApplication.getInstance().getWallet();
+        if(wallet != null) {
+            final Address address = wallet.getAddress();
+            return transaction.getDestAddress().equals(address) || 
+                    (transaction.getSrcAddress() != null && transaction.getSrcAddress().equals(address));
+        }
+        return false;
     }
 
     public static RelayConnection getInstance() throws IOException {
