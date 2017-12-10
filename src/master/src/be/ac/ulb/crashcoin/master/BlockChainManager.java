@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.master;
 
 import be.ac.ulb.crashcoin.common.BlockChain;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -83,11 +84,22 @@ public class BlockChainManager {
      * Save the blockchain to the BLOCKCHAIN_SAVE_PATH file.
      */
     public void saveBlockChain() {
-        FileWriter fw;
+        final File file = new File(BLOCKCHAIN_SAVE_PATH);
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            try {
+                file.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Error when create folder: {0}", 
+                        ex.getMessage());
+            }
+        }
+        
+        final FileWriter fw;
         try {
-            fw = new FileWriter(BLOCKCHAIN_SAVE_PATH);
+            fw = new FileWriter(file);
         } catch (IOException ex) {
-            Logger.getLogger(BlockChainManager.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Could not write blockchain: {0}", ex.getMessage());
             return;
         }
 
