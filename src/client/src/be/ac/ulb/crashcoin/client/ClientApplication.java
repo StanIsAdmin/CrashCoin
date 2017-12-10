@@ -235,13 +235,16 @@ public class ClientApplication {
             } else if (amount != -1){
                 System.out.print("Destination : ");
                 final PublicKey dstPublicKey = this.stringToKey(reader.next());
+                if(dstPublicKey == null) {
+                    System.out.println("Not a valid address...");
+                    break;
+                }
                 final Address srcAddress = wallet.getAddress();
                 final Address dstAddress = new Address(dstPublicKey);
                 transaction = new Transaction(srcAddress,dstAddress,amount,referencedOutput);
                 final char[] password = this.askPassword("Enter your secret password to confirm transaction: ");
                 if(!wallet.signTransaction(password, transaction)) {
                     System.err.println("Could not sign transaction");
-                    
                 } else {
                     try {
                         RelayConnection.getInstance().sendData(transaction);

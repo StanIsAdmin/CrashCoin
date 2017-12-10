@@ -162,7 +162,7 @@ public class Cryptography {
         try {
             return dsaKeyFactory.generatePublic(X509publicKey);
         } catch (InvalidKeySpecException e) {
-            logAndAbort("Unable to create public key from bytes. Abort!", e);
+            Logger.getLogger(Cryptography.class.getName()).warning("Unable to create public key from bytes.");
         }
         return null;
     }
