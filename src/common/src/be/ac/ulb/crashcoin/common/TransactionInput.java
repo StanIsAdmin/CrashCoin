@@ -1,7 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
 import be.ac.ulb.crashcoin.common.net.JsonUtils;
-import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.util.Arrays;
 import org.json.JSONObject;
 
@@ -17,7 +16,7 @@ public class TransactionInput implements JSONable {
     private final Integer previousOutputAmount;
 
     public TransactionInput(final TransactionOutput output) {
-        this.previousOutputHash = Cryptography.hashBytes(output.toBytes());
+        this.previousOutputHash = output.getHashBytes();
         this.previousOutputAmount = output.getAmount();
     }
 
@@ -49,7 +48,7 @@ public class TransactionInput implements JSONable {
      *
      * @return byte[]  Byte representation of the input
      */
-    public byte[] toBytes() {
+    public byte[] getHashBytes() {
         return previousOutputHash;
     }
 
