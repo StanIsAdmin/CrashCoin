@@ -119,7 +119,9 @@ public class WalletConnection extends AbstractConnection {
     public static void sendTransactionTo(Transaction transaction) {
         System.out.println("Send transaction to "+transaction.getDestAddress().toString());
         sendTransactionTo(transaction.getDestAddress(), transaction);
-        System.out.println("Send transaction to "+transaction.getSrcAddress().toString());
-        sendTransactionTo(transaction.getSrcAddress(), transaction);
+        if(transaction.getSrcAddress() != null) {
+            System.out.println("Send transaction to "+transaction.getSrcAddress().toString());
+            sendTransactionTo(transaction.getSrcAddress(), transaction);
+        }
     }
 }
