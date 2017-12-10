@@ -50,7 +50,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             // transactions from buffer
             MasterConnection.transactionsBuffer.removeAll(block);
             
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block from master and save to blockchain: {0}", 
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block from master and save to blockchain:\n{0}", 
                     new Object[]{block.toString()});
 
             // Broadcast to the miners the validate/mined block so that they can
@@ -69,7 +69,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             MasterConnection.transactionsBuffer.add(transaction);
             
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Get new transaction from master and send to miner "
-                    + "({0}): {1}", new Object[]{_ip, transaction.toString()});
+                    + "({0}):\n{1}", new Object[]{_ip, transaction.toString()});
             
             // Broadcast to the miners directly connected to the relay.
             MinerConnection.sendToAll(jsonData);
