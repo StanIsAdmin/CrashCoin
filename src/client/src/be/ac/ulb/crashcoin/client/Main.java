@@ -34,9 +34,14 @@ public class Main {
         }
         
         // Init connection with relay
-        RelayConnection.getInstance();
+        try {
+            RelayConnection.getInstance();
+        } catch(IOException ex) {
+            Logger.getLogger(Main.class.getName()).severe(ex.getMessage());
+            return;
+        }
         
-        final ClientApplication ca = new ClientApplication();
+        new ClientApplication();
 
     }
     

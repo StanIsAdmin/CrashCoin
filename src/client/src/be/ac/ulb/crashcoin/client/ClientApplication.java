@@ -230,7 +230,7 @@ public class ClientApplication {
             System.out.print("Amount : ");
             amount = reader.nextInt();
             final List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
-            if (referencedOutput == null) {
+            if (referencedOutput == null || referencedOutput.isEmpty()) {
                 System.out.print("You don't have enough money.");
             } else if (amount != -1){
                 System.out.print("Destination : ");

@@ -36,14 +36,16 @@ public class Main {
             MinerListener.getListener();
             WalletListener.getListener();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+            System.exit(1);
         }
 
         // Connect to master
         try {
             MasterConnection.getMasterConnection();
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, ex.getMessage());
+            System.exit(1);
         }
     }
 
