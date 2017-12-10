@@ -14,14 +14,14 @@ public class TestTransaction {
     @Test
     public void testCorrectRewardTransactionVerification() {
         final Transaction transaction = TestUtils.createRewardTransaction();
-        Assert.assertTrue(transaction.isValid());
+        Assert.assertTrue(transaction.isValidReward());
     }
     
     @Test
     public void testNotCorrectRewardTransactionVerification() {
         Transaction transaction = TestUtils.createTransaction();
         transaction = TestUtils.alterTransaction(transaction);
-        Assert.assertFalse(transaction.isValid());
+        Assert.assertFalse(transaction.isValidReward());
     }
     
 }
