@@ -1,11 +1,11 @@
 package be.ac.ulb.crashcoin.client.net;
 
 import be.ac.ulb.crashcoin.client.ClientApplication;
+import be.ac.ulb.crashcoin.client.Main;
 import be.ac.ulb.crashcoin.client.WalletClient;
 import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Message;
-import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class RelayConnection extends AbstractReconnectConnection {
     private static RelayConnection instance = null;
 
     private RelayConnection() throws UnsupportedEncodingException, IOException {
-        super("RelayConnection", new Socket(Parameters.RELAY_IP, Parameters.RELAY_PORT_WALLET_LISTENER));
+        super("RelayConnection", new Socket(Main.getIP(), Main.getPort()));
         start();
     }
 

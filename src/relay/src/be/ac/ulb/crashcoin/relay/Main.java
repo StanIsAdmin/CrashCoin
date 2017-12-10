@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.relay;
 
 import be.ac.ulb.crashcoin.common.BlockChain;
+import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.relay.net.MasterConnection;
 import be.ac.ulb.crashcoin.relay.net.MinerListener;
 import be.ac.ulb.crashcoin.relay.net.WalletListener;
@@ -14,10 +15,21 @@ import java.util.logging.Logger;
 public class Main {
 
     private static BlockChain _blockChain;
+    private static String ip;
+    private static Integer port;
 
-    public static void main(final String[] main) {
+    public static void main(final String[] argv) {
 
         _blockChain = new BlockChain();
+        
+        if(argv.length == 2) {
+            ip = argv[0];
+            port = Integer.parseInt(argv[1]);
+        } else {
+            Logger.getLogger(Main.class.getName()).log(Level.INFO, "Default ip and port were applied.");
+            ip = Parameters.MASTER_IP;
+            port = Parameters.MASTER_PORT_LISTENER;
+        }
 
         // Enable listener
         try {
@@ -41,6 +53,14 @@ public class Main {
 
     public static void setBlockChain(final BlockChain blockChain) {
         _blockChain = blockChain;
+    }
+    
+    public static String getIP() {
+        return ip;
+    }
+    
+    public static Integer getPort() {
+        return port;
     }
 
 }
