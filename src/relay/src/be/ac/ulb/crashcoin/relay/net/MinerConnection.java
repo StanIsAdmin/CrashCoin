@@ -2,6 +2,7 @@ package be.ac.ulb.crashcoin.relay.net;
 
 import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.JSONable;
+import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
@@ -26,6 +27,11 @@ class MinerConnection extends AbstractConnection {
         Logger.getLogger(getClass().getName()).log(Level.INFO, "Send last block to miner ({0}):\n{1}",
                 new Object[]{_ip, lastBlock.toString()});
         sendData(lastBlock);
+        
+        // When a new miner connects to relay, send all of the buffered transactions
+        for(final Transaction bufferedTransaction : MasterConnection.getBufferedTransactions()) {
+            sendData(bufferedTransaction);
+        }
 
         start();
     }

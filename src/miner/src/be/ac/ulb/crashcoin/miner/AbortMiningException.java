@@ -6,6 +6,10 @@ package be.ac.ulb.crashcoin.miner;
  * the blockchain
  */
 public class AbortMiningException extends Exception {
+    
+    public static final String NEW_BLOCK = "NEW_BLOCK";
+    public static final String BAD_TRANSACTIONS = "BAD_TRANSACTIONS";
+    
     public AbortMiningException() {
         super();
     }
