@@ -60,14 +60,13 @@ public class RelayConnection extends AbstractReconnectConnection {
             if(message.getRequest().equals(Message.TRANSACTIONS_NOT_VALID)) {
                 // TODO pour Robin
                 // @see #transactionConcernCurrentWallet
-//                message.getOption();
-//                final Transaction transaction = new Transaction();
-//                if(wallet != null) {
-//                    wallet.removeDummyTransaction(transaction);
-//                } else {
-//                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
-//                            + "message:\n{0}", message.toString());
-//                }
+                final Transaction transaction = new Transaction(message.getOption());
+                if(wallet != null) {
+                    wallet.removeNotValidTransaction(transaction);
+                } else {
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
+                            + "message:\n{0}", message.toString());
+                }
             }
         } else {
             Logger.getLogger(getClass().getName()).log(Level.WARNING, "Receive unknowed object: {0}", data.toString());

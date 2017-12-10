@@ -78,7 +78,7 @@ public class WalletClient extends Wallet {
         }
     }
     
-    public synchronized void removeDummyTransaction(final Transaction transaction) {
+    public synchronized void removeNotValidTransaction(final Transaction transaction) {
         if(this.unacceptedTransactionsList.contains(transaction)) {
             this.unacceptedTransactionsList.remove(transaction);
         }
@@ -87,7 +87,7 @@ public class WalletClient extends Wallet {
         }
     }
     
-    public ArrayList<Transaction> getAllTransaction() {
+    public ArrayList<Transaction> getAllTransactions() {
         final ArrayList<Transaction> allTransaction = new ArrayList<>();
         allTransaction.addAll(unacceptedTransactionsList);
         allTransaction.addAll(acceptedTransactionsList);
@@ -106,7 +106,7 @@ public class WalletClient extends Wallet {
         final List<TransactionOutput> transactions = new ArrayList<>();
         final Address srcAddress = new Address(this.publicKey);
         int total = 0;
-        for (final Transaction transaction: getAllTransaction()) {
+        for (final Transaction transaction: getAllTransactions()) {
             
             final TransactionOutput transactionOut;
             // Get destination address
@@ -134,7 +134,7 @@ public class WalletClient extends Wallet {
     }
     
     private boolean alreadyUsed(final byte[] hashTransaction) {
-        for (final Transaction transaction: getAllTransaction()) {
+        for (final Transaction transaction: getAllTransactions()) {
             if(transaction.getInputs() != null) {
                 for(final TransactionInput transInput : transaction.getInputs()) {
                     if(Arrays.equals(transInput.getHashBytes(), hashTransaction)) {

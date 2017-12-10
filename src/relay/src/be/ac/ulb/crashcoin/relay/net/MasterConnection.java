@@ -36,7 +36,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     @Override
     protected void receiveData(final JSONable jsonData) {
         if (jsonData instanceof BlockChain) {
-            // Receive BlockChain (normaly, only at the first connection
+            // Receive BlockChain (normaly, only at the first connection)
             final BlockChain blockChain = (BlockChain) jsonData;
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Get BlockChain of size {0} from master", 
                     new Object[]{blockChain.size()});
@@ -80,6 +80,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             switch(message.getRequest()) {
                 case Message.TRANSACTIONS_NOT_VALID:
                     handleTransactionsNotValid(message.getOption());
+                    WalletConnection.handleTransactionsNotValid(message.getOption());
                     // send bad transactions to each miner
                     MinerConnection.sendToAll(jsonData);
                     break;
@@ -128,5 +129,4 @@ public class MasterConnection extends AbstractReconnectConnection {
     public static HashSet<Transaction> getBufferedTransactions() {
         return MasterConnection.transactionsBuffer;
     }
-
 }

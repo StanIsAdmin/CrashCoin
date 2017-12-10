@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -126,6 +127,30 @@ public class WalletConnection extends AbstractConnection {
         sendTransactionTo(transaction.getDestAddress(), transaction);
         if(transaction.getSrcAddress() != null) {
             sendTransactionTo(transaction.getSrcAddress(), transaction);
+        }
+    }
+    
+    /**
+     * Send the unvalid transactions to all the wallets that are related to them.
+     * @param option the option of the Message received from master
+     */
+    public static void handleTransactionsNotValid(final JSONObject option) {
+        final JSONArray badTransactionsArray = option.getJSONArray("transactions");
+        for(int i = 0; i < badTransactionsArray.length(); ++i) {
+            // create a message telling that the transaction is not valid
+            final JSONObject badTransactionJSON = badTransactionsArray.getJSONObject(i);
+            final Message badTransactionMessage = new Message(Message.TRANSACTIONS_NOT_VALID, badTransactionJSON);
+            
+            // get the connections to the wallets that are either source or destination of the transaction
+            final Transaction badTransaction = new Transaction(badTransactionJSON);
+            WalletConnection destConnection = allWallets.get(badTransaction.getDestAddress());
+            WalletConnection srcConnection = allWallets.get(badTransaction.getSrcAddress());
+            
+            // if these wallets are connectetd right now, then send the unvalid transaction
+            if(destConnection != null) 
+                destConnection.sendData(badTransactionMessage);
+            if(srcConnection != null)
+                srcConnection.sendData(badTransactionMessage);
         }
     }
 }
