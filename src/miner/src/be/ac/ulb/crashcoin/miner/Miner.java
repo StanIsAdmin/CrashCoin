@@ -95,7 +95,6 @@ public class Miner {
             } else if (this.connection.hasBlocks()) {
                 this.removeAlreadyMinedTransactions();
             } else {
-                Logger.getLogger(getClass().getName()).info("Start mining new block");
                 makeBlockAndMineIt();
             }
         }
@@ -151,7 +150,7 @@ public class Miner {
         this.transactions.addAll(this.connection.getTransactions());
         Logger.getLogger(getClass().getName()).log(Level.INFO, "Transaction list: {0}", this.transactions);
         if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK-1) {
-            Logger.getLogger(getClass().getName()).info("Really begin mining");
+            Logger.getLogger(getClass().getName()).info("Mining in progress");
             try {
                 createBlock();
                 miner.setBlockToMine(currentlyMinedBlock);
