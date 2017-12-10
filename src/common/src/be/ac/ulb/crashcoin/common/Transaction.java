@@ -103,13 +103,13 @@ public class Transaction implements JSONable {
 
             // change output is present only for non-reward transactions
             this.changeOutput = new TransactionOutput((JSONObject) json.get("changeOutput"));
+            
+            // Add signature
+            this.signature = JsonUtils.decodeBytes(json.getString("signature"));
         }
 
         // Add transaction output
         this.transactionOutput = new TransactionOutput((JSONObject) json.get("transactionOutput"));
-
-        // Add signature
-        this.signature = JsonUtils.decodeBytes(json.getString("signature"));
     }
 
     /**
@@ -128,9 +128,9 @@ public class Transaction implements JSONable {
             }
             json.put("inputs", jsonInputs);
             json.put("changeOutput", this.changeOutput.toJSON());
+            json.put("signature", JsonUtils.encodeBytes(signature));
         }
         json.put("transactionOutput", this.transactionOutput.toJSON());
-        json.put("signature", JsonUtils.encodeBytes(signature));
         return json;
     }
 
@@ -186,8 +186,10 @@ public class Transaction implements JSONable {
 
         // Verify the digital signature with the sender's Public Key
         final PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
-        if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature))
+        if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature)) {
+            Logger.getLogger(getClass().getName()).warning("Error with Signature");
             return false;
+        }
 
         // Check whether sum of inputs is equal to the sum of outputs
         Integer sum = 0;
@@ -329,12 +331,12 @@ public class Transaction implements JSONable {
 
     @Override
     public String toString() {
-        String output = "Transaction :\n";
-        output += "Amount : "+this.transactionOutput.getAmount() + "\n";
-        output += "Charge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
-        output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
-        output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
-        output += "At     : "+this.lockTime.toString();
+        String output = "Transaction: " + JsonUtils.encodeBytes(Cryptography.hashBytes(toBytes())) + "\n";
+        output += "\tAmount : "+this.transactionOutput.getAmount() + "\n";
+        output += "\tCharge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
+        output += "\tFrom   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "\tTo     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
+        output += "\tAt     : "+this.lockTime.toString();
         return output;
     }
 }

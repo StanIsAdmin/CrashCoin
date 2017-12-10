@@ -6,6 +6,8 @@ import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.miner.net.RelayConnection;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +42,23 @@ public class Miner {
     private Block currentlyMinedBlock = null;
     
     private boolean currentBlockIsNew = true;
+    
+    /** object used to sort a list of Transactions according to their timestamp. */
+    private static final Comparator<Transaction> transactionsComparator;
+    
+    static {
+        transactionsComparator = new Comparator<Transaction>() {
+            @Override
+            public int compare(Transaction t1, Transaction t2) {
+                if(t1.before(t2))
+                    return -1;
+                else if(t2.before(t1))
+                    return +1;
+                else
+                    return 0;
+            }
+        };
+    }
 
     /**
      * Constructor of Miner.
@@ -75,6 +94,7 @@ public class Miner {
             } else if (this.connection.hasBlocks()) {
                 this.removeAlreadyMinedTransactions();
             } else {
+                Logger.getLogger(getClass().getName()).info("Start mining new block");
                 makeBlockAndMineIt();
             }
         }
@@ -100,9 +120,12 @@ public class Miner {
     private void createBlock() throws IOException {
         // only create a new block if there is not a partial block already existing
         if(currentlyMinedBlock == null) {
-            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), Parameters.MINING_DIFFICULTY);
+            currentlyMinedBlock = new Block(RelayConnection.getRelayConnection().getLastBlockOfBlockChainHash(), 
+                    Parameters.MINING_DIFFICULTY);
         }
         final int nbTransactionsToAdd = Parameters.NB_TRANSACTIONS_PER_BLOCK - currentlyMinedBlock.size();
+        // sort the pending transactions according to their timestamp
+        Collections.sort(this.transactions, Miner.transactionsComparator);
         if(nbTransactionsToAdd == 0) {
             currentBlockIsNew = false;
             return;
@@ -125,7 +148,9 @@ public class Miner {
      */
     private void makeBlockAndMineIt()  {
         this.transactions.addAll(this.connection.getTransactions());
-        if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Transaction list: {0}", this.transactions);
+        if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK-1) {
+            Logger.getLogger(getClass().getName()).info("Really begin mining");
             try {
                 createBlock();
                 miner.setBlockToMine(currentlyMinedBlock);
@@ -134,6 +159,7 @@ public class Miner {
                 currentlyMinedBlock = currentBlockIsNew ? miner.mineBlock() : miner.continueMining();
                 this.connection.sendData(currentlyMinedBlock);
                 currentlyMinedBlock = null;
+                Logger.getLogger(getClass().getName()).info("Finish mining");
             } catch (IOException ex) {
                 Logger.getLogger(Miner.class.getName()).log(Level.SEVERE,
                         "Error when asking for relay connection. Abort.", ex);
@@ -141,6 +167,8 @@ public class Miner {
                 if(!updateCurrentBlock())
                     makeBlockAndMineIt();
             }
+        } else {
+            Logger.getLogger(getClass().getName()).info("Not enought transaction to begin mining");
         }
     }
     

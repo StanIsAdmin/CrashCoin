@@ -205,7 +205,7 @@ public class ClientApplication {
             //    in RAM, in case an attacker has access to it
             // Note: we use Console.readPassword only in console since IDEs
             //       do not work with consoles
-            char[] userPassword = this.askPassword();
+            final char[] userPassword = this.askPassword();
             
             try {
                 this.wallet = new WalletClient(f, userPassword);
@@ -254,6 +254,7 @@ public class ClientApplication {
                     } catch (IOException ex) {
                         Logger.getLogger(ClientApplication.class.getName()).log(Level.SEVERE, ex.getMessage());
                     }
+                    wallet.addUnacceptedTransaction(transaction);
                 }
             }
         } while (amount != -1);
@@ -265,10 +266,23 @@ public class ClientApplication {
     }
 
     public void showWallet() {
-        final ArrayList<Transaction> transactionList = wallet.getTransactions();
-        transactionList.forEach((transaction) -> {
-            System.out.println(transaction.toString());
-        });
+        final ArrayList<Transaction> acceptedTransactionList = wallet.getAcceptedTransactions();
+        final ArrayList<Transaction> unacceptedTransactionList = wallet.getUnacceptedTransactions();
+        if(acceptedTransactionList.isEmpty() && unacceptedTransactionList.isEmpty()) {
+            System.out.println("You are broke... (Wallet is empty)");
+        } else {
+            if(!acceptedTransactionList.isEmpty()) {
+                acceptedTransactionList.forEach((transaction) -> {
+                    System.out.println(transaction.toString());
+                });
+            }
+            if(!unacceptedTransactionList.isEmpty()) {
+                System.out.println("Unaccepted transaction:");
+                unacceptedTransactionList.stream().forEach((unacceptTransaction) -> {
+                    System.out.println(unacceptTransaction.toString());
+                });
+            }
+        }
     }
     
     public WalletClient getWallet() {

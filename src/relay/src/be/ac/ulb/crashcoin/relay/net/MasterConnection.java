@@ -4,6 +4,7 @@ import be.ac.ulb.crashcoin.common.Block;
 import be.ac.ulb.crashcoin.common.BlockChain;
 import be.ac.ulb.crashcoin.common.JSONable;
 import be.ac.ulb.crashcoin.common.Parameters;
+import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.net.AbstractReconnectConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
@@ -45,6 +46,15 @@ public class MasterConnection extends AbstractReconnectConnection {
             // Broadcast to the miners the validate/mined block so that they can
             // either remove the mined transaction from their pool or stop
             // the block mining if the transaction is in the block.
+            MinerConnection.sendToAll(jsonData);
+            
+        } else if(jsonData instanceof Transaction) { // Get new transaction from master ("pool" transaction)
+            final Transaction transaction = (Transaction) jsonData;
+            
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get new transaction from master and send to miner "
+                    + "({0}): {1}", new Object[]{_ip, transaction.toString()});
+            
+            // Broadcast to the miners directly connected to the relay.
             MinerConnection.sendToAll(jsonData);
             
         } else {

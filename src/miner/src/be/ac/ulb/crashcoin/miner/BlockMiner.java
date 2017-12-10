@@ -50,7 +50,7 @@ public final class BlockMiner {
                 throw new AbortMiningException();
             }
             this.block.setNonce(currentNonce++);
-        } while (this.block.isHashValid());
+        } while (!this.block.isHashValid());
         return this.block;
     }
 }

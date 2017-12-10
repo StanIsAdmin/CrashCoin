@@ -43,7 +43,7 @@ public class RelayConnection extends AbstractReconnectConnection {
             final Transaction transaction = (Transaction) data;
             final WalletClient wallet = ClientApplication.getInstance().getWallet();
             if(wallet != null) {
-                wallet.addTransaction(transaction);
+                wallet.addAcceptedTransaction(transaction);
             } else {
                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
                         + "transaction:\n{0}", transaction.toString());
