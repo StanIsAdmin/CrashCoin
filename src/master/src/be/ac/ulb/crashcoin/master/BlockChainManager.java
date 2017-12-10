@@ -1,6 +1,7 @@
 package be.ac.ulb.crashcoin.master;
 
 import be.ac.ulb.crashcoin.common.BlockChain;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,8 +10,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  * Singleton class that manages the master node's BlockChain instance.
@@ -60,24 +59,27 @@ public class BlockChainManager {
      * @return the blockchain created from BLOCKCHAIN_SAVE_PATH
      */
     private BlockChain createBlockChain() {
-        FileReader fr;
+        final String fileContent;
         try {
-            fr = new FileReader(BLOCKCHAIN_SAVE_PATH);
-        } catch (FileNotFoundException ex) {
+            fileContent = readFile(BLOCKCHAIN_SAVE_PATH);
+        } catch (IOException ex) {
             // Returns a new BlockChain if none has been saved
             return new BlockChain();
         }
-
-        final JSONParser parser = new JSONParser();
-        JSONObject jsonBlockChain;
-        try {
-            jsonBlockChain = (JSONObject) parser.parse(fr);
-        } catch (ParseException | IOException ex) {
-            Logger.getLogger(BlockChainManager.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-
+        
+        final JSONObject jsonBlockChain = new JSONObject(fileContent);
         return new BlockChain(jsonBlockChain);
+    }
+    
+    private static String readFile(final String filename) throws FileNotFoundException, IOException {
+        String result = "";
+        final BufferedReader br = new BufferedReader(new FileReader(filename));
+        String line = br.readLine();
+        while (line != null) {
+            result += line;
+            line = br.readLine();
+        }
+        return result;
     }
 
     /**
