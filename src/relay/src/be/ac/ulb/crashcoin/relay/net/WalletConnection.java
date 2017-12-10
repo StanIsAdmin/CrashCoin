@@ -10,6 +10,7 @@ import be.ac.ulb.crashcoin.common.net.AbstractConnection;
 import be.ac.ulb.crashcoin.relay.Main;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
@@ -18,6 +19,8 @@ import org.json.JSONObject;
  *
  */
 public class WalletConnection extends AbstractConnection {
+    
+    private static final HashMap<Address, WalletConnection> allWallets = new HashMap<>();
 
     public WalletConnection(final Socket sock) throws IOException {
         super("WalletConnection", sock);
@@ -83,6 +86,8 @@ public class WalletConnection extends AbstractConnection {
         }
         final Address walletAddress = new Address(option);
         final BlockChain currentBlockChain = Main.getBlockChain();
+        // Add only after the wallet 'starting' request.
+        allWallets.put(walletAddress, this);
         
         int index = 0;
         for (final Block block : currentBlockChain) {
@@ -101,5 +106,16 @@ public class WalletConnection extends AbstractConnection {
             }
             ++index;
         }
+    }
+    
+    private static void sendTransactionTo(Address addr, Transaction trans) {
+        WalletConnection target = allWallets.get(addr);
+        if(target != null) {
+            target.sendData(trans);
+        }}
+    
+    public static void sendTransactionTo(Transaction transaction) {
+        sendTransactionTo(transaction.getDestAddress(), transaction);
+        sendTransactionTo(transaction.getSrcAddress(), transaction);
     }
 }
