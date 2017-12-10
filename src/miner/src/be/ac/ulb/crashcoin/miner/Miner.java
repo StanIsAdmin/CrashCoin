@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -164,12 +165,34 @@ public class Miner {
                 Logger.getLogger(Miner.class.getName()).log(Level.SEVERE,
                         "Error when asking for relay connection. Abort.", ex);
             } catch (AbortMiningException ex) {
-                if(!updateCurrentBlock())
-                    makeBlockAndMineIt();
+                switch(ex.getMessage()) {
+                    case AbortMiningException.NEW_BLOCK:
+                        if(!updateCurrentBlock())
+                            makeBlockAndMineIt();
+                        break;
+                    case AbortMiningException.BAD_TRANSACTIONS:
+                        if(!this.currentBlockIsNew)
+                            handleBadTransactions();
+                        break;
+                    default:
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, "AbortMiningException thrown with unknown message: {0}", ex.getMessage());
+                        break;
+                }
             }
         } else {
-            Logger.getLogger(getClass().getName()).info("Not enought transaction to begin mining");
+            Logger.getLogger(getClass().getName()).info("Not enough transactions to begin mining");
         }
+    }
+    
+    /**
+     * Remove bad transactions from both current block and transactions buffer.
+     */
+    private void handleBadTransactions() {
+        final HashSet<Transaction> badTransactions = this.connection.getBadTransactions();
+        // remove bad transactions from current block
+        this.currentBlockIsNew = this.currentlyMinedBlock.removeAll(badTransactions);
+        // remove bad transactions from transactions buffer
+        this.transactions.removeAll(badTransactions);
     }
     
     /**

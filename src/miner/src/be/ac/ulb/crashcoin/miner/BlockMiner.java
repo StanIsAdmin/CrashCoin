@@ -47,7 +47,9 @@ public final class BlockMiner {
     private Block mine() throws IOException, AbortMiningException {
         do {
             if(RelayConnection.getRelayConnection().hasBlocks()) {
-                throw new AbortMiningException();
+                throw new AbortMiningException(AbortMiningException.NEW_BLOCK);
+            } else if(RelayConnection.getRelayConnection().hasBadTransaction()) {
+                throw new AbortMiningException(AbortMiningException.BAD_TRANSACTIONS);
             }
             this.block.setNonce(currentNonce++);
         } while (!this.block.isHashValid());

@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -118,8 +119,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
                 && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
                 && // Previous hash block is valid
                 Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes()) 
-                && 
-                getFirstBadTransaction(block) == null; // Check the transaction
+                &&  getBadTransactions(block).isEmpty(); // Check the transaction
     }
 
     /**
@@ -129,16 +129,17 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @param block  Block that needs to be added to the blockchain
      * @return  First bad transaction found if there is one, null otherwise
      */
-    protected Transaction getFirstBadTransaction(final Block block)  {
+    public HashSet<Transaction> getBadTransactions(final Block block)  {
+        final HashSet<Transaction> badTransactions = new HashSet<>();
         tempUsedInputs.clear();
         tempAvailableInputs.clear();
         for (final Transaction transaction: block) {
             final boolean isReward = (transaction == block.get(block.size()-1));
             if (! isValidTransaction(transaction, isReward)) {
-                return transaction;
+                badTransactions.add(transaction);
             }
         }
-        return null;
+        return badTransactions;
     }
 
     /**
