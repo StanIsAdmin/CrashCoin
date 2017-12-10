@@ -375,7 +375,7 @@ public class Transaction implements JSONable {
     
     private String getReduiceAdresse(final Address address) {
         String strAddress = address.toString();
-        return strAddress.substring(2) + "..." + strAddress.substring(strAddress.length()-15, strAddress.length());
+        return strAddress.substring(0, 3) + "..." + strAddress.substring(strAddress.length()-15, strAddress.length());
     }
     
 }
