@@ -22,7 +22,7 @@ public class Transaction implements JSONable {
     private final Timestamp lockTime;
 
     private ArrayList<TransactionInput> inputs = null;
-    private TransactionOutput transactionOutput;
+    private final TransactionOutput transactionOutput;
     /**
      * Output of the transaction that contains the remaining value after payement.
      *
@@ -231,7 +231,7 @@ public class Transaction implements JSONable {
             byteBuffer.write(ByteBuffer.allocate(Long.BYTES).putLong(lockTime.getTime()).array());
             if(!isReward()) {
                 for(final TransactionInput input : inputs)
-                    byteBuffer.write(input.toBytes());
+                    byteBuffer.write(input.getHashBytes());
                 byteBuffer.write(this.changeOutput.toBytes());
             }
             byteBuffer.write(this.transactionOutput.toBytes());
@@ -344,12 +344,31 @@ public class Transaction implements JSONable {
 
     @Override
     public String toString() {
-        String output = "Transaction: " + JsonUtils.encodeBytes(Cryptography.hashBytes(toBytes())) + "\n";
+        String output = "Transaction: " + JsonUtils.encodeBytes(Cryptography.hashBytes(toBytes()));
+        if(this.signature == null) {
+            output += " (no signature)";
+        }
+        output += "\n";
         output += "\tAmount : "+this.transactionOutput.getAmount() + "\n";
         output += "\tCharge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
-        output += "\tFrom   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "\tFrom   : "+((this.isReward()) ? "Generated" : this.changeOutput.getDestinationAddress().toString())+"\n";
         output += "\tTo     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
-        output += "\tAt     : "+this.lockTime.toString();
+        output += "\tAt     : "+this.lockTime.toString() + "\n";
+        for(int i = 0; i < 2 || (this.inputs != null && i < this.inputs.size()); ++i) {
+            output += "\t";
+            if(this.inputs != null && i < this.inputs.size()) {
+                output += JsonUtils.encodeBytes(this.inputs.get(i).getHashBytes());
+            } else {
+                output += "\t\t\t\t\t";
+            }
+            if(i == 0) {
+                output += " => " + JsonUtils.encodeBytes(this.transactionOutput.getHashBytes());
+            } else if(i == 1 && this.changeOutput != null) {
+                output += " => " + JsonUtils.encodeBytes(this.changeOutput.getHashBytes());
+            }
+            output += "\n";
+        }
+        output += "\n";
         return output;
     }
 }

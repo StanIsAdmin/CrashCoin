@@ -169,7 +169,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         // Verify that each input is available and belongs to the sender
         for (final TransactionInput input: transaction.getInputs()) {
             // Temporarily remove the input so that it can't be used again
-            final byte[] inputHash = input.toBytes();
+            final byte[] inputHash = input.getHashBytes();
 
             TransactionOutput referencedOutput = null;
             // Must use loop because "byte[]".equals juste test instance and not value
@@ -207,7 +207,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     private void addAvailableTransactionOutputs(final Transaction transaction) {
         // Add the transactino output
         final TransactionOutput transactionOutput = transaction.getTransactionOutput();
-        final byte[] transactionHash = Cryptography.hashBytes(transactionOutput.toBytes());
+        final byte[] transactionHash = transactionOutput.getHashBytes();
         this.availableInputs.put(transactionHash, transactionOutput);
         this.tempAvailableInputs.put(transactionHash, transactionOutput);
         
@@ -215,7 +215,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         // (this avoids keeping useless transactions in memory)
         final TransactionOutput changeOutput = transaction.getTransactionOutput();
         if (! transaction.isReward() && changeOutput.getAmount() > 0) {
-            final byte[] changeHash = Cryptography.hashBytes(changeOutput.toBytes());
+            final byte[] changeHash = changeOutput.getHashBytes();
             this.availableInputs.put(changeHash, changeOutput);
             this.tempAvailableInputs.put(changeHash, changeOutput);
         }
