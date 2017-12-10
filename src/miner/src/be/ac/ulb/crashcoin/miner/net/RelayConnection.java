@@ -122,11 +122,11 @@ public class RelayConnection extends AbstractReconnectConnection {
      * @return the list of pending transactions
      */
     public ArrayList<Transaction> getTransactions() {
-        ArrayList<Transaction> tmp = new ArrayList<>();
+        final ArrayList<Transaction> tmp = new ArrayList<>();
         try {
             mutex.acquire();
             this.hasNewTransactions = false;
-            tmp = this.transactionsBuffer;
+            tmp.addAll(transactionsBuffer);
             this.transactionsBuffer.clear();
             mutex.release();
         } catch (InterruptedException ex) {

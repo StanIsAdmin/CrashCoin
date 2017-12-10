@@ -31,14 +31,13 @@ public class TestUtils {
     public static Transaction createTransaction() {
         //TODO put actual inputs, and a non-zero amount
         final BlockChain bc = createBlockchain();
-        final Transaction transaction = new Transaction(createAddress(), createAddress(), 0, new ArrayList<TransactionOutput>());
+        final Transaction transaction = new Transaction(createAddress(), createAddress(), 0, new ArrayList<>());
         transaction.sign(kp.getPrivate());
         return transaction;
     }
 
     public static Transaction createRewardTransaction() {
         final Transaction transaction = new Transaction(createAddress());
-        transaction.sign(kp.getPrivate());
         return transaction;
     }
     

@@ -103,13 +103,13 @@ public class Transaction implements JSONable {
 
             // change output is present only for non-reward transactions
             this.changeOutput = new TransactionOutput((JSONObject) json.get("changeOutput"));
+            
+            // Add signature
+            this.signature = JsonUtils.decodeBytes(json.getString("signature"));
         }
 
         // Add transaction output
         this.transactionOutput = new TransactionOutput((JSONObject) json.get("transactionOutput"));
-
-        // Add signature
-        this.signature = JsonUtils.decodeBytes(json.getString("signature"));
     }
 
     /**
@@ -128,9 +128,9 @@ public class Transaction implements JSONable {
             }
             json.put("inputs", jsonInputs);
             json.put("changeOutput", this.changeOutput.toJSON());
+            json.put("signature", JsonUtils.encodeBytes(signature));
         }
         json.put("transactionOutput", this.transactionOutput.toJSON());
-        json.put("signature", JsonUtils.encodeBytes(signature));
         return json;
     }
 

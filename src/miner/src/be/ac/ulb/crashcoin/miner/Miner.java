@@ -148,7 +148,8 @@ public class Miner {
      */
     private void makeBlockAndMineIt()  {
         this.transactions.addAll(this.connection.getTransactions());
-        if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK) {
+        Logger.getLogger(getClass().getName()).log(Level.INFO, "Transaction list: {0}", this.transactions);
+        if (this.transactions.size() >= Parameters.NB_TRANSACTIONS_PER_BLOCK-1) {
             Logger.getLogger(getClass().getName()).info("Really begin mining");
             try {
                 createBlock();
@@ -158,6 +159,7 @@ public class Miner {
                 currentlyMinedBlock = currentBlockIsNew ? miner.mineBlock() : miner.continueMining();
                 this.connection.sendData(currentlyMinedBlock);
                 currentlyMinedBlock = null;
+                Logger.getLogger(getClass().getName()).info("Finish mining");
             } catch (IOException ex) {
                 Logger.getLogger(Miner.class.getName()).log(Level.SEVERE,
                         "Error when asking for relay connection. Abort.", ex);
