@@ -24,7 +24,7 @@ public class Main {
             InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
             InvalidAlgorithmParameterException, ClassNotFoundException, GeneralSecurityException {
         
-        if(argv.length == 2) {
+        if(argv.length >= 2) {
             ip = argv[0];
             port = Integer.parseInt(argv[1]);
         } else {

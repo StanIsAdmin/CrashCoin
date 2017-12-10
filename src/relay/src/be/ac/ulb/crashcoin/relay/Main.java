@@ -22,7 +22,7 @@ public class Main {
 
         _blockChain = new BlockChain();
         
-        if(argv.length == 2) {
+        if(argv.length >= 2) {
             ip = argv[0];
             port = Integer.parseInt(argv[1]);
         } else {
