@@ -97,14 +97,20 @@ public class WalletClient extends Wallet {
     }
     
     public List<TransactionOutput> getUsefulTransactions(final int amount) {
-        final List<TransactionOutput> transactions = new ArrayList<>();
+        List<TransactionOutput> transactions = new ArrayList<>();
         int total = 0;
         for(final TransactionOutput transaction : getActiveTransactions()) {
-            total += transaction.getAmount();
-            if(total >= amount) {
+            if(total < amount) {
+                total += transaction.getAmount();
                 transactions.add(transaction);
+            } else {
+                break;
             }
         }
+        if(total < amount) {
+            transactions = null;
+        }
+        
         return transactions;
     }
     

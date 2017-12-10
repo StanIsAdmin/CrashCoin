@@ -229,10 +229,14 @@ public class ClientApplication {
             System.out.println("Or enter -1 to join the main menu.");
             System.out.print("Amount : ");
             amount = reader.nextInt();
+            if(amount == -1) {
+                break;
+            }
+            
             final List<TransactionOutput> referencedOutput = wallet.getUsefulTransactions(amount);
             if (referencedOutput == null || referencedOutput.isEmpty()) {
                 System.out.print("You don't have enough money.");
-            } else if (amount != -1){
+            } else {
                 System.out.print("Destination : ");
                 final PublicKey dstPublicKey = this.stringToKey(reader.next());
                 if(dstPublicKey == null) {
