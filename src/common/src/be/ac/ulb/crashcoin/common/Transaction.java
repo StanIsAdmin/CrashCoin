@@ -349,8 +349,8 @@ public class Transaction implements JSONable {
             output += " (no signature)";
         }
         output += "\n";
-        output += "  From: "+((this.isReward()) ? "Generated" : getReduiceAdresse(this.changeOutput.getDestinationAddress()))+"\n";
-        output += "  To  : "+getReduiceAdresse(this.transactionOutput.getDestinationAddress())+"\n";
+        output += "  From: "+((this.isReward()) ? "Generated" : getReducedAdresse(this.changeOutput.getDestinationAddress()))+"\n";
+        output += "  To  : "+getReducedAdresse(this.transactionOutput.getDestinationAddress())+"\n";
         output += "  At  : "+this.lockTime.toString() + "\n";
         
         for(int i = 0; i < 2 || (this.inputs != null && i < this.inputs.size()); ++i) {
@@ -373,7 +373,7 @@ public class Transaction implements JSONable {
         return output;
     }
     
-    private String getReduiceAdresse(final Address address) {
+    private String getReducedAdresse(final Address address) {
         String strAddress = address.toString();
         return strAddress.substring(0, 3) + "..." + strAddress.substring(strAddress.length()-15, strAddress.length());
     }
