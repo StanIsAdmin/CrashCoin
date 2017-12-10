@@ -9,7 +9,7 @@ SCREEN_CONFIG="~/.screenrc"
 
 command -v screen >/dev/null 2>&1 || { echo >&2 "Screen is not installed. Install screen by typing 'apt-get install screen' in order to use Crashcoin."; exit 1; }
 
-if [ ! -f "$SCREEN_CONFIG" ]; then
+if [ ! -f ~/.screenrc ]; then
     echo "Do you want to create file $SCREEN_CONFIG to allow scroll on screen [Y,n]"
     read input
     if [[ $input == "Y" || $input == "y" ]]; then
