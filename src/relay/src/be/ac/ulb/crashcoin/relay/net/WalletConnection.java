@@ -111,7 +111,8 @@ public class WalletConnection extends AbstractConnection {
     private static void sendTransactionTo(Address addr, Transaction trans) {
         WalletConnection target = allWallets.get(addr);
         if(target != null) {
-            target.sendData(trans);
+            Message message = new Message(Message.GET_TRANSACTION_FROM_RELAY, trans.toJSON());
+            target.sendData(message);
         }}
     
     public static void sendTransactionTo(Transaction transaction) {
