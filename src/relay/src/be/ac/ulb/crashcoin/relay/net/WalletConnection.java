@@ -113,7 +113,8 @@ public class WalletConnection extends AbstractConnection {
         if(target != null) {
             Message message = new Message(Message.GET_TRANSACTION_FROM_RELAY, trans.toJSON());
             target.sendData(message);
-        }}
+        }
+    }
     
     public static void sendTransactionTo(Transaction transaction) {
         sendTransactionTo(transaction.getDestAddress(), transaction);
