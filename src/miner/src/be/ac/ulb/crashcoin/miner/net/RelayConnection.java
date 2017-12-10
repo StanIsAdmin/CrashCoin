@@ -93,7 +93,6 @@ public class RelayConnection extends AbstractReconnectConnection {
         final JSONArray badTransactions = option.getJSONArray("transactions");
         for(int i = 0; i < badTransactions.length(); ++i) {
             badTransactionsBuffer.add(new Transaction(badTransactions.getJSONObject(i)));
-            Logger.getLogger(getClass().getName()).info(badTransactions.get(i).toString());
         }
     }
 
