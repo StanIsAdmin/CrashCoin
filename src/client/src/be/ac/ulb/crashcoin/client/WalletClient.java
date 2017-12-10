@@ -103,7 +103,6 @@ public class WalletClient extends Wallet {
             }
             
             if(!alreadyUsed(transactionOut.getHashBytes())) {
-                System.out.println("[DEBUG] transaction pas encore utilisé: " + JsonUtils.encodeBytes(transactionOut.getHashBytes()));
                 total += transactionOut.getAmount();
                 transactions.add(transactionOut);
             }
