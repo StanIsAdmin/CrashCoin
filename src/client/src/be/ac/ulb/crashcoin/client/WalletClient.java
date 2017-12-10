@@ -128,7 +128,7 @@ public class WalletClient extends Wallet {
         for (final Transaction transaction: getAllTransaction()) {
             if(transaction.getInputs() != null) {
                 for(final TransactionInput transInput : transaction.getInputs()) {
-                    if(Arrays.equals(transInput.toBytes(), hashTransaction)) {
+                    if(Arrays.equals(transInput.getHashBytes(), hashTransaction)) {
                         return true;
                     }
                 }

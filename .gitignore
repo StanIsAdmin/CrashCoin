@@ -38,3 +38,6 @@ bin/
 
 # CrashCoin folders
 wallets/
+
+# CrashCoin BlockChain
+/master/

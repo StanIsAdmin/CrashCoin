@@ -12,16 +12,35 @@ public class TestTransaction {
     }
     
     @Test
-    public void testCorrectRewardTransactionVerification() {
+    public void testRewardTransactionIsValid() {
         final Transaction transaction = TestUtils.createRewardTransaction();
-        Assert.assertTrue(transaction.isValid());
+        Assert.assertTrue(transaction.isValidReward());
     }
     
     @Test
-    public void testNotCorrectRewardTransactionVerification() {
+    public void testRewardTransactionIsNotValid() {
         Transaction transaction = TestUtils.createTransaction();
         transaction = TestUtils.alterTransaction(transaction);
-        Assert.assertFalse(transaction.isValid());
+        Assert.assertFalse(transaction.isValidReward());
+    }
+    
+    @Test
+    public void testNotIsReward() {
+        final Transaction transaction = TestUtils.createTransaction();
+        Assert.assertFalse(transaction.isReward());
+    }
+    
+    @Test
+    public void testNotRewardTransactionIsValid() {
+        final Transaction transaction = TestUtils.createTransaction();
+        Assert.assertTrue(transaction.isValidNonReward());
+    }
+    
+    @Test
+    public void testNotRewardTransactionIsNotValid() {
+        Transaction transaction = TestUtils.createTransaction();
+        transaction = TestUtils.alterTransaction(transaction);
+        Assert.assertFalse(transaction.isValidNonReward());
     }
     
 }

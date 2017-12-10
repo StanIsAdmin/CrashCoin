@@ -1,5 +1,6 @@
 package be.ac.ulb.crashcoin.common;
 
+import be.ac.ulb.crashcoin.common.utils.Cryptography;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.json.JSONObject;
@@ -67,6 +68,10 @@ public class TransactionOutput implements JSONable {
         buffer.putInt(amount);
         buffer.put(address.toBytes());
         return buffer.array();
+    }
+    
+    public byte[] getHashBytes() {
+        return Cryptography.hashBytes(toBytes());
     }
 
     @Override
