@@ -349,26 +349,27 @@ public class Transaction implements JSONable {
             output += " (no signature)";
         }
         output += "\n";
-        output += "\tAmount : "+this.transactionOutput.getAmount() + "\n";
-        output += "\tCharge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
-        output += "\tFrom   : "+((this.isReward()) ? "Generated" : this.changeOutput.getDestinationAddress().toString())+"\n";
-        output += "\tTo     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
-        output += "\tAt     : "+this.lockTime.toString() + "\n";
+        output += "  From: "+((this.isReward()) ? "Generated" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "  To  : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
+        output += "  At  : "+this.lockTime.toString() + "\n";
+        
         for(int i = 0; i < 2 || (this.inputs != null && i < this.inputs.size()); ++i) {
-            output += "\t";
+            output += "  ";
             if(this.inputs != null && i < this.inputs.size()) {
-                output += JsonUtils.encodeBytes(this.inputs.get(i).getHashBytes());
+                final TransactionInput currentInput = this.inputs.get(i);
+                output += "[" + currentInput.getAmount() + "CC] " + JsonUtils.encodeBytes(currentInput.getHashBytes());
             } else {
-                output += "\t\t\t\t\t";
+                output += "\t\t\t\t\t\t\t";
             }
             if(i == 0) {
-                output += " => " + JsonUtils.encodeBytes(this.transactionOutput.getHashBytes());
+                output += " => " + JsonUtils.encodeBytes(this.transactionOutput.getHashBytes()) + " " + 
+                        "[" + this.transactionOutput.getAmount() + "CC]";
             } else if(i == 1 && this.changeOutput != null) {
-                output += " => " + JsonUtils.encodeBytes(this.changeOutput.getHashBytes());
+                output += " => " + JsonUtils.encodeBytes(this.changeOutput.getHashBytes()) + " " + 
+                        "[" + this.changeOutput.getAmount() + "CC] (change)";
             }
             output += "\n";
         }
-        output += "\n";
         return output;
     }
 }
