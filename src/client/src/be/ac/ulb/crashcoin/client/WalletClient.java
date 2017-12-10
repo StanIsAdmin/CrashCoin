@@ -14,21 +14,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 
 /**
  *
@@ -143,38 +138,9 @@ public class WalletClient extends Wallet {
             throws InvalidKeyException,
             InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException,
             IOException {
-        writeWalletFile(userPassword, accountName, keyPair.getPublic().getEncoded(), keyPair.getPrivate().getEncoded());
-    }
-    
-    
-    public static void writeWalletFile(final char[] userPassword, final String accountName, 
-            final byte[] publicKeyBytes, final byte[] privateKeyBytes) throws InvalidKeyException,
-            InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, FileNotFoundException, IOException {
-
-        // Encrypt the private key using AES-128 protocol with the user password
-        // Compute a salt to avoid dictionary attacks (to turn a password into a secret key)
-        // The salt is not kept secret but is needed for decryption
-        final SecureRandom random = new SecureRandom();
-        final byte[] salt = new byte[Parameters.SALT_SIZE];
-        random.nextBytes(salt);
-
-        final SecretKey encryptionKey = Cryptography.computeSecretKey(userPassword, salt);
-
-        // Encrypt the private key with the encryption key generated from the user password
-        // Initialize a cipher to the encryption mode with the encryptionKey
-        final Cipher cipher = Cryptography.getCipher();
-        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
-
-        // Get the IV necessary to decrypt the message later
-        // In CBC mode, each block is XORed with the output of the previous block
-        // The IV represents the arbitrary "previous block" to be used for the first block
-        final AlgorithmParameters parameters = cipher.getParameters();
-        final byte[] iv = parameters.getParameterSpec(IvParameterSpec.class).getIV();
-
-        // Encrypt the private key
-        final byte[] encryptedPrivateKey = cipher.doFinal(privateKeyBytes);
+        
         // Write wallet information in the wallet file
-        final WalletInformation walletInformation = new WalletInformation(salt, iv, encryptedPrivateKey, publicKeyBytes);
+        final WalletInformation walletInformation = Cryptography.walletInformationFromKeyPair(userPassword, keyPair);
 
         // Creates wallet folder if not exists
         final File walletFolder = new File(Parameters.WALLETS_PATH);

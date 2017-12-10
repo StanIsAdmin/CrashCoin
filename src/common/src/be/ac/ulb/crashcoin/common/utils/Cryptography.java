@@ -1,6 +1,9 @@
 package be.ac.ulb.crashcoin.common.utils;
 
 import be.ac.ulb.crashcoin.common.Parameters;
+import be.ac.ulb.crashcoin.common.WalletInformation;
+import java.security.AlgorithmParameters;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -14,16 +17,20 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
@@ -307,5 +314,89 @@ public class Cryptography {
     private static void logAndAbort(final String message, final Throwable exception) {
         Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, message, exception);
         System.exit(1);
+    }
+
+    /**
+     * Creates a WalletInformation from a password and KeyPair.
+     * The private key is encrypted with the password.
+     * 
+     * @param userPassword the user-selected password, used to encrypt the private key
+     * @param keyPair the public and private key pair
+     * @return a WalletInformation instance
+     * @throws InvalidKeyException
+     * @throws InvalidParameterSpecException
+     * @throws IllegalBlockSizeException
+     * @throws BadPaddingException 
+     */
+    public static WalletInformation walletInformationFromKeyPair(final char[] userPassword, final KeyPair keyPair) 
+            throws InvalidKeyException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException {
+        final byte[] privateKeyBytes = keyPair.getPrivate().getEncoded();
+        final byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
+        // Encrypt the private key using AES-128 protocol with the user password
+        // Compute a salt to avoid dictionary attacks (to turn a password into a secret key)
+        // The salt is not kept secret but is needed for decryption
+        final SecureRandom random = new SecureRandom();
+        final byte[] salt = new byte[Parameters.SALT_SIZE];
+        random.nextBytes(salt);
+
+        final SecretKey encryptionKey = Cryptography.computeSecretKey(userPassword, salt);
+
+        // Encrypt the private key with the encryption key generated from the user password
+        // Initialize a cipher to the encryption mode with the encryptionKey
+        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
+
+        // Get the IV necessary to decrypt the message later
+        // In CBC mode, each block is XORed with the output of the previous block
+        // The IV represents the arbitrary "previous block" to be used for the first block
+        final AlgorithmParameters parameters = cipher.getParameters();
+        final byte[] iv = parameters.getParameterSpec(IvParameterSpec.class).getIV();
+
+        // Encrypt the private key
+        final byte[] encryptedPrivateKey = cipher.doFinal(privateKeyBytes);
+        return new WalletInformation(salt, iv, encryptedPrivateKey, publicKeyBytes);
+    }
+
+    /**
+     * Creates a KeyPair from a WalletInformation.
+     * 
+     * The private key is decrypted thanks to the password.
+     * @param userPassword the user-selected password used to decrypt the private key
+     * @param walletInformation the WalletInformation containing the encrypted private key
+     * @return a KeyPair with the keys contained in walletInformation
+     * @throws InvalidKeyException
+     * @throws InvalidAlgorithmParameterException
+     * @throws IllegalBlockSizeException 
+     */
+    public static KeyPair keyPairFromWalletInformation(final char[] userPassword, WalletInformation walletInformation) 
+            throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException {
+        // Retrieve wallet information stored
+        final byte[] salt = walletInformation.getSalt();
+        final byte[] iv = walletInformation.getIv();
+        final byte[] encryptedPrivateKey = walletInformation.getEncryptedPrivateKey();
+        final byte[] publicKeyBytes = walletInformation.getPublicKey();
+
+        final SecretKey decryptionKey = Cryptography.computeSecretKey(userPassword, salt);
+
+        // Decrypt the private key with the decryption key generated from the user password
+        // Initialize a cipher to the decryption mode with the decryptionKey
+        cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new IvParameterSpec(iv));
+        
+        // Decrypt the private key
+        KeyPair keyPair;
+        try {
+
+            final byte[] privateKeyBytes = cipher.doFinal(encryptedPrivateKey);
+
+            // Create a PairKey with the encoded public and private keys
+            keyPair = Cryptography.createKeyPairFromEncodedKeys(publicKeyBytes, privateKeyBytes);
+
+            // Verify the private key generated by the password entered by the user
+            if (! Cryptography.verifyPrivateKey(keyPair))
+                return null;
+
+        } catch (BadPaddingException e) {
+            return null;
+        }
+        return keyPair;
     }
 }
