@@ -187,7 +187,7 @@ public class Transaction implements JSONable {
         // Verify the digital signature with the sender's Public Key
         final PublicKey senderPublicKey = this.getSrcAddress().getPublicKey();
         if (! Cryptography.verifySignature(senderPublicKey, this.toBytes(), this.signature)) {
-            Logger.getLogger(getClass().getName()).info("Error with Signature");
+            Logger.getLogger(getClass().getName()).warning("Error with Signature");
             return false;
         }
 
@@ -196,10 +196,6 @@ public class Transaction implements JSONable {
         for(final TransactionInput input : this.inputs) {
             sum += input.getAmount();
         }
-        Logger.getLogger(getClass().getName()).log(Level.INFO, "Sum: {0}", sum);
-        Logger.getLogger(getClass().getName()).log(Level.INFO, "{0} > 0 && {1} >= 0 && sum == {2}", 
-                new Object[]{this.transactionOutput.getAmount(), this.changeOutput.getAmount(), 
-                    this.transactionOutput.getAmount() + this.changeOutput.getAmount()});
         return (this.transactionOutput.getAmount() > 0 && this.changeOutput.getAmount() >= 0)
                 && sum == (this.transactionOutput.getAmount() + this.changeOutput.getAmount());
     }
@@ -335,12 +331,12 @@ public class Transaction implements JSONable {
 
     @Override
     public String toString() {
-        String output = "Transaction :\n";
-        output += "Amount : "+this.transactionOutput.getAmount() + "\n";
-        output += "Charge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
-        output += "From   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
-        output += "To     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
-        output += "At     : "+this.lockTime.toString();
+        String output = "Transaction: " + JsonUtils.encodeBytes(Cryptography.hashBytes(toBytes())) + "\n";
+        output += "\tAmount : "+this.transactionOutput.getAmount() + "\n";
+        output += "\tCharge : "+((this.changeOutput == null) ? 0 : this.changeOutput.getAmount()) +"\n";
+        output += "\tFrom   : "+((this.isReward()) ? "Genesis" : this.changeOutput.getDestinationAddress().toString())+"\n";
+        output += "\tTo     : "+this.transactionOutput.getDestinationAddress().toString()+"\n";
+        output += "\tAt     : "+this.lockTime.toString();
         return output;
     }
 }

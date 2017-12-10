@@ -114,20 +114,12 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return wether the block may validly appended to the blockchain.
      */
     protected boolean isValidNextBlock(final Block block, final int difficulty)  {
-        boolean result = block.isHashValid() // check that the hash corresponds the indicated difficulty
+        return block.isHashValid() // check that the hash corresponds the indicated difficulty
                 && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
                 && // Previous hash block is valid
-                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes());
-        Logger.getLogger(getClass().getName()).log(Level.INFO, "{0} && {1} && {2}", 
-                new Object[]{block.isHashValid(), difficulty == block.getDifficulty(), 
-                    Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes())});
-        final Transaction transaction = getFirstBadTransaction(block);
-        result &= (transaction == null);
-        if(transaction != null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Invalid transaction: {0}", transaction);
-        }
-        Logger.getLogger(getClass().getName()).log(Level.INFO, "Result: {0}", result);
-        return result;
+                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes()) 
+                && 
+                getFirstBadTransaction(block) == null; // Check the transaction
     }
 
     /**
@@ -164,14 +156,23 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
             return false;
 
         if(!transaction.isReward()) {
-            Logger.getLogger(getClass().getName()).info("Is valid but..."); // TODO reprendre ici @Robin, @Denis, @Stan, @Rémy
             // Verify that each input is available and belongs to the sender
             for (final TransactionInput input: transaction.getInputs()) {
                 // Temporarily remove the input so that it can't be used again
-                final byte[] inputHash = Cryptography.hashBytes(input.toBytes());
-                final TransactionOutput referencedOutput = this.availableInputs.remove(inputHash);
-                if (referencedOutput == null)
+                final byte[] inputHash = input.toBytes();
+                
+                TransactionOutput referencedOutput = null;
+                // Must use loop because "byte[]".equals juste test instance and not value
+                for(final byte[] addressAvailable : availableInputs.keySet()) {
+                    if(Arrays.equals(addressAvailable, inputHash)) {
+                        referencedOutput = availableInputs.remove(addressAvailable);
+                        break;
+                    }
+                }
+                
+                if (referencedOutput == null) {
                     return false;
+                }
                 // Keep a copy of the discarded input, to put back if the block is invalid
                 tempUsedInputs.put(inputHash, referencedOutput);
                 
