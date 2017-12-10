@@ -51,10 +51,10 @@ public class RelayConnection extends AbstractReconnectConnection {
             
         } else if(data instanceof Message) {
             final Message message = (Message) data;
-            if(message.getRequest().equals(Message.GET_TRANSACTION_FROM_RELAY)) {
+            if(message.getRequest().equals(Message.GET_DUMMY_TRANSACTION)) {
                 final Transaction transaction = new Transaction(message.getOption());
                 if(wallet != null) {
-                    wallet.updateTransactionStatus(transaction);
+                    wallet.removeDummyTransaction(transaction);
                 } else {
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, "Wallet is not defined but recieved "
                             + "message:\n{0}", message.toString());

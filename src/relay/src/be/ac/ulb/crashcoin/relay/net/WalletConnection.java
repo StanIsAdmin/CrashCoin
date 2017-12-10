@@ -109,18 +109,22 @@ public class WalletConnection extends AbstractConnection {
     }
     
     private static void sendTransactionTo(final Address addr, final Transaction trans) {
-        final WalletConnection target = allWallets.get(addr);
+        WalletConnection target = null;
+        for(final Address checkAddress : allWallets.keySet()) {
+            if(addr.equals(checkAddress)) {
+                target = allWallets.get(checkAddress);
+                break;
+            }
+        }
+        
         if(target != null) {
-            final Message message = new Message(Message.GET_TRANSACTION_FROM_RELAY, trans.toJSON());
-            target.sendData(message);
+            target.sendData(trans);
         }
     }
     
     public static void sendTransactionTo(final Transaction transaction) {
-        System.out.println("Send transaction to "+transaction.getDestAddress().toString());
         sendTransactionTo(transaction.getDestAddress(), transaction);
         if(transaction.getSrcAddress() != null) {
-            System.out.println("Send transaction to "+transaction.getSrcAddress().toString());
             sendTransactionTo(transaction.getSrcAddress(), transaction);
         }
     }

@@ -58,7 +58,7 @@ public class MasterConnection extends AbstractReconnectConnection {
             // either remove the mined transaction from their pool or stop
             // the block mining if the transaction is in the block.
             MinerConnection.sendToAll(jsonData);
-            for (Transaction transaction : block) {
+            for (final Transaction transaction : block) {
                 WalletConnection.sendTransactionTo(transaction);
             }
             

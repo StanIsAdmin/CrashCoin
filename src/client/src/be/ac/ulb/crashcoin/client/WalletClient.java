@@ -78,6 +78,15 @@ public class WalletClient extends Wallet {
         }
     }
     
+    public synchronized void removeDummyTransaction(final Transaction transaction) {
+        if(this.unacceptedTransactionsList.contains(transaction)) {
+            this.unacceptedTransactionsList.remove(transaction);
+        }
+        if(this.acceptedTransactionsList.contains(transaction)) {
+            this.acceptedTransactionsList.remove(transaction);
+        }
+    }
+    
     public ArrayList<Transaction> getAllTransaction() {
         final ArrayList<Transaction> allTransaction = new ArrayList<>();
         allTransaction.addAll(unacceptedTransactionsList);
