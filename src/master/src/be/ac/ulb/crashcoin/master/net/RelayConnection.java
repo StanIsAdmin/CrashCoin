@@ -58,7 +58,6 @@ public class RelayConnection extends AbstractConnection {
                     new Object[]{block.toString()});
                 sendNotValidTransactions(block);
             }
-            // TODO ? Inform Relay (and Miner that the block has been rejected) ?
             
         } else if(data instanceof Transaction) {
             // Broadcast "pool" transaction to all nodes
