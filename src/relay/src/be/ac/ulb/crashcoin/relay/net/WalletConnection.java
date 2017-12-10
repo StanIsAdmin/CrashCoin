@@ -141,16 +141,12 @@ public class WalletConnection extends AbstractConnection {
             final JSONObject badTransactionJSON = badTransactionsArray.getJSONObject(i);
             final Message badTransactionMessage = new Message(Message.TRANSACTIONS_NOT_VALID, badTransactionJSON);
             
-            // get the connections to the wallets that are either source or destination of the transaction
+            // get the connections to the wallet that is source of the transaction
             final Transaction badTransaction = new Transaction(badTransactionJSON);
-            WalletConnection destConnection = allWallets.get(badTransaction.getDestAddress());
-            WalletConnection srcConnection = allWallets.get(badTransaction.getSrcAddress());
-            
-            // if these wallets are connectetd right now, then send the unvalid transaction
-            if(destConnection != null) 
-                destConnection.sendData(badTransactionMessage);
-            if(srcConnection != null)
-                srcConnection.sendData(badTransactionMessage);
+            for(final Address possibleSrc : allWallets.keySet()) {
+                if(possibleSrc.equals(badTransaction.getSrcAddress()))
+                    allWallets.get(possibleSrc).sendData(badTransactionMessage);
+            }
         }
     }
 }
