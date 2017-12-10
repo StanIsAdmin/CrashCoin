@@ -114,12 +114,33 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @return wether the block may validly appended to the blockchain.
      */
     protected boolean isValidNextBlock(final Block block, final int difficulty)  {
-        return block.isHashValid() // check that the hash corresponds the indicated difficulty
-                && difficulty == block.getDifficulty() // check that the indicated difficulty corresponds to the required difficulty
-                && // Previous hash block is valid
-                Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes()) 
-                && 
-                getFirstBadTransaction(block) == null; // Check the transaction
+        boolean result = block.isHashValid(); // check that the hash corresponds the indicated difficulty
+        if(result) {
+            // check that the indicated difficulty corresponds to the required difficulty
+            result &= (difficulty == block.getDifficulty()); 
+            if(result) {
+                // Previous hash block is valid
+                result &= Arrays.equals(block.getPreviousBlock(), this.getLastBlockToBytes()) ;
+                if(result) {
+                    
+                    result &= (getFirstBadTransaction(block) == null); // Check the transaction
+                    if(!result) {
+                        Logger.getLogger(getClass().getName()).warning("The transaction of the block is not valid");
+                    }
+                    
+                } else {
+                    Logger.getLogger(getClass().getName()).warning("Block not reference last block of blockchain");
+                }
+                
+            } else {
+                Logger.getLogger(getClass().getName()).warning("Difficulty of block not valid");
+            }
+            
+        } else {
+            Logger.getLogger(getClass().getName()).warning("Hash of block is invalid");
+        }
+
+        return result;
     }
 
     /**
@@ -132,7 +153,8 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
     protected Transaction getFirstBadTransaction(final Block block)  {
         tempUsedInputs.clear();
         tempAvailableInputs.clear();
-        for (final Transaction transaction: block) {
+        
+        for (final Transaction transaction : block) {
             final boolean isReward = (transaction == block.get(block.size()-1));
             if (! isValidTransaction(transaction, isReward)) {
                 return transaction;
@@ -157,20 +179,22 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
      * @param transaction
      * @return true if the transaction is valid as defined, false otherwise
      */
-    private boolean isValidTransaction(final Transaction transaction, boolean isReward)  {
+    private boolean isValidTransaction(final Transaction transaction, final boolean isReward)  {
         // Verify the transaction is valid as a reward
-        if (isReward)
+        if (isReward) {
             return transaction.isValidReward();
+        }
         
         // Verify the transaction is valid as a non-reward
-        if (! transaction.isValidNonReward())
+        if (! transaction.isValidNonReward()) {
             return false;
-
+        }
+        
         // Verify that each input is available and belongs to the sender
         for (final TransactionInput input: transaction.getInputs()) {
             // Temporarily remove the input so that it can't be used again
             final byte[] inputHash = input.getHashBytes();
-
+            
             TransactionOutput referencedOutput = null;
             // Must use loop because "byte[]".equals juste test instance and not value
             for(final byte[] addressAvailable : availableInputs.keySet()) {
@@ -213,7 +237,7 @@ public class BlockChain extends ArrayList<Block> implements JSONable {
         
         // Add the change output, only if it exists and has a strictly positive amount
         // (this avoids keeping useless transactions in memory)
-        final TransactionOutput changeOutput = transaction.getTransactionOutput();
+        final TransactionOutput changeOutput = transaction.getChangeOutput();
         if (! transaction.isReward() && changeOutput.getAmount() > 0) {
             final byte[] changeHash = changeOutput.getHashBytes();
             this.availableInputs.put(changeHash, changeOutput);
