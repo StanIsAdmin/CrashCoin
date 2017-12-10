@@ -139,12 +139,12 @@ public class Transaction implements JSONable {
      *
      * Transactions signature is performed by DSA.
      *
-     * @see Cryptography#signTransaction(java.security.PrivateKey, byte[])
+     * @see Cryptography#signData(java.security.PrivateKey, byte[])
      *
      * @param privateKey the private key of the payer (signer)
      */
     public void sign(final PrivateKey privateKey) {
-        this.signature = Cryptography.signTransaction(privateKey, this.toBytes());
+        this.signature = Cryptography.signData(privateKey, this.toBytes());
     }
 
     /**

@@ -35,34 +35,79 @@ import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 public class Cryptography {
 
     /**
-     * Transaction hasher
+     * Transaction hasher.
      */
     private static MessageDigest hasher = null;
-
-    /**
-     * Key derivator
-     */
-    private static RIPEMD160Digest ripemdHasher = null;
-    
-    private static Cipher cipher = null;
-    
-    private static SecretKeyFactory factory = null;
     
     /**
      * Secure random number/bytes generators.
      */
-    private static SecureRandom secureRandom = null;
+    private static SecureRandom randomGenerator = null;
+
+    /**
+     * Key derivation.
+     */
+    private static RIPEMD160Digest ripemdHasher = new RIPEMD160Digest();
+    
+    private static Cipher cipher = null;
+    
+    private static SecretKeyFactory secretKeyFactory = null;
     
     /**
      * DSA key pair generator.
      */
-    private static KeyPairGenerator dsaKeyGen = null;
+    private static KeyPairGenerator dsaKeyGenerator = null;
     
     /**
      * DSA public/private key constructor from bytes.
      */
     private static KeyFactory dsaKeyFactory = null;
-    private static Signature signature;
+    private static Signature dsaSigner;
+    
+    // Initialization of static attributes
+    static {
+        // Hashing
+        try {
+            hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);
+        } catch(NoSuchAlgorithmException ex) {
+            logAndAbort("Unable to use SHA-256 hash... Abort!", ex);
+        }
+        // Key derivation
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException ex) {
+            logAndAbort("Unable to get cipher: \"AES/CBC/PKCS5Padding\". Abort!", ex);
+        }
+        try {
+            secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        } catch (NoSuchAlgorithmException ex) {
+            logAndAbort("Unable to create SecretKeyFactory. Abort!", ex);
+        }
+        // Secure random generation
+        try {
+            randomGenerator = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
+            logAndAbort("Unable to create Secure Random \"SHA1PRNG\". Abort!", ex);
+        }
+        // DSA key generation
+        try {
+            dsaKeyGenerator = KeyPairGenerator.getInstance("DSA", "SUN");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
+            logAndAbort("unable to create DSA Keygen. Abort!", ex);
+        }
+        try {
+            dsaKeyFactory = KeyFactory.getInstance("DSA");
+        } catch (NoSuchAlgorithmException ex) {
+            logAndAbort("Unable to create DSA key factory. Abort!", ex);
+        }
+        try {
+            dsaSigner = Signature.getInstance("SHA1withDSA", "SUN");
+        } catch (NoSuchAlgorithmException e) {
+            logAndAbort("[Error] Could not find DSA signature algorithm. Abort!", e);
+        } catch (NoSuchProviderException e) {
+            logAndAbort("[Error] Could not find provider for DSA. Abort!", e);
+        }
+    }
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -71,13 +116,6 @@ public class Cryptography {
      * @return A 32 byte long byte[] with the SHA-256 of the transaction
      */
     public static byte[] hashBytes(final byte[] data) {
-        if (hasher == null) {
-            try {
-                hasher = MessageDigest.getInstance(Parameters.HASH_ALGORITHM);
-            } catch(NoSuchAlgorithmException ex) {
-                logAndAbort("Unable to use SHA-256 hash... Abort!", ex);
-            }
-        }
         hasher.update(data);
         return hasher.digest();
     }
@@ -89,9 +127,6 @@ public class Cryptography {
      * @return Byte representation of the CrashCoin address
      */
     public static byte[] deriveKey(final PublicKey key) {
-        if (ripemdHasher == null) {
-            ripemdHasher = new RIPEMD160Digest();
-        }
         final byte[] bytes = key.getEncoded();
         ripemdHasher.update(bytes, 0, bytes.length); // Copute RIPEMD160 digest
         ripemdHasher.doFinal(bytes, 0); // Copy digest into bytes
@@ -105,59 +140,52 @@ public class Cryptography {
      * @return a PublicKey instance
      */
     public static PublicKey createPublicKeyFromBytes(final byte[] key) {
-        PublicKey pk = null;
         final X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(key);
-        dsaKeyFactory = Cryptography.getDsaKeyFactory();
         try {
-            pk = dsaKeyFactory.generatePublic(X509publicKey);
+            return dsaKeyFactory.generatePublic(X509publicKey);
         } catch (InvalidKeySpecException e) {
             logAndAbort("Unable to create public key from bytes. Abort!", e);
         }
-        return pk;
+        return null;
     }
 
     /**
      * Returns a transaction signature using DSA algorithm.
      *
      * @param privateKey private key
-     * @param bytes data to sign
+     * @param data data to sign
      * @return transaction signature
      */
-    public static byte[] signTransaction(final PrivateKey privateKey, final byte[] bytes) {
-        final Signature dsa = dsaFromPrivateKey(privateKey);
-        byte[] signature = null;
+    public static byte[] signData(final PrivateKey privateKey, final byte[] data) {
+        // Use private key to initialize DSA signer
         try {
-            // Running DSA
-            dsa.update(bytes, 0, bytes.length);
-            signature = dsa.sign();
+            dsaSigner.initSign(privateKey);
+        } catch (InvalidKeyException e1) {
+            logAndAbort("Unable to create signature. Abort!", e1);
+        }
+        // Run the DSA signature generation on the data
+        try {
+            dsaSigner.update(data, 0, data.length);
+            return dsaSigner.sign();
         } catch (SignatureException e) {
             logAndAbort("Unable to sign transaction. Abort!", e);
         }
-        return signature;
+        return null;
     }
 
-    public static boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
-        final Signature dsa = Cryptography.dsaFromPublicKey(publicKey);
-
-        boolean verified = false;
+    public static boolean verifySignature(final PublicKey publicKey, final byte[] data, final byte[] signature) {
+        // Use public key to verify signatures
         try {
-            dsa.update(transaction);
-            verified = dsa.verify(signature);
-        } catch (SignatureException e) {
-            verified = false;
+            dsaSigner.initVerify(publicKey);
+        } catch (InvalidKeyException e1) {
+            logAndAbort("Unable to verify signature. Abort!", e1);
         }
-        return verified;
-    }
-    
-    public static Cipher getCipher() {
-        if(cipher == null) {
-            try {
-                cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException ex) {
-                logAndAbort("Unable to get cipher: \"AES/CBC/PKCS5Padding\". Abort!", ex);
-            }
-        }
-        return cipher;
+        // Run the DSA signature verification
+        try {
+            dsaSigner.update(data);
+            return dsaSigner.verify(signature);
+        } catch (SignatureException e) {}
+        return false;
     }
     
     /**
@@ -174,7 +202,6 @@ public class Cryptography {
         // Generate specs
         final X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
         final PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-        dsaKeyFactory = Cryptography.getDsaKeyFactory();
         
         try {
             // Create PublicKey and PrivateKey interfaces using the factory
@@ -188,28 +215,6 @@ public class Cryptography {
         return null;
     }
     
-    public static SecretKeyFactory getSecretKeyFactory() {
-        if(factory == null) {
-            try {
-                factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            } catch (NoSuchAlgorithmException ex) {
-                logAndAbort("Unable to create SecretKeyFactory. Abort!", ex);
-            }
-        }
-        return factory;
-    }
-    
-    public static SecureRandom getSecureRandom() {
-        if(secureRandom == null) {
-            try {
-                secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
-            } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
-                logAndAbort("Unable to create Secure Random \"SHA1PRNG\". Abort!", ex);
-            }
-        }
-        return secureRandom;
-    }
-    
     /**
      * Compute an encryption / decryption key (they are the same) from the
      * password and the salt<br>
@@ -221,10 +226,9 @@ public class Cryptography {
     public static SecretKey computeSecretKey(final char[] userPassword, final byte[] salt) {
 
         try {
-            factory = Cryptography.getSecretKeyFactory();
             final KeySpec spec = new PBEKeySpec(userPassword, salt, Parameters.KEY_DERIVATION_ITERATION,
                     Parameters.KEY_SIZE);
-            final SecretKey tmpKey = factory.generateSecret(spec);
+            final SecretKey tmpKey = secretKeyFactory.generateSecret(spec);
             final SecretKey secretKey = new SecretKeySpec(tmpKey.getEncoded(), "AES");
             
             return secretKey;
@@ -232,17 +236,6 @@ public class Cryptography {
             logAndAbort("Unable to compute Secret Key. Abort!", ex);
         }
         return null;
-    }
-    
-    public static KeyPairGenerator getDsaKeyGen() {
-        if(dsaKeyGen == null) {
-            try {
-                dsaKeyGen = KeyPairGenerator.getInstance("DSA", "SUN");
-            } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
-                logAndAbort("unable to create DSA Keygen. Abort!", ex);
-            }
-        }
-        return dsaKeyGen;
     }
     
     /**
@@ -253,14 +246,12 @@ public class Cryptography {
      */
     public static PrivateKey getPrivateKeyFomBytes(final byte[] privateKeyBytes) {
         final X509EncodedKeySpec ks = new X509EncodedKeySpec(privateKeyBytes);
-        dsaKeyFactory = Cryptography.getDsaKeyFactory();
-        PrivateKey pv = null;
         try {
-            pv = dsaKeyFactory.generatePrivate(ks);
+            return dsaKeyFactory.generatePrivate(ks);
         } catch (InvalidKeySpecException ex) {
             logAndAbort("Unable to generate private key from bytes. Abort!", ex);
         }
-        return pv;
+        return null;
     }
     
     /**
@@ -271,10 +262,8 @@ public class Cryptography {
      * @return Pair of DSA keys
      */
     public static KeyPair generateKeys() {
-        final SecureRandom random = Cryptography.getSecureRandom();
-        Cryptography.getDsaKeyGen();
-        dsaKeyGen.initialize(Parameters.DSA_KEYS_N_BITS, random);
-        final KeyPair keyPair = dsaKeyGen.generateKeyPair();
+        dsaKeyGenerator.initialize(Parameters.DSA_KEYS_N_BITS, randomGenerator);
+        final KeyPair keyPair = dsaKeyGenerator.generateKeyPair();
         return keyPair;
     }
     
@@ -293,7 +282,6 @@ public class Cryptography {
      * @return True if signature is valid
      */
     public static Boolean verifyPrivateKey(final KeyPair keyPair) {
-        final Boolean verified;
         final PrivateKey privateKey = keyPair.getPrivate();
         final PublicKey publicKey = keyPair.getPublic();
 
@@ -302,63 +290,13 @@ public class Cryptography {
         new Random().nextBytes(dummyTransaction);
 
         // Sign the dummy transaction with the private key that we want to verify
-        final byte[] dummySignature = Cryptography.signTransaction(privateKey, dummyTransaction);
+        final byte[] dummySignature = Cryptography.signData(privateKey, dummyTransaction);
 
         // Verify the signature using the public key and the specific Wallet method
-        verified = Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
-
-        return verified;
+        return Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
     }
     
     ///// private
-    
-    private static KeyFactory getDsaKeyFactory() {
-        if(dsaKeyFactory == null) {
-            try {
-                dsaKeyFactory = KeyFactory.getInstance("DSA");
-            } catch (NoSuchAlgorithmException ex) {
-                logAndAbort("Unable to create DSA key factory. Abort!", ex);
-            }
-        }
-        return dsaKeyFactory;
-    }
-    
-    private static Signature getSignature() {
-        if(signature == null) {
-            try {
-                signature = Signature.getInstance("SHA1withDSA", "SUN");
-            } catch (NoSuchAlgorithmException e) {
-                logAndAbort("[Error] Could not find DSA signature algorithm. Abort!", e);
-            } catch (NoSuchProviderException e) {
-                logAndAbort("[Error] Could not find provider for DSA. Abort!", e);
-            }
-        }
-        return signature;
-    }
-    
-    private static Signature dsaFromPrivateKey(final PrivateKey privateKey) {
-        Signature dsa = Cryptography.getSignature();
-
-        try {
-            // Using private key to sign with DSA
-            dsa.initSign(privateKey);
-        } catch (InvalidKeyException e1) {
-            logAndAbort("Unable to create signature. Abort!", e1);
-        }
-        return dsa;
-    }
-    
-    private static Signature dsaFromPublicKey(final PublicKey publicKey) {
-        Signature dsa = Cryptography.getSignature();
-        
-        try {
-            // Using public key to verify signatures
-            dsa.initVerify(publicKey);
-        } catch (InvalidKeyException e1) {
-            logAndAbort("Unable to verify signature. Abort!", e1);
-        }
-        return dsa;
-    }
     
     /**
      * Logs a message and the exception that goes with it, then aborts the program.

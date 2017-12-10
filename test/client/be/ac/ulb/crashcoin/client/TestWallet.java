@@ -44,7 +44,7 @@ public class TestWallet {
         final KeyPair keyPair = createKeyPair();
 
         final byte[] transaction = randomBytes(50);
-        final byte[] signature = Cryptography.signTransaction(keyPair.getPrivate(), transaction);
+        final byte[] signature = Cryptography.signData(keyPair.getPrivate(), transaction);
 
         assertEquals(Cryptography.verifySignature(keyPair.getPublic(), transaction, signature), true);
     }
@@ -64,7 +64,7 @@ public class TestWallet {
         // The offline software must check whether this key is wrong or not. Let's do this by signing a
         // test transaction (it can be anything, let's write random bytes) and verify the signature.
         final byte[] transaction = randomBytes(156);
-        final byte[] badSignature = Cryptography.signTransaction(badPrivateKey, transaction);
+        final byte[] badSignature = Cryptography.signData(badPrivateKey, transaction);
         assertEquals(Cryptography.verifySignature(keyPair.getPublic(), transaction, badSignature), false);
     }
 }
