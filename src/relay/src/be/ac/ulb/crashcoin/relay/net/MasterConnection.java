@@ -97,7 +97,7 @@ public class MasterConnection extends AbstractReconnectConnection {
     private void handleTransactionsNotValid(final JSONObject option) {
         final JSONArray badTransactions = option.getJSONArray("transactions");
         for(int i = 0; i < badTransactions.length(); ++i) {
-            final Transaction badTransaction = (Transaction) badTransactions.get(i);
+            final Transaction badTransaction = new Transaction(badTransactions.getJSONObject(i));
             MasterConnection.transactionsBuffer.remove(badTransaction);
         }
     }

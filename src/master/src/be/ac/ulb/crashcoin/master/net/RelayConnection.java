@@ -87,7 +87,9 @@ public class RelayConnection extends AbstractConnection {
         if(allBadTransactions.isEmpty())
             return;
         final JSONArray badTransactions = new JSONArray();
-        badTransactions.put(allBadTransactions);
+        for(final Transaction badTransaction : allBadTransactions) {
+            badTransactions.put(badTransaction.toJSON());
+        }
         final JSONObject option = new JSONObject();
         option.put("transactions", badTransactions);
         final Message transactionsNotValid = new Message(Message.TRANSACTIONS_NOT_VALID, option);

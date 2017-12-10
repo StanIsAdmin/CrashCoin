@@ -90,9 +90,11 @@ public class RelayConnection extends AbstractReconnectConnection {
     }
     
     private void handleTransactionsNotValid(final JSONObject option) {
+        Logger.getLogger(getClass().getName()).info("Miner recevied bad transactions");
         final JSONArray badTransactions = option.getJSONArray("transactions");
         for(int i = 0; i < badTransactions.length(); ++i) {
-            badTransactionsBuffer.add((Transaction) badTransactions.get(i));
+            badTransactionsBuffer.add(new Transaction(badTransactions.getJSONObject(i)));
+            Logger.getLogger(getClass().getName()).info(badTransactions.get(i).toString());
         }
     }
 
