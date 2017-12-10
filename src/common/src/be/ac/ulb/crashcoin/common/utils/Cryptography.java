@@ -139,7 +139,7 @@ public class Cryptography {
     public static boolean verifySignature(final PublicKey publicKey, final byte[] transaction, final byte[] signature) {
         final Signature dsa = Cryptography.dsaFromPublicKey(publicKey);
 
-        boolean verified = false;
+        boolean verified;
         try {
             dsa.update(transaction);
             verified = dsa.verify(signature);

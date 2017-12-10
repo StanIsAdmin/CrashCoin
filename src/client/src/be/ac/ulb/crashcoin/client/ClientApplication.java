@@ -243,7 +243,6 @@ public class ClientApplication {
                     System.err.println("Could not sign transaction");
                     
                 } else {
-                    transaction.setSignature(new byte[] {0x12});
                     try {
                         RelayConnection.getInstance().sendData(transaction);
                     } catch (IOException ex) {
