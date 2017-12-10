@@ -276,6 +276,7 @@ public class ClientApplication {
                     System.out.println(unacceptTransaction.toString());
                 });
             }
+            System.out.println("Total amount: " + wallet.getTotalAmount());
         }
     }
     

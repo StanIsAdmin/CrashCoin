@@ -1,6 +1,5 @@
 package be.ac.ulb.crashcoin.client;
 
-import be.ac.ulb.crashcoin.common.Address;
 import be.ac.ulb.crashcoin.common.Parameters;
 import be.ac.ulb.crashcoin.common.Transaction;
 import be.ac.ulb.crashcoin.common.TransactionInput;
@@ -99,17 +98,27 @@ public class WalletClient extends Wallet {
     
     public List<TransactionOutput> getUsefulTransactions(final int amount) {
         final List<TransactionOutput> transactions = new ArrayList<>();
-        final Address srcAddress = new Address(this.publicKey);
         int total = 0;
+        for(final TransactionOutput transaction : getActiveTransactions()) {
+            total += transaction.getAmount();
+            if(total >= amount) {
+                transactions.add(transaction);
+            }
+        }
+        return transactions;
+    }
+    
+    public List<TransactionOutput> getActiveTransactions() {
+        final List<TransactionOutput> transactions = new ArrayList<>();
         for (final Transaction transaction: getAllTransactions()) {
             
             final TransactionOutput transactionOut;
             // Get destination address
-            if(transaction.getDestAddress().equals(srcAddress)) {
+            if(transaction.getDestAddress().equals(getAddress())) {
                 transactionOut = transaction.getTransactionOutput();
                 
             // Get the address of the change back (the source user)
-            } else if(transaction.getChangeOutput().getDestinationAddress().equals(srcAddress)) {
+            } else if(transaction.getChangeOutput().getDestinationAddress().equals(getAddress())) {
                 transactionOut = transaction.getChangeOutput();
                 
             } else {
@@ -117,15 +126,18 @@ public class WalletClient extends Wallet {
             }
             
             if(!alreadyUsed(transactionOut.getHashBytes())) {
-                total += transactionOut.getAmount();
                 transactions.add(transactionOut);
             }
-            
-            if (total >= amount) {
-                return transactions;
-            }
         }
-        return null;
+        return transactions;
+    }
+    
+    public int getTotalAmount() {
+        int total = 0;
+        for(final TransactionOutput transaction : getActiveTransactions()) {
+            total += transaction.getAmount();
+        }
+        return total;
     }
     
     private boolean alreadyUsed(final byte[] hashTransaction) {
