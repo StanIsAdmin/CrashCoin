@@ -115,6 +115,21 @@ public class Cryptography {
             logAndAbort("[Error] Could not find provider for DSA. Abort!", e);
         }
     }
+    
+    /**
+     * Logs a message and the exception that goes with it, then aborts the program.
+     * 
+     * @param message The message to log (null if none)
+     * @param exception The exception that has been thrown
+     */
+    private static void logAndAbort(final String message, final Throwable exception) {
+        Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, message, exception);
+        System.exit(1);
+    }
+    
+    public static KeyPair generateKeyPair() {
+        return dsaKeyGenerator.generateKeyPair();
+    }
 
     /**
      * Performs SHA-256 hash of the transaction
@@ -301,19 +316,6 @@ public class Cryptography {
 
         // Verify the signature using the public key and the specific Wallet method
         return Cryptography.verifySignature(publicKey, dummyTransaction, dummySignature);
-    }
-    
-    ///// private
-    
-    /**
-     * Logs a message and the exception that goes with it, then aborts the program.
-     * 
-     * @param message The message to log (null if none)
-     * @param exception The exception that has been thrown
-     */
-    private static void logAndAbort(final String message, final Throwable exception) {
-        Logger.getLogger(Cryptography.class.getName()).log(Level.SEVERE, message, exception);
-        System.exit(1);
     }
 
     /**
