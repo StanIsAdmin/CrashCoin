@@ -40,7 +40,7 @@ class MinerConnection extends AbstractConnection {
     protected void receiveData(final JSONable jsonData) {
         if (jsonData instanceof Block) {
             final Block block = (Block) jsonData;
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block fomr miner ({0}):\n{1}",
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Get block from miner ({0}):\n{1}",
                     new Object[]{_ip, block.toString()});
             
             // Relay the data to the master node
