@@ -41,3 +41,13 @@ wallets/
 
 # CrashCoin BlockChain
 /master/
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.nav
+*.out
+*.pdf
+*.snm
+*.toc
