@@ -20,7 +20,7 @@ public class TestTransaction {
     @Test
     public void testRewardTransactionIsNotValid() {
         Transaction transaction = TestUtils.createTransaction();
-        transaction = TestUtils.alterTransaction(transaction);
+        transaction = TestUtils.alterTransactionLockTime(transaction);
         Assert.assertFalse(transaction.isValidReward());
     }
     
@@ -39,7 +39,7 @@ public class TestTransaction {
     @Test
     public void testNotRewardTransactionIsNotValid() {
         Transaction transaction = TestUtils.createTransaction();
-        transaction = TestUtils.alterTransaction(transaction);
+        transaction = TestUtils.alterTransactionLockTime(transaction);
         Assert.assertFalse(transaction.isValidNonReward());
     }
     
